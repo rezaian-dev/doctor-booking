@@ -1,5 +1,12 @@
-export default function LandingPage() {
+import React from 'react';
+import Header from '../components/layouts/Header';
+
+const LandingPage: React.FC = () => {
   return (
-    <div></div>
-  )
-}
+    <>
+      <Header />
+    </>
+  );
+};
+
+export default LandingPage;

@@ -4,6 +4,7 @@ import { ArrowLeft2 } from "iconsax-reactjs";
 import Link from "next/link";
 import { RefObject, useEffect, useRef } from "react";
 import clsx from "clsx";
+import Image from "next/image";
 
 interface NavItem {
   href: string;
@@ -25,7 +26,7 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // 🖱️ Close menu on outside click (skip if click is on toggle button or menu)
+  // 🖱️ Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -38,27 +39,44 @@ export const MobileMenu = ({
 
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, toggleButtonRef]);
 
   return (
-    <>
-      {/* 🌫️ Semi-transparent backdrop */}
+ <>
+      {/* 🌫️ Backdrop with fade */}
       <div
         className={clsx(
-          "fixed inset-0 z-40 bg-primary-50/30 backdrop-blur-sm transition-opacity duration-300 md:hidden",
+          "fixed inset-0 z-40 bg-primary-50/30 backdrop-blur-sm transition-opacity duration-300 ease-in-out md:hidden",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
       />
 
-      {/* 📦 Slide-in menu drawer */}
+      {/* 📦 Menu drawer with fade + slide */}
       <div
         ref={menuRef}
         className={clsx(
-          "fixed top-16 right-0 h-full w-[246px] bg-white z-50 flex flex-col px-4 pt-5 shadow-xl transform transition-transform duration-300 ease-in-out md:hidden",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          "fixed top-0 right-0 h-full w-[246px] bg-white z-50 flex flex-col px-4 pt-5 shadow-xl md:hidden",
+          // Always keep the element in the layout for smooth closing
+          "transition-all duration-300 ease-in-out",
+          isOpen
+            ? "opacity-100 translate-x-0 pointer-events-auto"
+            : "opacity-0 translate-x-full pointer-events-none"
         )}
       >
+        {/* ❌ Close button */}
+        <button
+          onClick={onClose}
+          className="self-end mb-6 p-1 rounded-md hover:bg-gray-100 focus:outline-none"
+        >
+          <Image
+            src="/svgs/cancel-01.svg"
+            alt=""
+            width={24}
+            height={24}
+          />
+        </button>
+
         <nav className="flex flex-col gap-y-5 mt-2">
           {navItems.map(({ href, label }) => (
             <Link

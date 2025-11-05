@@ -1,6 +1,6 @@
 'use client';
-
-import { Menu } from 'lucide-react';
+import { Menu01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
@@ -30,7 +30,7 @@ export const Header = () => {
               className="md:hidden"
               aria-label="Toggle mobile menu"
             >
-              <Menu size={24} className="text-neutral-800" />
+              <HugeiconsIcon icon={Menu01Icon} color='262626' />
             </button>
 
             <div className="flex items-center gap-x-2">

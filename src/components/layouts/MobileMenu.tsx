@@ -1,10 +1,9 @@
 "use client";
-
-import { ArrowLeft2 } from "iconsax-reactjs";
 import Link from "next/link";
 import { RefObject, useEffect, useRef } from "react";
 import clsx from "clsx";
-import Image from "next/image";
+import { ArrowLeft01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 
 interface NavItem {
   href: string;
@@ -69,12 +68,7 @@ export const MobileMenu = ({
           onClick={onClose}
           className="self-end mb-6 p-1 rounded-md hover:bg-gray-100 focus:outline-none"
         >
-          <Image
-            src="/svgs/cancel-01.svg"
-            alt=""
-            width={24}
-            height={24}
-          />
+       <HugeiconsIcon icon={Cancel01Icon} />
         </button>
 
         <nav className="flex flex-col gap-y-5 mt-2">
@@ -86,7 +80,7 @@ export const MobileMenu = ({
               className="flex items-center justify-between text-neutral-950 font-medium text-[15px] hover:text-primary-600 transition-colors"
             >
               {label}
-              <ArrowLeft2 size={22} className="text-neutral-800" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} color='#000000'  />
             </Link>
           ))}
         </nav>

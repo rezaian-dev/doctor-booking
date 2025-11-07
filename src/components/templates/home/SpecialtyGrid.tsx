@@ -1,6 +1,7 @@
 import { MdOutlineKeyboardArrowLeft } from 'react-icons/md';
 import React from 'react';
 import SpecialtyCard from './SpecialtyCard';
+import Link from 'next/link';
 
 /**
  * 🩺 Static list of medical specialties.
@@ -65,28 +66,34 @@ const healthServices = [
  */
 const SpecialtyGrid: React.FC = () => {
   return (
-    <section className="container px-4 md:px-8 mt-3.5 md:mt-[94px]">
+    <section className="container px-4 md:px-8 mt-[30px] md:mt-[94px]">
       {/* 🎯 Section header: title + "View All" CTA */}
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-xl md:text-2xl">لیست تخصص ها</h2>
-        <div className="flex items-center gap-x-1.5">
-          <span className="font-medium text-sm text-neutral-400">
-            مشاهده همه
-          </span>
-          {/* 🔄 RTL-friendly arrow (note: color fixed to valid hex format!) */}
-          <MdOutlineKeyboardArrowLeft size={20} color="#b3b3b3" />
-        </div>
+        {/* 🏷️ Section title – responsive font size */}
+        <h2 className="font-medium text-xl md:text-2xl text-gray-800">
+          لیست تخصص‌ها
+        </h2>
+
+        {/* 🔗 "View All" link – RTL-friendly with arrow */}
+        <Link
+          href="/specialties"
+          className="group inline-flex items-center gap-x-1.5 font-medium text-sm text-neutral-400 hover:text-neutral-600 focus:text-neutral-700 transition-colors whitespace-nowrap"
+          aria-label="View all medical specialties"
+        >
+          مشاهده همه
+          {/* 🔄 Left-pointing arrow (correct for RTL languages like Persian) */}
+          <MdOutlineKeyboardArrowLeft
+            size={20}
+            className="text-neutral-400 group-hover:text-neutral-600 transition-colors"
+            aria-hidden="true"
+          />
+        </Link>
       </div>
 
       {/* 🧱 Responsive grid — auto-adjusts columns based on screen size */}
       <div className="grid xl:grid-cols-7 md:grid-cols-5 sm:grid-cols-3 xs:grid-cols-2 gap-4 gap-x-3.5 mt-[18px] auto-rows-fr">
-        {healthServices.map(({ id, image, title, subtitle }) => (
-          <SpecialtyCard
-            key={id}
-            image={image}
-            title={title}
-            subtitle={subtitle}
-          />
+        {healthServices.map(healthServices => (
+          <SpecialtyCard key={healthServices.id} {...healthServices} />
         ))}
       </div>
     </section>

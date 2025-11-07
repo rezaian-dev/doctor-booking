@@ -1,30 +1,58 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { FC } from 'react';
+import clsx from 'clsx';
 
 /**
- * 🎯 Hero Section – Introduces the main value proposition with a CTA and hero image.
+ * 🎯 Hero section – primary value proposition with dual CTAs
+ * 🖼️ LCP-optimized image (priority-loaded)
+ * 💬 Clear messaging: trust + convenience
+ * 📱 Mobile-first layout (stacked → side-by-side)
+ * ✨ Subtle hover animations (elevate UX)
  */
 const Hero: FC = () => {
   return (
     <section className="container px-4 md:px-8 mt-[22px] md:mt-[30px]">
-      {/* 📱 Stack on mobile, row on desktop */}
-      <div className="flex flex-col-reverse md:flex-row items-center justify-center md:justify-between gap-y-3.5 md:gap-y-0">
-
-        {/* 📝 Hero Text & CTAs */}
+      {/* 📱 Layout: column on mobile, row on desktop */}
+      <div
+        className={clsx(
+          'flex flex-col-reverse md:flex-row',
+          'items-center justify-center md:justify-between',
+          'gap-y-3.5 md:gap-y-0'
+        )}
+      >
+        {/* 📝 Headline + CTAs */}
         <div className="flex flex-col gap-y-8">
-          <div className="flex flex-col gap-y-4 text-center md:text-right">
-            <h1 className="font-bold text-3xl sm:text-[32px] md:text-4xl lg:text-5xl">
+          <div
+            className={clsx(
+              'flex flex-col gap-y-4',
+              'text-center md:text-right'
+            )}
+          >
+            <h1
+              className={clsx(
+                'font-bold',
+                'text-3xl sm:text-[32px] md:text-4xl lg:text-5xl',
+                'text-gray-900'
+              )}
+            >
               سلامت شما، رسالت ما
             </h1>
-            <h3 className="text-base lg:text-xl text-neutral-600">
+            <h2
+              className={clsx(
+                'text-base lg:text-xl text-neutral-600',
+                'leading-relaxed'
+              )}
+            >
               بهترین پزشکان در دسترس شما،
               <br />
               نوبت‌دهی آنلاین مطمئن فقط با چند کلیک.
-            </h3>
+            </h2>
           </div>
 
-          {/* 🔘 Primary & Secondary Actions */}
+          {/* 🔘 Dual CTA Buttons */}
           <div className="flex items-center justify-center md:justify-start gap-x-4">
             {/* 💉 Book Appointment */}
             <Link
@@ -46,14 +74,14 @@ const Hero: FC = () => {
           </div>
         </div>
 
-        {/* 🖼️ Hero Image – LCP candidate */}
+        {/* 🖼️ Hero image – LCP candidate */}
         <div className="relative w-full max-w-[834px]">
           <Image
             src="/images/happy-doctors-group.webp"
             alt="گروهی از پزشکان خوشحال در بیمارستان"
             width={834}
             height={520}
-            priority // ✅ LCP image → eager load + preload
+            priority // ✅ Critical LCP image – preloaded
             className="w-full h-auto object-cover"
           />
         </div>

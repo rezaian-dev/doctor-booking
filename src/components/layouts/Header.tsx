@@ -5,7 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { MobileMenu } from './MobileMenu';
+import clsx from 'clsx';
 
+/**
+ * 🧭 Site header – logo, nav, auth link
+ * 📱 Mobile: hamburger menu + overlay
+ * 💻 Desktop: full nav + branding
+ * ♿ a11y: focus management, aria-labels, semantic HTML
+ */
 const navItems = [
   { href: '/doctors', label: 'لیست پزشکان' },
   { href: '/faq', label: 'سوالات متداول' },
@@ -19,34 +26,45 @@ export const Header = () => {
 
   return (
     <>
-      {/* 🏗️ Main site header (desktop + mobile trigger) */}
-      <header className="md:border-b border-neutral-100 shadow-sm md:shadow-none bg-white relative z-50">
-        <div className="md:container flex items-center justify-between h-16 px-4 md:px-8">
-          {/* 🏷️ Branding: logo + mobile menu button */}
+      {/* 🏗️ Main site header */}
+      <header
+        className={clsx(
+          'bg-white relative z-50',
+          'md:border-b border-neutral-100',
+          'shadow-sm md:shadow-none'
+        )}
+      >
+        <div
+          className={clsx(
+            'md:container flex items-center justify-between',
+            'h-16 px-4 md:px-8'
+          )}
+        >
+          {/* 🏷️ Logo + mobile menu button */}
           <div className="flex items-center gap-x-4">
             <button
               ref={toggleButtonRef}
               onClick={() => setMobileMenuOpen(prev => !prev)}
               className="md:hidden"
-              aria-label="Toggle mobile menu"
+              aria-label={mobileMenuOpen ? 'بستن منوی موبایل' : 'باز کردن منوی موبایل'}
             >
-              <HugeiconsIcon icon={Menu01Icon} color='262626' />
+              <HugeiconsIcon icon={Menu01Icon} color="#262626" />
             </button>
 
-            <div className="flex items-center gap-x-2">
+            <Link href="/" className="flex items-center gap-x-2">
               <Image
-                src="/images/Logo.jpg" // ✅ WebP for better quality & compression
-                alt="دکتر رزرو Logo"
-                width={32} // ✅ Real dimensions of the image file
-                height={32} // ✅ Real dimensions of the image file
+                src="/images/Logo.jpg"
+                alt="دکتر رزرو – رزرو آنلاین نوبت پزشک"
+                width={32}
+                height={32}
                 className="w-6 h-6 sm:w-8 sm:h-8"
                 priority
-                sizes="(max-width: 640px) 24px, 32px" // ✅ Optional: for responsive optimization
+                sizes="(max-width: 640px) 24px, 32px"
               />
-              <h2 className="font-medium md:font-bold text-lg md:text-2xl">
+              <h1 className="font-medium md:font-bold text-lg md:text-2xl">
                 دکتر <span className="text-primary-500">رزرو</span>
-              </h2>
-            </div>
+              </h1>
+            </Link>
           </div>
 
           {/* 💻 Desktop navigation */}
@@ -62,7 +80,7 @@ export const Header = () => {
             ))}
           </nav>
 
-          {/* 🔐 Auth link */}
+          {/* 🔐 Auth CTA */}
           <Link
             href="/login"
             className="text-primary-500 text-sm font-medium hover:text-primary-600 transition-colors"
@@ -72,7 +90,7 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* 📱 Controlled mobile menu */}
+      {/* 📱 Mobile menu (portal or absolute) */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}

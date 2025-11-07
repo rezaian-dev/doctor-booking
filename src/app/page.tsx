@@ -4,6 +4,7 @@ import Hero from '@/components/templates/home/Hero';
 import InfoCards from '@/components/templates/home/InfoCards';
 import SearchHero from '@/components/templates/home/SearchHero';
 import SpecialtyGrid from '@/components/templates/home/SpecialtyGrid';
+import PopularDocs from '../components/templates/home/PopularDocs';
 
 const LandingPage: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const LandingPage: React.FC = () => {
       <InfoCards/>
       <SearchHero/>
       <SpecialtyGrid/>
+      <PopularDocs/>
     </>
   );
 };

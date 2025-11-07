@@ -1,42 +1,60 @@
+'use client';
+
 import React from 'react';
 import FeatureCard from './FeatureCard';
-import { Settings04Icon, Comment01Icon, Clock02Icon } from '@hugeicons/core-free-icons';
+import {
+  Settings04Icon,
+  Comment01Icon,
+  Clock02Icon,
+} from '@hugeicons/core-free-icons';
+import clsx from 'clsx';
 
-// 📌 Feature data for info cards (immutable)
+/**
+ * 💡 Key value propositions section
+ * 🃏 3 feature cards explaining platform benefits
+ * 📱 Responsive: 1 → 2 → 3 columns
+ * 🔒 Immutable data (as const)
+ */
 const features = [
   {
     id: 1,
-    icon:Settings04Icon,
+    icon: Settings04Icon,
     title: 'مدیریت و تغییر نوبت‌ها به راحتی',
-    description: "توانایی لغو، تغییر و مدیریت نوبت ها به راحتی",
+    description: 'توانایی لغو، تغییر و مدیریت نوبت‌ها به راحتی',
   },
   {
     id: 2,
-    icon:Comment01Icon,
+    icon: Comment01Icon,
     title: 'اطمینان از انتخاب مجرب‌ترین پزشکان',
-    description: "بهترین پزشکان را با توجه به نظرات کاربران انتخاب کنید",
+    description: 'بهترین پزشکان را با توجه به نظرات کاربران انتخاب کنید',
   },
   {
     id: 3,
-    icon:Clock02Icon,
-    title: "دسترسی ۲۴ ساعته به پزشکان",
-    description: "در هر زمانی میتوانید نوبت خود را رزرو کنید",
+    icon: Clock02Icon,
+    title: 'دسترسی ۲۴ ساعته به پزشکان',
+    description: 'در هر زمانی می‌توانید نوبت خود را رزرو کنید',
   },
 ] as const;
 
-// 🧩 Responsive info cards section (1 → 2 → 3 columns)
+/**
+ * 🧩 Feature cards grid – highlights platform benefits
+ * 📐 Auto height (auto-rows-fr) for visual consistency
+ * 🌐 Fully responsive & scalable
+ */
 const InfoCards: React.FC = () => {
   return (
-    <section className="container px-4 md:px-8 mt-3.5 md:mt-6">
-      {/* 📱 Responsive grid: 1 col (mobile) → 2 cols (tablet) → 3 cols (desktop) */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
-        {features.map(({ id,icon, title, description }) => (
-          <FeatureCard
-            key={id}
-            icon={icon}
-            title={title}
-            description={description}
-          />
+    <section className={clsx('container px-4 md:px-8', 'mt-3.5 md:mt-6')}>
+      <div
+        className={clsx(
+          'grid',
+          'grid-cols-1', // mobile
+          'md:grid-cols-2', // tablet
+          'lg:grid-cols-3', // desktop
+          'gap-4 auto-rows-fr'
+        )}
+      >
+        {features.map(feature => (
+          <FeatureCard key={feature.id} {...feature} />
         ))}
       </div>
     </section>

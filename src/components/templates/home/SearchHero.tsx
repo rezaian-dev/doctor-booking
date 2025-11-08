@@ -12,7 +12,7 @@ import clsx from 'clsx';
  */
 const SearchHero: React.FC = () => {
   return (
-    <section className="container px-4 md:px-8 mt-3.5 md:my-[30px]">
+    <section className="container px-4 md:px-8 mt-3.5 md:mt-[30px]">
       {/* 🖼️ Hero background with dark overlay for text contrast */}
       <div
         className={clsx(

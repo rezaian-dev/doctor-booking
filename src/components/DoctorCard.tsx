@@ -113,6 +113,7 @@ const DoctorCard = ({
             'hover:text-white hover:bg-primary-500',
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
           )}
+          aria-label={`دریافت نوبت از ${name}`}
         >
           دریافت نوبت
         </Link>

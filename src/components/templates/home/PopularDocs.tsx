@@ -76,7 +76,7 @@ const PopularDocs: React.FC = () => {
   ] as const;
 
   return (
-    <section className="container px-4 md:px-8 my-[30px] md:my-[94px]">
+    <section className="container px-4 md:px-8 mt-[30px] md:mt-[94px]">
       {/* 🧭 Header: Section title + "View All" link */}
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-gray-800 line-clamp-2">

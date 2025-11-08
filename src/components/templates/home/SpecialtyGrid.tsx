@@ -66,7 +66,7 @@ const healthServices = [
  */
 const SpecialtyGrid: React.FC = () => {
   return (
-    <section className="container px-4 md:px-8 mt-[30px] md:mt-[94px]">
+    <section className="container px-4 md:px-8 mt-[30px] md:mt-[124px]">
       {/* 🎯 Section header: title + "View All" CTA */}
       <div className="flex items-center justify-between">
         {/* 🏷️ Section title – responsive font size */}

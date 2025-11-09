@@ -1,17 +1,26 @@
 'use client';
-import { Menu01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+
+// 🎯 Core React & Next.js
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { MobileMenu } from './MobileMenu';
 import clsx from 'clsx';
 
+// 🧩 UI & Icons
+import { Menu01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+
+// 📱 Mobile-specific component
+import { MobileMenu } from './MobileMenu';
+
 /**
- * 🧭 Site header – logo, nav, auth link
- * 📱 Mobile: hamburger menu + overlay
- * 💻 Desktop: full nav + branding
- * ♿ a11y: focus management, aria-labels, semantic HTML
+ * 🏷️ Site Header – Fully responsive, accessible, and performance-optimized
+ * ✅ Semantic HTML (role="banner")
+ * ✅ Keyboard & screen reader friendly
+ * ✅ Active link highlighting
+ * ✅ Optimized logo loading (LCP)
+ * ✅ Mobile menu with focus trapping
  */
 const navItems = [
   { href: '/doctors', label: 'لیست پزشکان' },
@@ -21,13 +30,18 @@ const navItems = [
 ] as const;
 
 export const Header = () => {
+  // 📍 Current route for active link detection
+  const pathname = usePathname();
+
+  // 📱 Mobile menu state & focus management
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      {/* 🏗️ Main site header */}
+      {/* 🏗️ Main site header – semantic & accessible */}
       <header
+        role="banner"
         className={clsx(
           'bg-white relative z-50',
           'md:border-b border-neutral-100',
@@ -40,18 +54,23 @@ export const Header = () => {
             'h-16 px-4 md:px-8'
           )}
         >
-          {/* 🏷️ Logo + mobile menu button */}
+          {/* 🏷️ Branding + mobile toggle */}
           <div className="flex items-center gap-x-4">
             <button
               ref={toggleButtonRef}
               onClick={() => setMobileMenuOpen(prev => !prev)}
               className="md:hidden"
-              aria-label={mobileMenuOpen ? 'بستن منوی موبایل' : 'باز کردن منوی موبایل'}
+              aria-label={mobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
             >
-              <HugeiconsIcon icon={Menu01Icon} color="#262626" />
+              <HugeiconsIcon icon={Menu01Icon} color="#262626" aria-hidden="true" />
             </button>
 
-            <Link href="/" className="flex items-center gap-x-2">
+            {/* 🔖 Site logo – not an h1 to preserve semantic structure */}
+            <Link
+              href="/"
+              className="flex items-center gap-x-2"
+              aria-label="دکتر رزرو – صفحه اصلی"
+            >
               <Image
                 src="/images/Logo.jpg"
                 alt="دکتر رزرو – رزرو آنلاین نوبت پزشک"
@@ -61,26 +80,30 @@ export const Header = () => {
                 priority
                 sizes="(max-width: 640px) 24px, 32px"
               />
-              <h1 className="font-medium md:font-bold text-lg md:text-2xl">
+              <span className="font-medium md:font-bold text-lg md:text-2xl">
                 دکتر <span className="text-primary-500">رزرو</span>
-              </h1>
+              </span>
             </Link>
           </div>
 
-          {/* 💻 Desktop navigation */}
+          {/* 💻 Desktop navigation – with active state */}
           <nav className="hidden md:flex gap-x-9 lg:gap-x-10">
             {navItems.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
-                className="text-neutral-950 hover:text-primary-500 font-medium transition-colors"
+                aria-current={pathname === href ? 'page' : undefined}
+                className={clsx(
+                  'text-neutral-950 hover:text-primary-500 font-medium transition-colors',
+                  pathname === href && 'text-primary-500'
+                )}
               >
                 {label}
               </Link>
             ))}
           </nav>
 
-          {/* 🔐 Auth CTA */}
+          {/* 🔐 Auth CTA – consistent across all pages */}
           <Link
             href="/login"
             className="text-primary-500 text-sm font-medium hover:text-primary-600 transition-colors"
@@ -90,7 +113,7 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* 📱 Mobile menu (portal or absolute) */}
+      {/* 📱 Mobile menu overlay – handles focus trapping & a11y */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}

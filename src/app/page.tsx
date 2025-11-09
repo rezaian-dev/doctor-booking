@@ -6,6 +6,7 @@ import SearchHero from '@/components/templates/home/SearchHero';
 import SpecialtyGrid from '@/components/templates/home/SpecialtyGrid';
 import HealthCTA from '@/components/templates/home/HealthCTA';
 import DoctorSection from '@/components/templates/home/DoctorSection';
+import UserTestimonials from '@/components/templates/home/UserTestimonials';
 
 const LandingPage: React.FC = () => {
   return (
@@ -18,6 +19,7 @@ const LandingPage: React.FC = () => {
       <DoctorSection title="محبوب‌ترین پزشکان (بر اساس تعداد نوبت‌های رزرو شده)" />
       <HealthCTA />
       <DoctorSection title="جدیدترین پزشک‌ها" />
+      <UserTestimonials/>
     </>
   );
 };

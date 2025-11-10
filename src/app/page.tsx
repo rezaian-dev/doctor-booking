@@ -7,6 +7,7 @@ import SpecialtyGrid from '@/components/templates/home/SpecialtyGrid';
 import HealthCTA from '@/components/templates/home/HealthCTA';
 import DoctorSection from '@/components/templates/home/DoctorSection';
 import UserTestimonials from '@/components/templates/home/UserTestimonials';
+import HomeFaqAccordion from '@/components/templates/home/HomeFaqAccordion';
 
 const LandingPage: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const LandingPage: React.FC = () => {
       <HealthCTA />
       <DoctorSection title="جدیدترین پزشک‌ها" />
       <UserTestimonials/>
+      <HomeFaqAccordion/>
     </>
   );
 };

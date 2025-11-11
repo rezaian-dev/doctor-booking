@@ -8,14 +8,9 @@ import {
 import Link from 'next/link'; // 🔄 Next.js client-side navigation
 import { MdOutlineKeyboardArrowLeft } from 'react-icons/md'; // 🡐 Left arrow icon
 
-// 💬 Type definition for each FAQ item
-interface FaqItem {
-  question: string;
-  answer: string;
-}
 
 // 📚 Static FAQ data (in Persian)
-const faqs: FaqItem[] = [
+const faqs = [
   {
     question: 'چگونه می‌توانم نوبت رزرو کنم؟',
     answer:

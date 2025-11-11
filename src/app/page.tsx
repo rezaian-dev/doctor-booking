@@ -9,6 +9,8 @@ import DoctorSection from '@/components/templates/home/DoctorSection';
 import UserTestimonials from '@/components/templates/home/UserTestimonials';
 import HomeFaqAccordion from '@/components/templates/home/HomeFaqAccordion';
 import MedicalArticles from '@/components/templates/home/MedicalArticles';
+import Footer from '@/components/layouts/Footer';
+import FooterMobile from '@/components/layouts/FooterMobile';
 
 const LandingPage: React.FC = () => {
   return (
@@ -21,9 +23,11 @@ const LandingPage: React.FC = () => {
       <DoctorSection title="محبوب‌ترین پزشکان (بر اساس تعداد نوبت‌های رزرو شده)" />
       <HealthCTA />
       <DoctorSection title="جدیدترین پزشک‌ها" />
-      <UserTestimonials/>
-      <HomeFaqAccordion/>
-      <MedicalArticles/>
+      <UserTestimonials />
+      <HomeFaqAccordion />
+      <MedicalArticles />
+      <Footer />
+      <FooterMobile/>
     </>
   );
 };

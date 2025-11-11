@@ -8,6 +8,7 @@ import HealthCTA from '@/components/templates/home/HealthCTA';
 import DoctorSection from '@/components/templates/home/DoctorSection';
 import UserTestimonials from '@/components/templates/home/UserTestimonials';
 import HomeFaqAccordion from '@/components/templates/home/HomeFaqAccordion';
+import MedicalArticles from '@/components/templates/home/MedicalArticles';
 
 const LandingPage: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const LandingPage: React.FC = () => {
       <DoctorSection title="جدیدترین پزشک‌ها" />
       <UserTestimonials/>
       <HomeFaqAccordion/>
+      <MedicalArticles/>
     </>
   );
 };

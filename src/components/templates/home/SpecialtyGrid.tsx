@@ -1,7 +1,7 @@
-import { MdOutlineKeyboardArrowLeft } from 'react-icons/md';
-import React from 'react';
-import SpecialtyCard from './SpecialtyCard';
 import Link from 'next/link';
+import React from 'react';
+import { MdOutlineKeyboardArrowLeft } from 'react-icons/md';
+import SpecialtyCard from './SpecialtyCard';
 
 /**
  * 🩺 Static list of medical specialties.
@@ -70,7 +70,7 @@ const SpecialtyGrid: React.FC = () => {
       {/* 🎯 Section header: title + "View All" CTA */}
       <div className="flex items-center justify-between">
         {/* 🏷️ Section title – responsive font size */}
-        <h2 className="font-medium text-xl md:text-2xl text-gray-800">
+        <h2 className="font-medium text-xl md:text-2xl text-neutral-975">
           لیست تخصص‌ها
         </h2>
 

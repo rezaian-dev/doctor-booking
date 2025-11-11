@@ -46,7 +46,8 @@ const DoctorCard = ({
           fill
           className="object-cover"
           loading="lazy"
-          sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          property='false'
         />
       </div>
 

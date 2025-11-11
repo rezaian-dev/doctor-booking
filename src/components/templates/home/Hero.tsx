@@ -81,7 +81,7 @@ const Hero: FC = () => {
             alt="گروهی از پزشکان خوشحال در بیمارستان"
             width={834}
             height={520}
-            priority // ✅ Critical LCP image – preloaded
+            preload // ✅ Critical LCP image – preloaded
             className="w-full h-auto object-cover"
           />
         </div>

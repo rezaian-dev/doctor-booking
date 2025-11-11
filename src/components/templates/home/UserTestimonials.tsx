@@ -1,4 +1,6 @@
 'use client';
+import clsx from 'clsx';
+import Link from 'next/link';
 import React, { useRef, useState } from 'react';
 import {
   MdOutlineKeyboardArrowLeft,
@@ -9,8 +11,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperRef, SwiperSlide } from 'swiper/react';
-import Link from 'next/link';
-import clsx from 'clsx';
 import UserTestimonialCard from './UserTestimonialCard';
 
 // 🧾 HomeUserTestimonials – A responsive, accessible testimonial carousel
@@ -70,7 +70,7 @@ const HomeUserTestimonials: React.FC = () => {
     <section className="container px-4 md:px-8 mt-7.5 md:mt-[94px]">
       {/* 🧭 Header: Title + "View All" */}
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-gray-800 line-clamp-2">
+        <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">
           نظرات کاربران
         </h2>
 
@@ -98,19 +98,19 @@ const HomeUserTestimonials: React.FC = () => {
           slidesPerView={1}
           spaceBetween={16}
           watchOverflow
-          onSwiper={(swiper) => {
+          onSwiper={swiper => {
             setIsBeginning(swiper.isBeginning);
             setIsEnd(swiper.isEnd);
           }}
           onSlideChange={handleSlideChange}
           breakpoints={{
-            640: { slidesPerView: 2, spaceBetween: 16 },   // sm
-            768: { slidesPerView: 2, spaceBetween: 20 },   // md
-            1024: { slidesPerView: 3, spaceBetween: 24 },  // lg
+            640: { slidesPerView: 2, spaceBetween: 16 }, // sm
+            768: { slidesPerView: 2, spaceBetween: 20 }, // md
+            1024: { slidesPerView: 3, spaceBetween: 24 }, // lg
           }}
           className="pb-6"
         >
-          {testimonials.map((testimonial) => (
+          {testimonials.map(testimonial => (
             <SwiperSlide key={testimonial.id}>
               <UserTestimonialCard {...testimonial} />
             </SwiperSlide>

@@ -1,5 +1,4 @@
 'use client';
-
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
@@ -10,99 +9,90 @@ import {
 import { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperRef, SwiperSlide } from 'swiper/react';
-import DoctorCard from '../../DoctorCard';
+import ArticleCard from '../../ArticleCard';
 
-interface DoctorSectionProps {
-  title: string;
+interface MedicalArticlesProps {
+  title?: string;
 }
 
 /**
- * 🏆 PopularDocs – A fully responsive, accessible doctor carousel
- * ✅ RTL-ready | ✅ a11y-compliant | ✅ mobile-first | ✅ production-optimized
+ * 📚 MedicalArticles – Swiper-based article carousel for latest health insights
+ * ✅ RTL-ready | ✅ Mobile-first | ✅ Reusable | ✅ Performance-optimized
  */
-const DoctorSection = ({ title }: DoctorSectionProps) => {
-  // 🧠 State to track swiper navigation boundaries
+const MedicalArticles= ({title = 'آخرین مقالات'}:MedicalArticlesProps) => {
+  // 🧠 Track swiper navigation state
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const swiperRef = useRef<SwiperRef>(null);
 
-  // 🔄 Update navigation state on slide change
+  // 🔄 Update nav state on slide change
   const handleSlideChange = (swiper: SwiperType) => {
     setIsBeginning(swiper.isBeginning);
     setIsEnd(swiper.isEnd);
   };
 
-  // 🎯 Manual slide navigation handlers
+  // 🎯 Manual navigation
   const handlePrev = () => swiperRef.current?.swiper?.slidePrev();
   const handleNext = () => swiperRef.current?.swiper?.slideNext();
 
-  // 📦 Static data – replace with API in real app
-  const doctors = [
+  // 📦 Static article data – replace with API later
+  const articles = [
     {
       id: 1,
-      name: 'دکتر علی راد',
-      specialty: 'متخصص ریه',
-      rating: '۳.۵',
-      reviewsCount: 105,
-      city: 'تهران',
-      image: '/images/4.png',
+      title: '۱۰ نشانه هشدار دهنده مشکلات قلبی',
+      excerpt: 'اگر این ۱۰ نشانه را داشتید حتما به پزشک مراجعه کنید...',
+      date: '۱۴۰۳/۰۸/۱۵',
+      image: '/images/article-1.png',
+      href: '/articles/1',
     },
     {
       id: 2,
-      name: 'دکتر علی وارسته',
-      specialty: 'متخصص قلب و عروق',
-      rating: '۳.۵',
-      reviewsCount: 105,
-      city: 'تهران',
-      image: '/images/1.png',
+      title: '۵ گام ساده برای پیشگیری از دیابت',
+      excerpt: '۵ گام ساده برای پیشگیری از دیابت نوع ۲ ...',
+      date: '۱۴۰۳/۰۸/۱۰',
+      image: '/images/article-2.png',
+      href: '/articles/2',
     },
     {
       id: 3,
-      name: 'دکتر زهرا وارسته',
-      specialty: 'متخصص قلب و عروق',
-      rating: '۳.۵',
-      reviewsCount: 105,
-      city: 'تهران',
-      image: '/images/2.png',
-    },
-    {
-      id: 4,
-      name: 'دکتر بهنوش حسینی',
-      specialty: 'جراح گوش حلق و بینی',
-      rating: '۳.۵',
-      reviewsCount: 105,
-      city: 'تهران',
-      image: '/images/3.png',
+      title: 'چگونه بهترین دکتر را برای نیازهای خود پیدا کنیم؟',
+      excerpt: 'رزرو بهترین دکتر نیازمند یکسری پیشنیاز ها است که باید بدانید...',
+      date: '۱۴۰۳/۰۸/۰۵',
+      image: '/images/article-3.png',
+      href: '/articles/3',
     },
   ] as const;
 
   return (
-    <section className="container px-4 md:px-8 mt-[30px] md:mt-[94px]">
-      {/* 🧭 Header: Section title + "View All" link */}
+    <section className="container px-4 md:px-8 mt-7.5 md:mt-10">
+      {/* 🧭 Header: Title + "View All" */}
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">
           {title}
         </h2>
         <div className="flex items-center gap-x-1.5">
           <Link
-            href="/doctors"
+            href="/articles"
             className="font-medium text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 focus:text-neutral-700 focus:outline-none transition-colors whitespace-nowrap"
-            aria-label="مشاهده همه پزشکان"
+            aria-label="مشاهده همه مقالات"
           >
             مشاهده همه
           </Link>
-          <MdOutlineKeyboardArrowLeft size={20} color="#b3b3b3" />
+          <MdOutlineKeyboardArrowLeft
+            size={20}
+            className="text-neutral-400"
+            aria-hidden="true"
+          />
         </div>
       </div>
 
-      {/* 🎠 Swiper Carousel */}
+      {/* 🎠 Swiper Carousel for Articles */}
       <div className="mt-[18px] relative">
         <Swiper
           ref={swiperRef}
-          modules={[Navigation, Pagination]}
+          modules={[Navigation]}
           slidesPerView={1}
           spaceBetween={16}
           watchOverflow={true}
@@ -111,21 +101,20 @@ const DoctorSection = ({ title }: DoctorSectionProps) => {
             setIsEnd(swiper.isEnd);
           }}
           onSlideChange={handleSlideChange}
-          breakpoints={{
+         breakpoints={{
             480: { slidesPerView: 2, spaceBetween: 16 },
             768: { slidesPerView: 3, spaceBetween: 20 },
-            1024: { slidesPerView: 4, spaceBetween: 24 },
           }}
           className="pb-6"
         >
-          {doctors.map(doctor => (
-            <SwiperSlide key={doctor.id}>
-              <DoctorCard {...doctor} />
+          {articles.map(article => (
+            <SwiperSlide key={article.id}>
+              <ArticleCard {...article} />
             </SwiperSlide>
           ))}
         </Swiper>
 
-        {/* ◀️ Previous Button (RTL: right side) */}
+        {/* ◀️ Prev Button (RTL: right side) */}
         {!isBeginning && (
           <button
             onClick={handlePrev}
@@ -133,12 +122,13 @@ const DoctorSection = ({ title }: DoctorSectionProps) => {
               'absolute top-1/2 -translate-y-1/2 z-10',
               'flex items-center justify-center',
               'w-10 h-10 rounded-full',
-              'bg-white/80 backdrop-blur-sm text-gray-700',
+              'bg-white/80 backdrop-blur-sm text-neutral-700',
               'hover:bg-white hover:shadow-md',
               'focus:outline-none focus:ring-2 focus:ring-primary-500',
               'transition-all duration-200 ease-in-out',
-              'right-0 sm:-right-3 md:-right-4 lg:-right-5'
+              'right-0 sm:-right-3 md:-right-4'
             )}
+            aria-label="اسلاید قبلی"
           >
             <MdOutlineKeyboardArrowRight size={20} />
           </button>
@@ -152,12 +142,13 @@ const DoctorSection = ({ title }: DoctorSectionProps) => {
               'absolute top-1/2 -translate-y-1/2 z-10',
               'flex items-center justify-center',
               'w-10 h-10 rounded-full',
-              'bg-white/80 backdrop-blur-sm text-gray-700',
+              'bg-white/80 backdrop-blur-sm text-neutral-700',
               'hover:bg-white hover:shadow-md',
               'focus:outline-none focus:ring-2 focus:ring-primary-500',
               'transition-all duration-200 ease-in-out',
-              'left-0 sm:-left-3 md:-left-4 lg:-left-5'
+              'left-0 sm:-left-3 md:-left-4'
             )}
+            aria-label="اسلاید بعدی"
           >
             <MdOutlineKeyboardArrowLeft size={20} />
           </button>
@@ -167,4 +158,4 @@ const DoctorSection = ({ title }: DoctorSectionProps) => {
   );
 };
 
-export default DoctorSection;
+export default MedicalArticles;

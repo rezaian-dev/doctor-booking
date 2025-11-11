@@ -55,6 +55,7 @@
   --color-neutral-300: #c1c1c1;
   --color-neutral-400: #b3b3b3;
   --color-neutral-500: #888888;
+  --color-neutral-550: #757575;
   --color-neutral-600: #6d6d6d;
   --color-neutral-700: #5d5d5d;
   --color-neutral-750: #565656;
@@ -62,6 +63,7 @@
   --color-neutral-900: #333333;
   --color-neutral-950: #262626;
   --color-neutral-975: #2e2e2e;
+  --color-neutral-990: #1D1D1D;
 
   /* 🟨 Special: Alert / Accent */
   --color-alert: #ffb800;

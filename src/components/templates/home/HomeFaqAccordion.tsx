@@ -1,12 +1,12 @@
 'use client';
-import Link from 'next/link'; // 🔄 Next.js client-side navigation
-import { MdOutlineKeyboardArrowLeft } from 'react-icons/md'; // 🡐 Left arrow icon
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'; // 🗂️ Custom Accordion UI components
+import Link from 'next/link'; // 🔄 Next.js client-side navigation
+import { MdOutlineKeyboardArrowLeft } from 'react-icons/md'; // 🡐 Left arrow icon
 
 // 💬 Type definition for each FAQ item
 interface FaqItem {
@@ -58,10 +58,9 @@ const HomeFaqAccordion = () => {
   return (
     // 📐 Section container with responsive horizontal padding
     <section className="container px-4 md:px-8 mt-7.5 md:mt-[94px]">
-
       {/* 🧭 Header with title and "View All" link */}
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-gray-800 line-clamp-2">
+        <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">
           سوالات متداول
         </h2>
 
@@ -86,8 +85,8 @@ const HomeFaqAccordion = () => {
 
       {/* 🗂️ Accordion component */}
       <Accordion
-        type="single"        // 🔒 Allow only one item open at a time
-        collapsible          // 🔄 Allow closing the open item
+        type="single" // 🔒 Allow only one item open at a time
+        collapsible // 🔄 Allow closing the open item
         className="w-full mt-[18px] p-6 border-[1.5px] rounded-2xl border-neutral-100"
         defaultValue="item-1" // ⏭️ Pre-expand the first item (Note: this won't work as expected—see note below ⚠️)
       >
@@ -95,11 +94,11 @@ const HomeFaqAccordion = () => {
           /* 📄 Each FAQ item */
           <AccordionItem key={question} value={question}>
             {/* ❓ Question trigger */}
-            <AccordionTrigger className="font-medium text-base py-5 cursor-pointer px-5 text-black no-underline!">
+            <AccordionTrigger className="font-medium text-sm text-right sm:text-base py-5 cursor-pointer sm:px-5 text-black no-underline!">
               {question}
             </AccordionTrigger>
             {/* 💬 Answer content */}
-            <AccordionContent className="flex flex-col gap-4 px-5">
+            <AccordionContent className="flex flex-col gap-4 sm:px-5">
               <p className="text-sm leading-7 text-neutral-975">{answer}</p>
             </AccordionContent>
           </AccordionItem>

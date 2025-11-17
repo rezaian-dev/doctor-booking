@@ -52,7 +52,7 @@ export const MobileMenu = ({
       {/* 🌫️ Backdrop – fade in/out */}
       <div
         className={clsx(
-          'fixed inset-0 z-40 bg-black/20 backdrop-blur-sm',
+          'fixed inset-0 z-50 bg-black/20 backdrop-blur-sm',
           'transition-opacity duration-300 ease-in-out md:hidden',
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}

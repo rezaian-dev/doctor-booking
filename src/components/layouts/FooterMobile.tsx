@@ -9,54 +9,46 @@ import {
   TelegramIcon,
   WhatsappIcon,
 } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
-// Define types for better type safety 🔧
-type QuickLink = {
-  href: string;
-  label: string;
-};
-
-type SocialLink = {
-  href: string;
-  icon: typeof WhatsappIcon; // Using typeof to get the icon type
-  label: string;
-};
 
 const FooterMobile: React.FC = () => {
   // Quick navigation links 🧭
-  const quickLinks: readonly QuickLink[] = [
+  const quickLinks = [
     { href: '/', label: 'صفحه اصلی' },
     { href: '/doctors', label: 'لیست پزشکان' },
     { href: '/faq', label: 'سوالات متداول' },
     { href: '/about', label: 'درباره ما' },
     { href: '/contact', label: 'تماس با ما' },
-  ];
+  ] as const;
 
   // Social media links data 🧠
-  const socialLinks: readonly SocialLink[] = [
+  const socialLinks = [
     { href: 'https://wa.me/yournumber', icon: WhatsappIcon, label: 'واتساپ' },
     { href: 'https://instagram.com/yourhandle', icon: InstagramIcon, label: 'اینستاگرام' },
     { href: 'https://t.me/yourchannel', icon: TelegramIcon, label: 'تلگرام' },
     { href: 'https://linkedin.com/company/yourcompany', icon: Linkedin01Icon, label: 'لینکدین' },
-  ];
+  ] as const;
 
   // Contact numbers data 📱
   const phoneNumbers = [
     { number: '۰۹۱۲ ۳۴۵ ۶۷۸۹', link: 'tel:09123456789' },
     { number: '۰۹۱۲ ۳۴۵ ۶۷۹۰', link: 'tel:09123456790' },
-  ];
+  ] as const;
 
   const officeNumbers = [
     { number: '۰۲۱-۷۷ ۴۲۵۸۶۷', link: 'tel:02177425867' },
     { number: '۰۲۱-۷۷ ۴۲۵۸۶۸', link: 'tel:02177425868' },
-  ];
+  ] as const;
+
+    // ✅ Type definition for contact items — improves type safety 🛡️
+  type ContactItem = { readonly number: string; readonly link: string };
 
   // Function to render contact list 📞
-  const renderContactList = (items: typeof phoneNumbers, icon: typeof SmartPhone01Icon) => (
+  const renderContactList = (items: readonly ContactItem[], icon:IconSvgElement) => (
     <div className="flex items-center gap-2.5">
       <HugeiconsIcon icon={icon} color="#3D3D3D" size={24} aria-hidden="true" />
       <div className="flex flex-col gap-y-2">

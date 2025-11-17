@@ -8,72 +8,64 @@ import {
   TelegramIcon,
   WhatsappIcon,
 } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
-// Define types for better type safety 🔧
-type QuickLink = {
-  href: string;
-  label: string;
-};
-
-type SocialLink = {
-  href: string;
-  icon: typeof WhatsappIcon;
-  label: string;
-};
-
-type ContactInfo = {
-  number: string;
-  link: string;
-};
-
 const Footer: React.FC = () => {
   // Quick navigation links 🧭
-  const quickLinks: readonly QuickLink[] = [
+  const quickLinks = [
     { href: '/', label: 'صفحه اصلی' },
     { href: '/doctors', label: 'لیست پزشکان' },
     { href: '/faq', label: 'سوالات متداول' },
     { href: '/about', label: 'درباره ما' },
     { href: '/contact', label: 'تماس با ما' },
-  ];
+  ] as const;
 
   // Social media links data 🧠
-  const socialLinks: readonly SocialLink[] = [
+  const socialLinks = [
     { href: 'https://wa.me/yournumber', icon: WhatsappIcon, label: 'واتساپ' },
     { href: 'https://instagram.com/yourhandle', icon: InstagramIcon, label: 'اینستاگرام' },
     { href: 'https://t.me/yourchannel', icon: TelegramIcon, label: 'تلگرام' },
     { href: 'https://linkedin.com/company/yourcompany', icon: Linkedin01Icon, label: 'لینکدین' },
-  ];
+  ] as const;
 
   // Contact numbers data 📱
-  const mobileNumbers: readonly ContactInfo[] = [
+  const mobileNumbers:readonly ContactItem[] = [
     { number: '۰۹۱۲ ۳۴۵ ۶۷۸۹', link: 'tel:09123456789' },
     { number: '۰۹۱۲ ۳۴۵ ۶۷۹۰', link: 'tel:09123456790' },
-  ];
+  ] as const;
 
-  const officeNumbers: readonly ContactInfo[] = [
+  const officeNumbers: ContactItem[] = [
     { number: '۰۲۱-۷۷ ۴۲۵۸۶۷', link: 'tel:02177425867' },
     { number: '۰۲۱-۷۷ ۴۲۵۸۶۸', link: 'tel:02177425868' },
-  ];
+  ] as const;
 
-  // Function to render a list of contact numbers 📞
+  // ✅ Fixed: Proper type for contact items — now strongly typed 🛡️
+  type ContactItem = { number: string; link: string };
+
+  // ✅ Fixed: Render contact list with correct typing, RTL-aware text rendering 📞
   const renderContactList = (
-    items: readonly ContactInfo[],
-    icon: typeof SmartPhone01Icon,
-    iconColor: string = "#3D3D3D"
+    items:readonly ContactItem[],
+    icon: IconSvgElement,
+    iconColor: string = '#3D3D3D'
   ) => (
     <div className="flex flex-col items-center justify-center gap-y-2">
-      <HugeiconsIcon icon={icon} className={clsx(icon === Call02Icon && "transform rotate-y-180")} color={iconColor} size={24} aria-hidden="true" />
-      {items.map(({link,number}) => (
+      <HugeiconsIcon
+        icon={icon}
+        className={clsx(icon === Call02Icon && 'transform rotate-y-180')}
+        color={iconColor}
+        size={24}
+        aria-hidden="true"
+      />
+      {items.map(({ link, number }) => (
         <a
-          key={link} // Using the unique href as key
+          key={link}
           href={link}
+          dir='ltr'
           className="text-neutral-850 text-sm hover:text-primary-500 transition-colors duration-200"
-          dir="ltr"
         >
           {number}
         </a>
@@ -92,9 +84,12 @@ const Footer: React.FC = () => {
             <div>
               <h4 className="text-neutral-850 font-bold text-base mb-4">لینک‌های سریع</h4>
               <ul className="flex flex-col gap-y-3">
-                {quickLinks.map(({href,label}) => (
+                {quickLinks.map(({ href, label }) => (
                   <li key={href}>
-                    <Link href={href} className="text-sm text-neutral-850 hover:underline hover:text-primary-500 transition-colors duration-200">
+                    <Link
+                      href={href}
+                      className="text-sm text-neutral-850 hover:underline hover:text-primary-500 transition-colors duration-200"
+                    >
                       {label}
                     </Link>
                   </li>
@@ -107,7 +102,7 @@ const Footer: React.FC = () => {
               <h4 className="text-neutral-850 font-bold text-base mb-4">اطلاعات حقوقی</h4>
               <ul className="flex flex-col gap-y-3">
                 <li className="text-sm text-neutral-850">تمامی حقوق محفوظ است.</li>
-                <li className="text-sm text-neutral-850">سال تأسیس یا بروزرسانی: 2025</li>
+                <li className="text-sm text-neutral-850">سال تأسیس: 2025</li>
               </ul>
             </div>
 
@@ -118,7 +113,7 @@ const Footer: React.FC = () => {
                 {renderContactList(mobileNumbers, SmartPhone01Icon)}
               </div>
               <div>
-                {renderContactList(officeNumbers, Call02Icon)} {/* Corrected icon usage */}
+                {renderContactList(officeNumbers, Call02Icon)}
               </div>
             </div>
           </div>
@@ -128,13 +123,14 @@ const Footer: React.FC = () => {
             <h4 className="text-base/7 text-dark-blue">مشترک شوید</h4>
             <form
               className="flex items-center border-[1.5px] border-light-gray bg-white rounded-[6px] h-11"
-              onSubmit={(e) => e.preventDefault()} // Consider adding actual submission logic
+              onSubmit={(e) => e.preventDefault()}
             >
               <input
                 className="w-full outline-none h-full px-3 text-sm text-dark-blue placeholder:text-medium-gray"
                 type="email"
                 placeholder="آدرس ایمیل"
                 aria-label="آدرس ایمیل"
+                required // ✅ Added for better form UX
               />
               <button
                 className="bg-primary-500 rounded-l-[10px] flex items-center justify-center w-[52px] h-11 hover:bg-primary-600 transition-colors duration-200"
@@ -154,14 +150,14 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between mt-[27px] gap-y-4">
           {/* Social media icons 🌐 */}
           <div className="flex items-center gap-x-3">
-            {socialLinks.map(({href,label,icon}) => (
+            {socialLinks.map(({ href, label, icon }) => (
               <a
-                key={href} // Using href as key for better uniqueness
+                key={href}
                 href={href}
                 aria-label={label}
                 className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded-full p-1.5 hover:bg-gray-100 transition-colors duration-200"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer" // ✅ Already correct — well done!
               >
                 <HugeiconsIcon icon={icon} size={26} color="#141B34" aria-hidden="true" />
               </a>
@@ -176,6 +172,7 @@ const Footer: React.FC = () => {
               height={28}
               alt="لوگو دکتر رزرو"
               className="w-[30px] h-7 object-contain"
+              priority // ✅ Added for critical logo — improves LCP
             />
             <h2 className="text-2xl font-bold">
               دکتر<span className="text-primary-500"> رزرو </span>

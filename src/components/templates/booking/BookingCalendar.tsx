@@ -80,8 +80,8 @@ const BookingCalendar = () => {
   return (
     <div className="mt-6 lg:mt-0 rounded-xl p-3 md:p-4 border border-neutral-100">
       {/* 📆 Calendar Section */}
-      <div className="border border-neutral-100 px-1 py-3 md:p-3 rounded-xl mb-4">
-        <div className="flex items-center justify-between mb-4 mx-3">
+      <div className="border border-neutral-100 px-1 py-3 md:p-3 rounded-xl mb-2">
+        <div className="flex items-center justify-between mb-3 mx-3">
           <h4 className="text-base md:text-lg font-bold text-neutral-950">تقویم</h4>
           <span className="text-sm md:text-[15px]/7 text-neutral-500">{displayDate}</span>
         </div>
@@ -96,7 +96,7 @@ const BookingCalendar = () => {
       </div>
 
       {/* ⏰ Time Slots Grid */}
-      <div className="grid grid-cols-2 auto-cols-fr md:grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-2 auto-cols-fr md:grid-cols-3 gap-2 mb-2">
         {sortedTimeSlots().map(slot => (
           <Button
             key={slot.id}

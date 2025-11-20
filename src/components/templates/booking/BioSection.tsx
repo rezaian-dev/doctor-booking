@@ -30,12 +30,7 @@ const BioSection = ({ bio, title, className }:BioSectionProps) => {
       </h4>
 
       {/* 📝 Expandable content with fixed height animation */}
-      <div
-        className="transition-all duration-400 ease-in-out overflow-hidden"
-        style={{
-          height: isExpanded ? '65px' : `150px` // Fixed heights for smooth transition; consider dynamic height if needed
-        }}
-      >
+      <div className={clsx("transition-all duration-400 ease-in-out overflow-hidden",isExpanded ? "h-[65px]" : "h-[125px]  xl:h-[111px]")}>
         <p className="text-neutral-700 text-[13px] mt-2  line-clamp-6">
           {bio}
         </p>

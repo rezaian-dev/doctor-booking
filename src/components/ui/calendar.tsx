@@ -48,10 +48,10 @@ function Calendar({
         button_next: cn(buttonVariants({ variant: buttonVariant }), 'size-6 md:size-8 p-0 rounded-full bg-primary-50 text-primary-500 hover:bg-primary-50 hover:text-primary-500 transition-colors', base.button_next),
         month_caption: cn('flex items-center justify-center h-10', base.month_caption),
         caption_label: cn('text-sm md:text-base font-bold text-gray-900', base.caption_label),
-        weekdays: cn('flex justify-between h-7 mb-3 rounded-[25px] gap-x-2 md:gap-x-3 font-medium px-1 bg-gray-100'),
-        weekday: cn('flex-1 w-6 h-6 rounded-full  flex items-center justify-center text-[10px] font-medium text-gray-600', base.weekday),
-        week: cn('flex w-full  p-1 md:px-7 lg:px-2 items-center justify-between h-10', base.week),
-        day: cn('flex w-6 h-6 rounded-full  items-center justify-center text-neutral-500 hover:bg-neutral-100 hover:text-black text-xs xs:text-sm font-medium',base.day),
+        weekdays: cn('flex justify-between h-7 mb-3 px-1 xs:px-3 lg:px-1 rounded-[25px] gap-x-1 xs:gap-x-3 font-medium bg-gray-100'),
+        weekday: cn('flex w-6 h-6 rounded-full font-medium text-gray-600', base.weekday),
+        week: cn('flex w-full p-1 md:px-7 lg:px-2 items-center justify-between h-10', base.week),
+        day: cn('flex w-6 h-6 rounded-full items-center justify-center text-neutral-500 hover:bg-neutral-100 hover:text-black text-[11px] xs:text-sm font-medium',base.day),
         today: cn('font-bold text-xs text-secondary-500', base.today),
         selected:cn("bg-primary-500 text-white hover:bg-primary-500 hover:text-white",base.selected),
         outside:cn("text-danger-950",base.outside),
@@ -66,8 +66,8 @@ function Calendar({
         },
         DayButton: CalendarDayButton,
         Weekday: (props: any) => (
-          <th {...props} className={cn('flex-1 flex items-center justify-center w-6 h-6', props.className)}>
-            <span className="text-[10px] xs:text-xs font-medium text-neutral-700">{WEEKDAYS[props['aria-label']]}</span>
+          <th {...props} className={cn('flex md:flex-1 items-center justify-center w-6 h-6', props.className)}>
+            <span className="text-[10px] xs:text-xs xs:font-medium text-neutral-700">{WEEKDAYS[props['aria-label']]}</span>
           </th>
         ),
         ...components

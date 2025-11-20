@@ -112,7 +112,7 @@ const HomeUserTestimonials: React.FC = () => {
         >
           {testimonials.map(testimonial => (
             <SwiperSlide key={testimonial.id}>
-              <UserTestimonialCard {...testimonial} />
+              <UserTestimonialCard {...testimonial} className="rounded-xl border border-neutral-100 p-6" />
             </SwiperSlide>
           ))}
         </Swiper>

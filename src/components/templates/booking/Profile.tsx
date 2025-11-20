@@ -2,31 +2,35 @@
 import { AlarmClockIcon, MapPinpoint02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Image from 'next/image';
-import React from 'react';
 import { FaStar } from 'react-icons/fa6';
 import { GoCheckCircle } from 'react-icons/go';
 import BioSection from './BioSection';
 
-// 📊 Static doctor data configuration
-const doctorData = {
-  name: 'دکتر زهرا وارسته',
-  specialty: 'متخصص قلب و عروق',
-  image: '/images/2.png',
-  rating: 4,
-  reviewsCount: 105,
-  medicalCode: '۴۰۲۲۳',
-  address: 'تهران، ستارخان، خیابان هفتم، پلاک ۴۰',
-  nextAvailableSlot: 'دوشنبه ۲۴ دی',
-  bio: 'دارای بورد تخصصی بیماری های نوزادان و کودکان با بیش از بیست سال سابقه فعالیت در زمینه تشخیص و درمان اختلالات گوارشی آلرژیک رشد و نمو نوزادان و کودکان و مشکلات رشد و بلوغ در نوجوانان در مطب خدمات تخصصی شامل سونوگرافی شکم برای بررسی وضعیت گوارشی و اندام های داخلی تست حساسیت به کازئین شیر برای تشخیص آلرژی های پروتئینی تست حساسیت به لاکتوز شیر جهت شناسایی عدم تحمل لاکتوز تست تنفسی اسپیرومتری برای بررسی عملکرد ریوی و تشخیص بیماری های تنفسی ارائه می شود همچنین حضور دستیار کارشناس ارشد مشاور کودکان و نوجوانان جهت ارائه راهنمایی های تکمیلی پاسخگویی به پرسش های والدین و همراهی در روند درمان فراهم شده است هدف ما پایش دقیق رشد سلامت و کیفیت زندگی کودکان و نوجوانان با رویکردی علمی صبورانه و دلسوزانه می باشد'
-} as const;
+interface ProfileProps {
+  showBio:boolean
+}
 
-// 🌟 Generate star rating array based on rating value
-const generateStars = (rating: number) => {
-  return Array.from({ length: 5 }, (_, i) => i < rating);
-};
 
 // 👨‍⚕️ Main Profile Component
-const Profile: React.FC = () => {
+const Profile = ({showBio=true}:ProfileProps) => {
+
+  // 📊 Static doctor data configuration
+  const doctorData = {
+    name: 'دکتر زهرا وارسته',
+    specialty: 'متخصص قلب و عروق',
+    image: '/images/2.png',
+    rating: 4,
+    reviewsCount: 105,
+    medicalCode: '۴۰۲۲۳',
+    address: 'تهران، ستارخان، خیابان هفتم، پلاک ۴۰',
+    nextAvailableSlot: 'دوشنبه ۲۴ دی',
+    bio: 'دارای بورد تخصصی بیماری های نوزادان و کودکان با بیش از بیست سال سابقه فعالیت در زمینه تشخیص و درمان اختلالات گوارشی آلرژیک رشد و نمو نوزادان و کودکان و مشکلات رشد و بلوغ در نوجوانان در مطب خدمات تخصصی شامل سونوگرافی شکم برای بررسی وضعیت گوارشی و اندام های داخلی تست حساسیت به کازئین شیر برای تشخیص آلرژی های پروتئینی تست حساسیت به لاکتوز شیر جهت شناسایی عدم تحمل لاکتوز تست تنفسی اسپیرومتری برای بررسی عملکرد ریوی و تشخیص بیماری های تنفسی ارائه می شود همچنین حضور دستیار کارشناس ارشد مشاور کودکان و نوجوانان جهت ارائه راهنمایی های تکمیلی پاسخگویی به پرسش های والدین و همراهی در روند درمان فراهم شده است هدف ما پایش دقیق رشد سلامت و کیفیت زندگی کودکان و نوجوانان با رویکردی علمی صبورانه و دلسوزانه می باشد'
+  } as const;
+
+  // 🌟 Generate star rating array based on rating value
+  const generateStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => i < rating);
+  };
   // 🌟 Generate stars array
   const stars = generateStars(doctorData.rating);
 
@@ -129,22 +133,24 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        <hr className="hidden md:block" />
+        {showBio && <hr className="hidden md:block" />}
 
         {/* 📋 Bio section — desktop only */}
-        <BioSection
+        { showBio && <BioSection
           bio={doctorData.bio}
           title={doctorData.name}
           className="hidden md:block"
-        />
+        />}
+
       </div>
 
       {/* 📋 Bio section — mobile/tablet only */}
-      <BioSection
+      {showBio && <BioSection
         bio={doctorData.bio}
         title={doctorData.name}
         className="mt-6 block md:hidden"
-      />
+      /> }
+
     </>
   );
 };

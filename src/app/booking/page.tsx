@@ -18,7 +18,9 @@ const page: React.FC = () => {
       {/* Page header section 🏷️ */}
       <Header />
       {/* Dynamic page title display 📝 */}
-      <PageTitle />
+
+      <PageTitle title='صفحه پزشک' hasPadding={true}/>
+
 
       {/* Main content container with responsive padding 📐 */}
       <div className="container px-4 md:px-8 mt-8">

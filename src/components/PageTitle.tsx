@@ -1,16 +1,20 @@
-import React from 'react';
 import { IoArrowForwardCircleOutline } from "react-icons/io5";
 import Link from 'next/link';
+import clsx from 'clsx';
+interface pageTitleProps {
+  title:string
+  hasPadding:boolean
+}
 
-const PageTitle: React.FC = () => {
+const PageTitle = ({title,hasPadding}:pageTitleProps) => {
   return (
-    <section className="container px-4 md:px-[30px] mt-6 md:mt-8 flex items-center gap-x-2">
+    <section className={clsx("container  mt-6 md:mt-8 flex items-center gap-x-2",hasPadding && "px-4 md:px-[30px]")} >
       {/* Navigate back to doctors list 🔄 */}
       <Link href="/doctors">
         <IoArrowForwardCircleOutline size={24} color='#3D3D3D' />
       </Link>
       {/* Main page title — clear, bold, semantic 🎯 */}
-      <h1 className="text-xl font-bold text-neutral-850">صفحه پزشک</h1>
+      <h1 className="text-xl font-bold text-neutral-850">{title}</h1>
     </section>
   );
 };

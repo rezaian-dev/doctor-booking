@@ -75,7 +75,7 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-gray-50">
-      <div className="hidden md:block container px-4 md:px-8 mt-[94px] pt-16 pb-7">
+      <div className="hidden md:block container px-4 md:px-8 pt-16 pb-7">
         {/* Main footer content 🧩 */}
         <div className="flex flex-col lg:flex-row gap-x-16 xl:gap-x-[168px] gap-y-8 border-b-[3px] border-dark-blue/10 pb-[27px]">
           {/* Left section: Links & Contact 📋 */}

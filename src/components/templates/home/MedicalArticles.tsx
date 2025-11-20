@@ -66,7 +66,7 @@ const MedicalArticles= ({title = 'آخرین مقالات'}:MedicalArticlesProps
   ] as const;
 
   return (
-    <section className="container px-4 md:px-8 mt-7.5 md:mt-10">
+    <section className="container px-4 md:px-8 mt-7.5 mb-8 md:mb-16 md:mt-10">
       {/* 🧭 Header: Title + "View All" */}
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">

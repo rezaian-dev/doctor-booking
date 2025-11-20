@@ -103,6 +103,7 @@
   object-fit: cover;
 }
 
+
 /* 🌀 Accordion animations – required for smooth expand/collapse with Radix UI */
 @keyframes accordion-down {
   from {

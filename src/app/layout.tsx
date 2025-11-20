@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body
-        className={`${vazirmatn.variable} min-w-[320px] min-h-screen antialiased`}
+        className={`${vazirmatn.variable} min-w-[320px] overflow-x-hidden! min-h-screen antialiased`}
 >
         {children}
       </body>

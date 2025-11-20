@@ -67,7 +67,7 @@ const FooterMobile: React.FC = () => {
   );
 
   return (
-    <section className="block md:hidden bg-gray-50 border-t border-neutral-100 mt-[45px] rounded-t-4xl">
+    <section className="block md:hidden bg-gray-50 border-t border-neutral-100 rounded-t-4xl">
       <div className="container px-4 pt-10">
         <div className="flex justify-between flex-wrap gap-x-8 gap-y-6">
           {/* Quick links 🔗 */}

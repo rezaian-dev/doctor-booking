@@ -1,7 +1,7 @@
+import React from 'react';
 import { Add01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import React from 'react';
-import ContinueButton from './ContinueButton';
+import ContinueButton from '../../ContinueButton';
 
 /**
  * 🧑‍💼 Patient Selection UI Component
@@ -58,7 +58,7 @@ const PatientSelector: React.FC = () => {
       </div>
 
       {/* ▶️ Continue button to proceed to the next step */}
-      <ContinueButton />
+      <ContinueButton text={"ادامه"} mode={'default'} />
     </>
   );
 };

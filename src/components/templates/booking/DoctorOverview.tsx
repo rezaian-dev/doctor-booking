@@ -1,6 +1,6 @@
 import React from 'react';
-import Profile from './Profile';
-import DoctorContact from './DoctorContact';
+import Contact from './Contact';
+import DoctorProfile from '../../DoctorProfile';
 
 /**
  * DoctorOverview Component 🏥
@@ -11,9 +11,9 @@ const DoctorOverview: React.FC = () => {
   return (
     <>
       {/* Doctor's profile section 👤 */}
-      <Profile showBio={true} />
+      <DoctorProfile mode={'default'}/>
       {/* Doctor's contact details section 📞 */}
-      <DoctorContact />
+      <Contact />
     </>
   );
 };

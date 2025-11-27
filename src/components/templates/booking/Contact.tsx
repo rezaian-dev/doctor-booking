@@ -1,6 +1,6 @@
+import React from 'react';
 import { ChromeIcon, InstagramIcon, TelephoneIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import React from 'react';
 
 const Contact: React.FC = () => {
   const items = [

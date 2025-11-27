@@ -1,17 +1,17 @@
 import React from 'react';
 import Header from '@/components/layouts/Header';
 import PageTitle from '@/components/PageTitle';
-import Profile from '@/components/templates/booking/Profile';
 import PatientSelector from '@/components/templates/booking/PatientSelector';
 import Footer from '@/components/layouts/Footer';
 import FooterMobile from '@/components/layouts/FooterMobile';
+import DoctorProfile from '@/components/DoctorProfile';
 
 /**
  * 📄 Booking Confirmation Page
  * This page guides the user through selecting a patient for appointment.
  * It follows a clean, semantic, and accessible UI structure.
  */
-const BookingConfirmPage: React.FC = () => {
+const Page: React.FC = () => {
   return (
     <>
       {/* 🚀 Render header component */}
@@ -29,7 +29,7 @@ const BookingConfirmPage: React.FC = () => {
         {/* 🎯 Centered content with max width and vertical spacing */}
         <div className="max-w-[805px] mx-auto space-y-6">
           {/* 👨‍⚕️ Display doctor profile without bio section */}
-          <Profile showBio={false} />
+          <DoctorProfile mode='confirm'/>
 
           {/* 👥 Select patient (self or other) */}
           <PatientSelector />
@@ -45,4 +45,4 @@ const BookingConfirmPage: React.FC = () => {
   );
 };
 
-export default BookingConfirmPage;
+export default Page;

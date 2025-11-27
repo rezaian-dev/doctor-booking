@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '@/components/layouts/Header';
 import PageTitle from '@/components/PageTitle';
 import DoctorOverview from '@/components/templates/booking/DoctorOverview';
-import Reviews from '@/components/templates/booking/Reviews';
+import Reviews from '@/components/Reviews';
 import BookingCalendar from '@/components/templates/booking/BookingCalendar';
 import Footer from '@/components/layouts/Footer';
 import FooterMobile from '@/components/layouts/FooterMobile';
@@ -19,8 +19,7 @@ const page: React.FC = () => {
       <Header />
       {/* Dynamic page title display 📝 */}
 
-      <PageTitle title='صفحه پزشک' hasPadding={true}/>
-
+      <PageTitle title="صفحه پزشک" hasPadding={true} />
 
       {/* Main content container with responsive padding 📐 */}
       <div className="container px-4 md:px-8 mt-8">

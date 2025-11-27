@@ -123,7 +123,7 @@ const FooterMobile: React.FC = () => {
                   key={social.href} // Using href as key for better uniqueness
                   href={social.href}
                   aria-label={social.label}
-                  className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded-full p-1.5 hover:bg-gray-100 transition-colors duration-200"
+                  className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded-full  hover:bg-gray-100 transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

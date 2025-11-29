@@ -10,18 +10,31 @@ import clsx from 'clsx';
  * 📱 Fully responsive: mobile → desktop
  * ♿ a11y-ready (labels, roles, focus management)
  */
-const SearchHero: React.FC = () => {
+
+interface  SearchHeroParams {
+  mode: "main" | "find-doctor";
+}
+const SearchHero = ({mode}:SearchHeroParams) => {
   return (
-    <section className="container px-4 md:px-8 mt-3.5 md:mt-[30px]">
+    <section className={clsx(
+  mode === 'find-doctor'
+    ? 'md:mt-0 px-4 md:px-0 min-w-screen-sm w-full  mt-4 mx-auto'
+    : 'container px-4 md:px-8 mt-3.5 md:mt-[30px]'
+)}>
       {/* 🖼️ Hero background with dark overlay for text contrast */}
       <div
-        className={clsx(
-          'w-full h-[300px] rounded-2xl overflow-hidden',
-          'bg-[linear-gradient(rgba(17,17,17,0.4),rgba(17,17,17,0.4)),url(/images/Search-box.png)]',
-          'bg-cover bg-center bg-no-repeat',
-          'flex flex-col items-center justify-center',
-          'gap-y-4 md:gap-y-6 px-4 md:px-0'
-        )}
+      className={clsx(
+  'w-full overflow-hidden',
+  'bg-cover bg-center bg-no-repeat',
+  'flex flex-col items-center justify-center',
+  'gap-y-4 md:gap-y-6 px-4 md:px-0',
+  {
+    'h-[260px] md:h-[428px] rounded-2xl md:rounded-none bg-[linear-gradient(rgba(17,17,17,0.1),rgba(17,17,17,0.1)),url(/images/Search-box.png)]':
+      mode === 'find-doctor',
+    'h-[300px] rounded-2xl bg-[linear-gradient(rgba(17,17,17,0.4),rgba(17,17,17,0.4)),url(/images/Search-box.png)]':
+      mode !== 'find-doctor',
+  }
+)}
       >
         {/* 🏷️ Hero headline – bold & centered */}
         <h2
@@ -47,8 +60,9 @@ const SearchHero: React.FC = () => {
         <div
           className={clsx(
             'bg-white w-full max-w-[616px]',
-            'h-14 rounded-2xl px-4 py-2',
-            'flex items-center gap-x-2'
+            '  px-4 py-2',
+            'flex items-center gap-x-2',
+            mode ==="find-doctor" ? "h-10 md:h-14 rounded-[14px]" : "h-14 rounded-2xl"
           )}
         >
           <input
@@ -67,6 +81,7 @@ const SearchHero: React.FC = () => {
           <HugeiconsIcon
             icon={Search01Icon}
             color="#b3b3b3"
+            size={24}
             className="cursor-pointer hover:text-black transition-colors"
           />
         </div>

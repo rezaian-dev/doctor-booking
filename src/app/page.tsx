@@ -18,7 +18,7 @@ const LandingPage: React.FC = () => {
       <Header />
       <Hero />
       <InfoCards />
-      <SearchHero />
+      <SearchHero mode='main' />
       <SpecialtyGrid />
       <DoctorSection title="محبوب‌ترین پزشکان (بر اساس تعداد نوبت‌های رزرو شده)" />
       <HealthCTA />

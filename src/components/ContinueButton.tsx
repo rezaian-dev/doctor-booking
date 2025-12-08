@@ -17,7 +17,7 @@ interface ContinueButtonProps {
   /** 📝 Button label text (in Persian) */
   text: string;
   /** 🎨 UI variant: 'payment' for larger height, 'default' for compact layout */
-  mode: 'payment' | 'default';
+  mode: 'payment' | 'default' | 'doctor-find';
   /** 🚫 Disables interaction and applies inactive styling */
   disabled?: boolean;
   /** 🔗 Optional Next.js route for navigation (if omitted, treated as client-side action) */
@@ -59,15 +59,30 @@ const ContinueButton = ({
       aria-disabled={disabled} // 👁️ Only a hint; not fully respected by all ATs
       className={clsx(
         // Base styles
-        'w-full font-medium rounded-xl text-white flex items-center justify-center gap-x-1.5 transition-colors',
+        'w-full mx-auto rounded-xl font-medium  text-white flex items-center justify-center transition-colors',
+
+        // Spacing & typography (common to all modes)
+        'gap-x-1.5',
+
         // Disabled state
         disabled
           ? 'bg-primary-300 cursor-not-allowed'
           : 'bg-primary-500 hover:bg-primary-600',
-        // Mode-specific sizing
-        mode === 'payment'
-          ? 'h-[49px] text-base gap-x-2 max-w-full'
-          : 'h-10 text-sm max-w-[394px] mx-auto'
+
+        // Mode: payment
+        mode === 'payment' && [
+          'h-[49px]',
+          'text-base',
+          'gap-x-2',
+          'max-w-full',
+        ],
+
+        // Mode: doctor-find
+        mode === 'doctor-find' && 'mx-0! text-sm h-10 max-w-[330px]',
+
+        // Default mode styles (non-payment, non-doctor-find)
+        mode !== 'payment' &&
+          mode !== 'doctor-find' && "h-10 text-sm max-w-[394px] "
       )}
     >
       {text}

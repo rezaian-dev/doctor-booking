@@ -90,7 +90,11 @@ const FILTERS: FilterConfig[] = [
   },
 ];
 
-export default function DoctorFilters() {
+interface DoctorFiltersProps {
+  mode: 'doctor-find' | "doctors";
+}
+
+const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
   // 🧠 Initialize form with default values
   const methods = useForm<FilterFormData>({
     defaultValues: {
@@ -104,8 +108,8 @@ export default function DoctorFilters() {
     },
   });
 
-  // 📦 Manage accordion open/close state
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  // 📦 Manage single open accordion - only one ID at a time
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const {
     handleSubmit,
@@ -115,15 +119,15 @@ export default function DoctorFilters() {
     register,
   } = methods;
 
-  // 🔄 Toggle accordion section open/close
+  // 🔄 Toggle accordion section - close if same, open if different
   const toggleSection = (sectionId: string) => {
-    setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+    setOpenSection(prev => prev === sectionId ? null : sectionId);
   };
 
   // 🧹 Reset form and close all accordions
   const handleReset = () => {
     reset();
-    setOpenSections({}); // Close all accordions
+    setOpenSection(null); // Close all accordions
   };
 
   // ✅ Handle form submission
@@ -134,20 +138,19 @@ export default function DoctorFilters() {
 
   return (
     <FormProvider {...methods}>
-      {/* 📝 Wrap in <form> for proper submit behavior (Enter key, accessibility) */}
       <form onSubmit={handleSubmit(handleApply)}>
         <div className="p-4 hidden md:block rounded-xl border border-neutral-100 bg-white not-last:space-y-6">
           {/* 🎯 Header with reset button */}
           <div className="flex justify-between items-center mb-4">
             <div className='flex items-center gap-x-2'>
-            <HugeiconsIcon icon={FilterIcon} />
-            <h3 className="text-lg font-medium">فیلترها</h3>
+              <HugeiconsIcon icon={FilterIcon} />
+              <h3 className="text-lg font-medium">فیلترها</h3>
             </div>
             <button
               type="button"
               onClick={handleReset}
               className={clsx(
-                'text-sm flex items-center gap-x-1 text-primary-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-primary-100 transition-colors',
+                'text-sm flex items-center cursor-pointer gap-x-1 text-primary-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-primary-100 transition-colors',
                 isDirty ? 'opacity-100' : 'opacity-0 pointer-events-none'
               )}
             >
@@ -157,7 +160,7 @@ export default function DoctorFilters() {
           </div>
 
           {/* 🔍 Search input */}
-          <div className="pb-[18px] border-b border-neutral-100">
+          {mode === "doctors" && <div className="pb-[18px] border-b border-neutral-100">
             <div className="h-12 flex items-center px-4 border border-neutral-200 rounded-xl">
               <input
                 {...register('search')}
@@ -169,14 +172,14 @@ export default function DoctorFilters() {
             <p className="text-[11px] text-neutral-500 mt-1">
               نام یا تخصص مورد نظرتان را وارد کنید.
             </p>
-          </div>
+          </div>}
 
           {/* 🎛️ Render all accordion filters */}
           {FILTERS.map(filter => (
             <MultiSelectFilter
               key={filter.id}
               filter={filter}
-              isOpen={openSections[filter.id] || false}
+              isOpen={openSection === filter.id}
               onToggle={() => toggleSection(filter.id)}
             />
           ))}
@@ -202,3 +205,5 @@ export default function DoctorFilters() {
     </FormProvider>
   );
 }
+
+export default DoctorFilters;

@@ -100,10 +100,11 @@ const FILTERS: FilterConfig[] = [
 interface DoctorFiltersSheetProps {
   onApply: (data: FilterFormData) => void;
   setIsOpen: (isOpen: boolean) => void;
+  mode:"/doctors" | "/find-doctor";
 }
 
-const DoctorFiltersSheet = ({ onApply, setIsOpen }: DoctorFiltersSheetProps) => {
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps) => {
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const methods = useForm<FilterFormData>({
     defaultValues: {
@@ -120,12 +121,12 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen }: DoctorFiltersSheetProps) => 
   const { handleSubmit, reset, formState: { isDirty }, register } = methods;
 
   const toggleSection = (sectionId: string) => {
-    setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+    setOpenSection(prev => prev === sectionId ? null : sectionId);
   };
 
   const handleReset = () => {
     reset();
-    setOpenSections({});
+    setOpenSection(null);
   };
 
   const handleApply = (data: FilterFormData) => {
@@ -161,7 +162,7 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen }: DoctorFiltersSheetProps) => 
           {/* 📜 Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* 🔍 Search */}
-            <div className="pb-5 border-b border-neutral-100">
+            {mode ==="/doctors" && <div className="pb-5 border-b border-neutral-100">
               <div className="h-12 flex items-center px-3 xs:px-4 border border-neutral-200 rounded-xl">
                 <input
                   {...register('search')}
@@ -173,14 +174,14 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen }: DoctorFiltersSheetProps) => 
               <p className="text-[11px] text-neutral-500 mt-1">
                 نام یا تخصص مورد نظرتان را وارد کنید.
               </p>
-            </div>
+            </div>}
 
             {/* 🎛️ Filters */}
             {FILTERS.map(filter => (
               <MultiSelectFilter
                 key={filter.id}
                 filter={filter}
-                isOpen={openSections[filter.id] || false}
+                isOpen={openSection === filter.id}
                 onToggle={() => toggleSection(filter.id)}
               />
             ))}

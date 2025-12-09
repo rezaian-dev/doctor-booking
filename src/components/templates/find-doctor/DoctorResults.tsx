@@ -10,6 +10,7 @@ import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 import { FilterFormData } from '@/types/filters';
 import SortSheet from './SortSheet';
 import Pagination from '@/components/Pagination';
+import { usePathname } from 'next/navigation';
 
 // 📋 Static sort options for doctor listing
 const SORT_OPTIONS = [
@@ -40,6 +41,7 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
   // 📱 Sheet visibility states
   const [isOpen, setIsOpen] = useState(false);        // Filter sheet
   const [isSortOpen, setIsSortOpen] = useState(false); // Sort sheet
+  const pathname = usePathname()
 
   // ✅ Mark as client after hydration
   useEffect(() => {
@@ -97,6 +99,7 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
               <DoctorFiltersSheet
                 onApply={handleApplyFilters}
                 setIsOpen={setIsOpen}
+                mode={pathname as ("/doctors" | "/find-doctor") }
               />
             </Sheet>
           ) : (

@@ -32,7 +32,7 @@ const MultiSelectFilter = ({ filter, isOpen, onToggle }: MultiSelectFilterProps)
           <Accordion
             type="single"
             collapsible
-            value={isOpen ? filter.id : ''} // 🔑 Only open if parent says so
+            value={isOpen ? filter.id : ""} // 🔑 Only open if parent says so
             onValueChange={onToggle}        // 🔄 Notify parent on toggle
           >
             <AccordionItem

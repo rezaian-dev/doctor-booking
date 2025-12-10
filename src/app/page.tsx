@@ -5,12 +5,12 @@ import InfoCards from '@/components/templates/home/InfoCards';
 import SearchHero from '@/components/templates/home/SearchHero';
 import SpecialtyGrid from '@/components/templates/home/SpecialtyGrid';
 import HealthCTA from '@/components/templates/home/HealthCTA';
-import DoctorSection from '@/components/templates/home/DoctorSection';
+import DoctorSection from '@/components/DoctorSection';
 import UserTestimonials from '@/components/templates/home/UserTestimonials';
-import HomeFaqAccordion from '@/components/templates/home/HomeFaqAccordion';
 import MedicalArticles from '@/components/templates/home/MedicalArticles';
 import Footer from '@/components/layouts/Footer';
 import FooterMobile from '@/components/layouts/FooterMobile';
+import FaqAccordion from '@/components/FaqAccordion';
 
 const LandingPage: React.FC = () => {
   return (
@@ -18,16 +18,16 @@ const LandingPage: React.FC = () => {
       <Header />
       <Hero />
       <InfoCards />
-      <SearchHero mode='main' />
+      <SearchHero mode="main" />
       <SpecialtyGrid />
       <DoctorSection title="محبوب‌ترین پزشکان (بر اساس تعداد نوبت‌های رزرو شده)" />
       <HealthCTA />
       <DoctorSection title="جدیدترین پزشک‌ها" />
       <UserTestimonials />
-      <HomeFaqAccordion />
+      <FaqAccordion mode="preview" />
       <MedicalArticles />
       <Footer />
-      <FooterMobile/>
+      <FooterMobile />
     </>
   );
 };

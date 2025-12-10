@@ -18,7 +18,7 @@ const Page: React.FC = () => {
         <div className="grid grid-cols-12 my-[23px] gap-x-5">
           {/* Filters: hidden on mobile */}
           <div className="hidden md:block md:col-span-5 lg:col-span-4 xl:col-span-3">
-            <DoctorFilters />
+            <DoctorFilters mode='doctor-find' />
           </div>
           {/* Results: full width on mobile, offset on xl */}
           <div className="col-span-12 md:col-span-7 xl:col-span-9 xl:mr-[25px]">

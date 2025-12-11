@@ -8,7 +8,7 @@ import { FC } from 'react';
 const Intro: FC = () => {
   return (
     <div className="container px-4 md:px-8">
-      <div className="flex flex-col-reverse md:flex-row items-center justify-between pt-6 md:pt-16 lg:py-[135px] gap-10 md:gap-0 lg:gap-[43px]">
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between pt-6 md:pt-16 lg:pt-[135px] gap-10 md:gap-0 lg:gap-[43px]">
         
         {/* 📝 Text content */}
         <div className="flex flex-col gap-y-4 w-full md:w-1/2">

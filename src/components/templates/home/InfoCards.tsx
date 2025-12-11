@@ -1,6 +1,3 @@
-'use client';
-
-import React from 'react';
 import FeatureCard from './FeatureCard';
 import {
   Settings04Icon,
@@ -8,6 +5,10 @@ import {
   Clock02Icon,
 } from '@hugeicons/core-free-icons';
 import clsx from 'clsx';
+
+interface InfoCardsProps {
+  mode: 'home' | 'about';
+}
 
 /**
  * 💡 Key value propositions section
@@ -41,9 +42,12 @@ const features = [
  * 📐 Auto height (auto-rows-fr) for visual consistency
  * 🌐 Fully responsive & scalable
  */
-const InfoCards: React.FC = () => {
+const InfoCards = ({mode}:InfoCardsProps) => {
   return (
-    <section className={clsx('container px-4 md:px-8', 'mt-3.5 md:mt-6')}>
+    <section
+      className={clsx('container px-4 md:px-8', mode ==="home" ? "mt-3.5 md:mt-6": "mt-[43px] md:mt-[135px]")}
+    >
+      {mode ==="about" && <h2 className="text-black text-2xl font-bold mb-6">چرا دکتر رزرو؟</h2>}
       <div
         className={clsx(
           'grid',

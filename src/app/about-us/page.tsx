@@ -1,5 +1,6 @@
 import Header from '@/components/layouts/Header';
 import Intro from '@/components/templates/about-us/Intro';
+import InfoCards from '@/components/templates/home/InfoCards';
 import { FC } from 'react';
 
 const page: FC = () => {
@@ -7,6 +8,7 @@ const page: FC = () => {
     <>
       <Header />
       <Intro/>
+      <InfoCards mode={'about'}/>
     </>
   );
 };

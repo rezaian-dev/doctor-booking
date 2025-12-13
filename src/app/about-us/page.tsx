@@ -1,4 +1,6 @@
 import Header from '@/components/layouts/Header';
+import AppPreview from '@/components/templates/about-us/AppPreview';
+import ContactSection from '@/components/templates/about-us/ContactSection';
 import Intro from '@/components/templates/about-us/Intro';
 import InfoCards from '@/components/templates/home/InfoCards';
 import { FC } from 'react';
@@ -9,6 +11,8 @@ const page: FC = () => {
       <Header />
       <Intro/>
       <InfoCards mode={'about'}/>
+      <ContactSection/>
+      <AppPreview/>
     </>
   );
 };

@@ -13,7 +13,7 @@ import Image from 'next/image';
 const AppPreview = () => {
   return (
     <section className="container px-4 md:px-8 mt-10 md:mt-[135px]">
-      <div className="flex flex-col-reverse md:flex-row items-center gap-y-6 md:gap-y-0 justify-between">
+      <div className="flex flex-col-reverse md:flex-row items-center gap-6 md:gap-y-0 justify-between">
         {/* 🖼️ Responsive image container with native aspect ratio */}
         <div className="w-full max-w-[500px] aspect-498/541">
           <Image

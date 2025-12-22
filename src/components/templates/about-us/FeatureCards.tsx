@@ -30,7 +30,7 @@ const FeatureCards: FC = () => {
   ] as const;
 
   return (
-    <section className="container px-4 md:px-8 mt-10 md:mt-[135px]">
+    <section className="container px-4 md:px-8 my-10 md:my-[135px]">
       <h2 className="text-neutral-990 text-2xl md:text-3xl font-bold mb-4 text-center">
         افتخارات و دستاوردهای ما
       </h2>

@@ -1,3 +1,5 @@
+import Footer from '@/components/layouts/Footer';
+import FooterMobile from '@/components/layouts/FooterMobile';
 import Header from '@/components/layouts/Header';
 import AppPreview from '@/components/templates/about-us/AppPreview';
 import ContactSection from '@/components/templates/about-us/ContactSection';
@@ -15,6 +17,8 @@ const page: FC = () => {
       <ContactSection/>
       <AppPreview/>
       <FeatureCards/>
+      <Footer/>
+      <FooterMobile/>
     </>
   );
 };

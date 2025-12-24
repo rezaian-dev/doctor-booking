@@ -1,4 +1,5 @@
-import { useSearchParams, useRouter } from 'next/navigation';
+"use client"
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
 // 🔢 Convert to Persian
@@ -19,17 +20,40 @@ interface PaginationProps {
 
 export default function Pagination({ totalPages, className = '' }: PaginationProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const current = Number(searchParams.get('page')) || 1;
+
+// 📏 Responsive scroll handler with breakpoints
+const handleScrollAfterNavigation = (pathname: string) => {
+  // 🛡️ SSR protection
+  if (typeof window === 'undefined') return;
+
+  // 📱 Define responsive breakpoints
+  const MOBILE_BREAKPOINT = 768;
+  const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+
+  // 🎯 Calculate target position based on route and device
+  const targetPosition = pathname === '/articles'
+    ? (isMobile ? 80 : 100)  // 📱 Mobile: 100px | 💻 Desktop: 500px
+    : 80;                    // 🌐 All other routes
+
+  // ✨ Smooth scroll with frame sync
+  requestAnimationFrame(() => {
+    window.scrollTo({
+      top: targetPosition,
+      behavior: 'smooth'
+    });
+  });
+};
 
   const goTo = (page: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', String(page));
     router.push(`?${params.toString()}`, { scroll: false });
-    window.innerWidth > 768 ?
-    window.scrollTo({top: 500,behavior: 'smooth'}) :
-    window.scrollTo({top: 350,behavior: 'smooth'})
+    handleScrollAfterNavigation(pathname);
+
   };
 
 

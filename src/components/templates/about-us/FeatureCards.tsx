@@ -38,7 +38,7 @@ const FeatureCards: FC = () => {
         {achievements.map(({ id, count, title }) => (
           <div
             key={id}
-            className="group flex items-center justify-center flex-col gap-y-3 bg-white rounded-xl border border-neutral-100 transition-all duration-300 relative hover:shadow-[0_8px_24px_-4px_rgba(65,121,240,0.12)] hover:-translate-y-0.5">
+            className="group flex overflow-hidden items-center justify-center flex-col gap-y-3 bg-white rounded-xl border border-neutral-100 transition-all duration-300 relative hover:shadow-[0_8px_24px_-4px_rgba(65,121,240,0.12)] hover:-translate-y-0.5">
             {/* Hover background overlay */}
             <div className="absolute inset-0 bg-primary-50 opacity-0 group-hover:opacity-50 transition-opacity duration-300 -z-10"/>
 

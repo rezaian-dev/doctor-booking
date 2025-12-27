@@ -13,7 +13,7 @@ const navItems = [
   { href: '/doctors', label: 'لیست پزشکان' },
   { href: '/faq', label: 'سوالات متداول' },
   { href: '/about-us', label: 'درباره ما' },
-  { href: '/contact', label: 'تماس با ما' },
+  { href: '/contact-us', label: 'تماس با ما' },
 ] as const;
 
 /**

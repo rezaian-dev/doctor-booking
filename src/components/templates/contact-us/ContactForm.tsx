@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { contactSchema } from '@/lib/validations/contactSchema';
 import SuccessMessage from '@/components/templates/contact-us/SuccessMessage';
-import FormInput from '@/components/templates/contact-us/FormInput';
+import FormInput from '@/components/FormInput';
 import FormSelect from '@/components/templates/contact-us/FormSelect';
 import FormTextarea from '@/components/templates/contact-us/FormTextarea';
 import SubmitButton from '@/components/templates/contact-us/SubmitButton';
@@ -27,7 +27,7 @@ const REQUEST_TYPES = [
   { value: 'consultation', label: 'مشاوره' },
   { value: 'support', label: 'پشتیبانی' },
   { value: 'complaint', label: 'شکایت' },
-  { value: 'other', label: 'سایر موارد' }
+  { value: 'other', label: 'سایر موارد' },
 ];
 
 // 📝 Contact form with zero layout shift & smooth UX
@@ -37,13 +37,18 @@ const ContactForm: FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   // 🧠 Form logic with Yup validation & real-time error tracking
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
     resolver: yupResolver(contactSchema),
-    mode: 'onChange'
+    mode: 'onChange',
   });
 
   // 🚀 Handle submission with mock API delay
-  const onSubmit = async ( FormData:FormData) => {
+  const onSubmit = async (FormData: FormData) => {
     setIsSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 1500)); // ⏱️ Simulate network
     console.log('📧 Form Data:', FormData);
@@ -58,16 +63,18 @@ const ContactForm: FC = () => {
 
   return (
     <div className="bg-white rounded-3xl shadow-2xl p-8 min-h-[668px]">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">فرم ثبت بازخورد و درخواست</h2>
-      <p className="text-gray-600 mb-8">در صورت نیاز به ارتباط فوری، از تماس تلفنی استفاده کنید.</p>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        فرم ثبت بازخورد و درخواست
+      </h2>
+      <p className="text-gray-600 mb-8">
+        در صورت نیاز به ارتباط فوری، از تماس تلفنی استفاده کنید.
+      </p>
 
       {/* ✅ Success banner — always in DOM, no layout shift */}
       <div
         className={clsx(
           'mb-1 transition-opacity  duration-300',
-          submitSuccess
-            ? 'block'
-            : 'hidden'
+          submitSuccess ? 'block' : 'hidden'
         )}
         aria-live="polite"
         aria-atomic="true"
@@ -80,14 +87,13 @@ const ContactForm: FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className={clsx(
           'space-y-3 transition-opacity duration-300',
-          submitSuccess
-            ? 'opacity-0 invisible'
-            : 'opacity-100 visible'
+          submitSuccess ? 'opacity-0 invisible' : 'opacity-100 visible'
         )}
         aria-hidden={submitSuccess}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
+            variant="contact"
             label="نام و نام خانوادگی"
             placeholder="علی محمدی"
             error={errors.fullName}
@@ -103,6 +109,7 @@ const ContactForm: FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
+            variant="contact"
             type="email"
             label="ایمیل"
             placeholder="email@gmail.com"
@@ -111,6 +118,7 @@ const ContactForm: FC = () => {
             {...register('email')}
           />
           <FormInput
+            variant="contact"
             type="tel"
             label="شماره تماس"
             placeholder="09123456789"

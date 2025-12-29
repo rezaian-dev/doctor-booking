@@ -187,7 +187,7 @@ const ProfileCard = ({ initialProfile }: ProfileCardProps) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+    <section className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-1/3">
           <Avatar
@@ -227,7 +227,7 @@ const ProfileCard = ({ initialProfile }: ProfileCardProps) => {
           onAppointments={handleAppointments}
         />
       </div>
-    </div>
+    </section>
   );
 };
 

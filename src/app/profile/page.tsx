@@ -4,9 +4,10 @@ import ProfileCard from "@/components/templates/profile/ProfileCard";
 import { UserProfile } from "@/types/profileTypes";
 import Footer from "@/components/layouts/Footer";
 import FooterMobile from "@/components/layouts/FooterMobile";
+import { FC } from "react";
 
 // 🏠 Main page component
-export default function Page() {
+ const Page:FC =() => {
   // 📦 Complete profile object including image URL
   const initialData: UserProfile = {
     firstName: "فاطمه",
@@ -44,3 +45,5 @@ export default function Page() {
     </>
   );
 }
+
+export default Page;

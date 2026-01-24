@@ -1,7 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import BankOption from './BankOption';
-import ContinueButton from '../../ContinueButton';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { IoIosArrowBack } from 'react-icons/io';
 
 /**
  * 🧾 PaymentSummary Component
@@ -21,8 +23,8 @@ const PaymentSummary: React.FC = () => {
   };
 
   // ✅ Handle terms checkbox toggle
-  const handleTermsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsTermsAccepted(e.target.checked);
+  const handleTermsChange = (checked: boolean) => {
+    setIsTermsAccepted(checked);
   };
 
   return (
@@ -86,13 +88,12 @@ const PaymentSummary: React.FC = () => {
       </div>
 
       {/* ✅ Terms agreement */}
-      <div className="flex items-center gap-x-2">
-        <input
-          type="checkbox"
+      <div className="flex *:cursor-pointer items-center gap-x-2">
+        <Checkbox
           id="payment-terms"
-          className="size-4 mt-0.5"
           checked={isTermsAccepted}
-          onChange={handleTermsChange}
+          onCheckedChange={handleTermsChange}
+          className="mt-0.5 data-[state=checked]:bg-primary-700 data-[state=checked]:border-primary-700"
         />
         <label className="text-neutral-850 text-xs" htmlFor="payment-terms">
           پرداخت به منزله پذیرش شرایط و قوانین است.
@@ -100,11 +101,13 @@ const PaymentSummary: React.FC = () => {
       </div>
 
       {/* ▶️ Submit button — disabled until terms are accepted */}
-      <ContinueButton
-        text="پرداخت"
-        mode="payment"
+      <Button
         disabled={!isTermsAccepted}
-      />
+        className="w-full cursor-pointer h-[49px] rounded-xl bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 disabled:cursor-not-allowed text-white text-base font-medium flex items-center justify-center gap-x-2 transition-colors"
+      >
+        پرداخت
+        <IoIosArrowBack size={20} className="text-white" />
+      </Button>
     </div>
   );
 };

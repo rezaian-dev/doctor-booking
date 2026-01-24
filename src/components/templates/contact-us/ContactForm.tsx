@@ -1,14 +1,21 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { contactSchema } from '@/lib/validations/contactSchema';
 import SuccessMessage from '@/components/templates/contact-us/SuccessMessage';
-import FormInput from '@/components/FormInput';
-import FormSelect from '@/components/templates/contact-us/FormSelect';
-import FormTextarea from '@/components/templates/contact-us/FormTextarea';
-import SubmitButton from '@/components/templates/contact-us/SubmitButton';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 
 // 💬 Form data interface — explicit & type-safe
@@ -22,7 +29,6 @@ interface FormData {
 
 // 📋 Predefined request options for consistent UX
 const REQUEST_TYPES = [
-  { value: '', label: 'مثال: پشتیبانی' },
   { value: 'appointment', label: 'نوبت‌دهی' },
   { value: 'consultation', label: 'مشاوره' },
   { value: 'support', label: 'پشتیبانی' },
@@ -42,6 +48,7 @@ const ContactForm: FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    control,
   } = useForm<FormData>({
     resolver: yupResolver(contactSchema),
     mode: 'onChange',
@@ -61,19 +68,19 @@ const ContactForm: FC = () => {
     }, 3000);
   };
 
-  return (
+ return (
     <div className="bg-white rounded-3xl shadow-2xl p-8 min-h-[668px]">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      <h2 className="text-2xl font-bold text-neutral-900 mb-6">
         فرم ثبت بازخورد و درخواست
       </h2>
-      <p className="text-gray-600 mb-8">
+      <p className="text-neutral-600 mb-8">
         در صورت نیاز به ارتباط فوری، از تماس تلفنی استفاده کنید.
       </p>
 
-      {/* ✅ Success banner — always in DOM, no layout shift */}
+      {/* ✅ Success message */}
       <div
         className={clsx(
-          'mb-1 transition-opacity  duration-300',
+          'mb-1 transition-opacity duration-300',
           submitSuccess ? 'block' : 'hidden'
         )}
         aria-live="polite"
@@ -82,7 +89,7 @@ const ContactForm: FC = () => {
         <SuccessMessage />
       </div>
 
-      {/* 📤 Form — always present, visually toggled */}
+      {/* 📝 Form */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className={clsx(
@@ -92,52 +99,170 @@ const ContactForm: FC = () => {
         aria-hidden={submitSuccess}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            variant="contact"
-            label="نام و نام خانوادگی"
-            placeholder="علی محمدی"
-            error={errors.fullName}
-            {...register('fullName')}
-          />
-          <FormSelect
-            label="نوع درخواست"
-            options={REQUEST_TYPES}
-            error={errors.requestType}
-            {...register('requestType')}
-          />
+          {/* 👤 Full Name */}
+          <div>
+            <label className="text-sm mb-2 inline-block font-medium text-neutral-700">
+              نام و نام خانوادگی
+            </label>
+            <Input
+              placeholder="علی محمدی"
+              aria-invalid={!!errors.fullName}
+              {...register('fullName')}
+            />
+            <div className="min-h-5 mt-1">
+              <p
+                className={clsx(
+                  'text-xs text-danger-400 transition-opacity duration-200',
+                  errors.fullName
+                    ? 'opacity-100 visible'
+                    : 'opacity-0 invisible pointer-events-none'
+                )}
+                aria-live="polite"
+              >
+                {errors.fullName?.message}
+              </p>
+            </div>
+          </div>
+
+          {/* 📋 Request Type */}
+          <div>
+            <label className="text-sm mb-2 inline-block font-medium text-neutral-700">
+              نوع درخواست
+            </label>
+            <Controller
+              name="requestType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger aria-invalid={!!errors.requestType}>
+                    <SelectValue placeholder="مثال: پشتیبانی" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REQUEST_TYPES.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <div className="min-h-5 mt-1">
+              <p
+                className={clsx(
+                  'text-xs text-danger-400 transition-opacity duration-200',
+                  errors.requestType
+                    ? 'opacity-100 visible'
+                    : 'opacity-0 invisible pointer-events-none'
+                )}
+                aria-live="polite"
+              >
+                {errors.requestType?.message}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            variant="contact"
-            type="email"
-            label="ایمیل"
-            placeholder="email@gmail.com"
-            dir="ltr"
-            error={errors.email}
-            {...register('email')}
-          />
-          <FormInput
-            variant="contact"
-            type="tel"
-            label="شماره تماس"
-            placeholder="09123456789"
-            dir="ltr"
-            error={errors.phone}
-            {...register('phone')}
-          />
+          {/* 📧 Email */}
+          <div>
+            <label className="text-sm mb-2 inline-block font-medium text-neutral-700">
+              ایمیل
+            </label>
+            <Input
+              type="email"
+              placeholder="email@gmail.com"
+              dir="ltr"
+              aria-invalid={!!errors.email}
+              {...register('email')}
+            />
+            <div className="min-h-5 mt-1">
+              <p
+                className={clsx(
+                  'text-xs text-danger-400 transition-opacity duration-200',
+                  errors.email
+                    ? 'opacity-100 visible'
+                    : 'opacity-0 invisible pointer-events-none'
+                )}
+                aria-live="polite"
+              >
+                {errors.email?.message}
+              </p>
+            </div>
+          </div>
+
+          {/* 📱 Phone */}
+          <div>
+            <label className="text-sm mb-2 inline-block font-medium text-neutral-700">
+              شماره تماس
+            </label>
+            <Input
+              type="tel"
+              placeholder="09123456789"
+              dir="ltr"
+              aria-invalid={!!errors.phone}
+              {...register('phone')}
+            />
+            <div className="min-h-5 mt-1">
+              <p
+                className={clsx(
+                  'text-xs text-danger-400 transition-opacity duration-200',
+                  errors.phone
+                    ? 'opacity-100 visible'
+                    : 'opacity-0 invisible pointer-events-none'
+                )}
+                aria-live="polite"
+              >
+                {errors.phone?.message}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <FormTextarea
-          label="متن"
-          placeholder="متن نمونه"
-          rows={5}
-          error={errors.message}
-          {...register('message')}
-        />
+        {/* 💬 Message */}
+        <div>
+          <label className="text-sm mb-2 inline-block font-medium text-neutral-700">
+            متن
+          </label>
+          <Textarea
+            placeholder="متن نمونه"
+            rows={5}
+            aria-invalid={!!errors.message}
+            {...register('message')}
+          />
+          <div className="min-h-5 mt-1">
+            <p
+              className={clsx(
+                'text-xs text-danger-400 transition-opacity duration-200',
+                errors.message
+                  ? 'opacity-100 visible'
+                  : 'opacity-0 invisible pointer-events-none'
+              )}
+              aria-live="polite"
+            >
+              {errors.message?.message}
+            </p>
+          </div>
+        </div>
 
-        {/* 🚦 Submit button with loading state */}
-        <SubmitButton isSubmitting={isSubmitting} />
+        {/* 🚀 Submit Button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-6 text-lg cursor-pointer font-bold bg-linear-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+        >
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              در حال ارسال...
+            </span>
+          ) : (
+            'ارسال'
+          )}
+        </Button>
       </form>
     </div>
   );

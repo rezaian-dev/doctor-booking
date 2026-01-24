@@ -3,14 +3,15 @@ import { CommentAdd01Icon, ThumbsUpIcon } from '@hugeicons/core-free-icons';
 import { IoIosArrowDown } from 'react-icons/io';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { FaStar } from 'react-icons/fa6';
-import UserTestimonialCard from './templates/home/UserTestimonialCard'; // ✅ Ensure correct path
+import UserTestimonialCard from './templates/home/UserTestimonialCard';
+import { Button } from '@/components/ui/button';
 
 const Reviews: React.FC = () => {
-  // 📝 Mock data for demonstration — replace with actual props or state
+  // 📝 Mock data for demonstration
   const ratingData = {
     filledStars: 4,
     totalStars: 5,
-    rating: 4, // totalStars - filledStars
+    rating: 4,
     count: 105,
   } as const;
 
@@ -28,10 +29,12 @@ const Reviews: React.FC = () => {
     text: 'نظرات بیشتر',
     iconColor: '#4179F0',
   } as const;
-  // 🌟 Generate star rating array based on rating value
+
+  // 🌟 Generate star rating array
   const generateStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => i < rating);
   };
+
   return (
     <section className="my-10 px-5 pb-2 rounded-[12px] border border-neutral-100">
       {/* 🏷️ Section header */}
@@ -61,28 +64,30 @@ const Reviews: React.FC = () => {
           {/* 👍 Recommendation Stat */}
           <div className="flex items-center gap-x-1">
             <HugeiconsIcon icon={ThumbsUpIcon} color="#60C61D" size={24} />
-            <span className="text-neutral-600 text-[10px]  sm:text-[13px]">
+            <span className="text-neutral-600 text-[10px] sm:text-[13px]">
               {recommendationStat.percentage}% {recommendationStat.label}
             </span>
           </div>
         </div>
 
-        {/* 📝 Submit Review Button */}
-        <button className="flex items-center cursor-pointer bg-white shrink-0 transition-colors duration-200 hover:bg-primary-500 hover:text-white h-9 w-[70px] sm:w-[104px] text-primary-500 font-medium text-xs justify-center rounded-[6px] border border-primary-500 group">
+        {/* 📝 Submit Review Button - Using Shadcn Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 h-9 w-[70px] sm:w-[104px] text-primary-500 border-primary-500 hover:bg-primary-500 hover:text-white transition-colors duration-200 group"
+        >
           {submitReviewButton.text}
           <HugeiconsIcon
             icon={CommentAdd01Icon}
             size={16}
             color={submitReviewButton.iconColor}
-            className="group-hover:text-white transition-colors duration-200" // ✨ Icon color transition on hover
+            className="group-hover:text-white transition-colors duration-200"
           />
-        </button>
+        </Button>
       </div>
 
       {/* 💬 Testimonials List */}
       <ul className="space-y-0">
-        {' '}
-        {/* 🔁 Use space-y-0 for consistent control with card's own spacing */}
         <UserTestimonialCard
           userName="علی رضایی"
           userImage="/images/user-2.png"
@@ -90,7 +95,7 @@ const Reviews: React.FC = () => {
           date="1401/03/15"
           comment="خدمات بسیار خوبی ارائه شد. ممنون از تیم پزشکی."
           showDoctorReference={false}
-          className="border-t mt-2 p-4 last:border-b-0" // ✅ Auto-hide border for last item
+          className="border-t mt-2 p-4 last:border-b-0"
         />
         <UserTestimonialCard
           userName="علی رضایی"
@@ -99,7 +104,7 @@ const Reviews: React.FC = () => {
           date="1401/03/15"
           comment="خدمات بسیار خوبی ارائه شد. ممنون از تیم پزشکی."
           showDoctorReference={false}
-          className="border-t mt-2 p-4 last:border-b-0" // ✅ Auto-hide border for last item
+          className="border-t mt-2 p-4 last:border-b-0"
         />
         <UserTestimonialCard
           userName="علی رضایی"
@@ -108,16 +113,19 @@ const Reviews: React.FC = () => {
           date="1401/03/15"
           comment="خدمات بسیار خوبی ارائه شد. ممنون از تیم پزشکی."
           showDoctorReference={false}
-          className="border-t mt-2 p-4 last:border-b-0" // ✅ Auto-hide border for last item
+          className="border-t mt-2 p-4 last:border-b-0"
         />
-        {/* 📌 Add more UserTestimonialCard components here as needed */}
       </ul>
 
-      {/* 🔄 Load More Button */}
-      <button className="flex mx-auto cursor-pointer items-center grow gap-x-1 justify-center h-9 max-w-[134px]  text-primary-500 text-xs font-medium">
+      {/* 🔄 Load More Button - Using Shadcn Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex mx-auto gap-x-1 h-9 max-w-[134px] text-primary-500 hover:text-primary-600 hover:bg-transparent"
+      >
         {loadMoreButton.text}
         <IoIosArrowDown size={16} color={loadMoreButton.iconColor} />
-      </button>
+      </Button>
     </section>
   );
 };

@@ -1,6 +1,7 @@
-import ContinueButton from "@/components/ContinueButton";
+import { Button } from "@/components/ui/button";
 import { ProfileMode } from "@/types/doctorProfile";
 import Link from "next/link";
+import { IoIosArrowBack } from "react-icons/io";
 
 // 🔘 Action Buttons Component
 const ActionButtons = ({ mode }: { mode: ProfileMode }) => {
@@ -20,13 +21,25 @@ const ActionButtons = ({ mode }: { mode: ProfileMode }) => {
 
   return (
     <div className="flex items-center px-3 justify-center mt-4 mb-4 md:mb-6 flex-col xs:flex-row gap-x-3 lg:gap-x-[46px] gap-y-4 mx-auto">
-      <ContinueButton text={buttons.primary} mode="doctor-find" />
-      <Link
-        href="#"
-        className="text-sm font-medium text-neutral-500 bg-white h-10 rounded-xl border border-neutral-100 flex items-center w-full justify-center max-w-[330px]"
+      {/* Primary Button */}
+      <Button
+        asChild
+        className="w-full max-w-[330px] h-10 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium"
       >
-        {buttons.secondary}
-      </Link>
+        <Link href="#" className="flex items-center justify-center gap-x-1.5">
+          {buttons.primary}
+          <IoIosArrowBack size={20} className="text-white" />
+        </Link>
+      </Button>
+
+      {/* Secondary Button */}
+      <Button
+        asChild
+        variant="outline"
+        className="w-full max-w-[330px] h-10 rounded-xl border-neutral-100 bg-white text-neutral-500 text-sm font-medium hover:bg-neutral-50"
+      >
+        <Link href="#">{buttons.secondary}</Link>
+      </Button>
     </div>
   );
 };

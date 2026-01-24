@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Toaster } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 // 🚀 Dynamic import to avoid SSR issues
 const HeartHealthQuiz = dynamic(() => import('./HeartHealthQuiz'), {
@@ -14,7 +15,7 @@ const HealthCTA: React.FC = () => {
   // 🎭 State to control dialog visibility
   const [isQuizOpen, setIsQuizOpen] = useState(false);
 
-  // 🎯 Handle button click with debug log
+  // 🎯 Handle button click
   const handleStartQuiz = () => {
     console.log('Opening quiz dialog...');
     setIsQuizOpen(true);
@@ -25,7 +26,7 @@ const HealthCTA: React.FC = () => {
       <section className="container px-4 md:px-8 mt-8 md:mt-[94px]">
         {/* ✨ Main CTA card: RTL layout with responsive image + content */}
         <div className="relative z-10 border-[1.5px] bg-white rounded-2xl border-neutral-100 overflow-hidden flex flex-col-reverse sm:flex-row">
-          {/* 📝 Content section: centered vertically on mobile, top-aligned on large screens */}
+          {/* 📝 Content section */}
           <div className="flex flex-col justify-center lg:justify-start py-6 sm:py-0 px-4 lg:pr-[72px] lg:pt-10 grow">
             <h2 className="text-neutral-900 font-medium text-base sm:text-2xl lg:text-[32px] leading-tight">
               همین حالا رایگان تست سلامت بگیرید!
@@ -33,17 +34,18 @@ const HealthCTA: React.FC = () => {
             <p className="mt-4 text-neutral-750 text-[13px] md:text-lg">
               در کمتر از دو دقیقه سلامت خود را ارزیابی کنید.
             </p>
-            {/* 🚀 Updated button to open quiz dialog */}
-            <button
-              type="button"
+
+            {/* 🚀 Start Quiz Button - Using Shadcn Button */}
+            <Button
               onClick={handleStartQuiz}
-              className="w-full max-w-[121px] md:max-w-[200px] h-10 md:h-14 rounded-lg bg-primary-500 text-white font-medium text-[13px] md:text-lg flex items-center justify-center mt-2.5 md:mt-10 hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300"
+              size="lg"
+              className="w-full max-w-[121px] md:max-w-[200px] h-10 md:h-14 bg-primary-500 hover:bg-primary-600 text-[13px] md:text-lg mt-2.5 md:mt-10"
             >
               شروع تست سلامت
-            </button>
+            </Button>
           </div>
 
-          {/* 🖼️ Image section: full-width on mobile, fixed size on desktop */}
+          {/* 🖼️ Image section */}
           <div>
             <Image
               src="/images/cta-health-check.png"

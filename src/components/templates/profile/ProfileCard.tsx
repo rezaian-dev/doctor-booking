@@ -188,7 +188,7 @@ const ProfileCard = ({ initialProfile }: ProfileCardProps) => {
 
   return (
     <section className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-1/3">
           <Avatar
             imageUrl={getCurrentImageUrl()}

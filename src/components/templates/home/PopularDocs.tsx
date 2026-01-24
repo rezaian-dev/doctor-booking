@@ -14,6 +14,7 @@ import { Swiper, SwiperRef, SwiperSlide } from 'swiper/react';
 import DoctorCard from '../../DoctorCard';
 import Link from 'next/link';
 import clsx from 'clsx';
+import SwiperSection from '@/components/SwiperSection';
 
 /**
  * 🏆 PopularDocs – A fully responsive, accessible doctor carousel
@@ -95,70 +96,14 @@ const PopularDocs: React.FC = () => {
       </div>
 
       {/* 🎠 Swiper Carousel */}
-      <div className="mt-[18px] relative">
-        <Swiper
-          ref={swiperRef}
-          modules={[Navigation, Pagination]}
-          slidesPerView={1}
-          spaceBetween={16}
-          watchOverflow={true}
-          onSwiper={swiper => {
-            setIsBeginning(swiper.isBeginning);
-            setIsEnd(swiper.isEnd);
-          }}
-          onSlideChange={handleSlideChange}
-          breakpoints={{
-            480: { slidesPerView: 2, spaceBetween: 16 },
-            768: { slidesPerView: 3, spaceBetween: 20 },
-            1024: { slidesPerView: 4, spaceBetween: 24 },
-          }}
-          className="pb-6"
-        >
-          {doctors.map(doctor => (
-            <SwiperSlide key={doctor.id}>
-              <DoctorCard {...doctor} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
-        {/* ◀️ Previous Button (RTL: right side) */}
-        {!isBeginning && (
-          <button
-            onClick={handlePrev}
-            className={clsx(
-              'absolute top-1/2 -translate-y-1/2 z-10',
-              'flex items-center justify-center',
-              'w-10 h-10 rounded-full',
-              'bg-white/80 backdrop-blur-sm text-gray-700',
-              'hover:bg-white hover:shadow-md',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500',
-              'transition-all duration-200 ease-in-out',
-              'right-0 sm:-right-3 md:-right-4 lg:-right-5'
-            )}
-          >
-            <MdOutlineKeyboardArrowRight size={20} />
-          </button>
-        )}
-
-        {/* ▶️ Next Button (RTL: left side) */}
-        {!isEnd && (
-          <button
-            onClick={handleNext}
-            className={clsx(
-              'absolute top-1/2 -translate-y-1/2 z-10',
-              'flex items-center justify-center',
-              'w-10 h-10 rounded-full',
-              'bg-white/80 backdrop-blur-sm text-gray-700',
-              'hover:bg-white hover:shadow-md',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500',
-              'transition-all duration-200 ease-in-out',
-              'left-0 sm:-left-3 md:-left-4 lg:-left-5'
-            )}
-          >
-            <MdOutlineKeyboardArrowLeft size={20} />
-          </button>
-        )}
-      </div>
+   <SwiperSection
+      title="محبوب‌ترین پزشکان (بر اساس تعداد نوبت‌های رزرو شده)"
+      viewAllHref="/doctors"
+      viewAllLabel="مشاهده همه"
+      items={doctors}
+      renderItem={(doctor) => <DoctorCard {...doctor} />}
+      getItemKey={(doctor) => doctor.id}
+    />
     </section>
   );
 };

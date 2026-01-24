@@ -2,7 +2,12 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Cancel01Icon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
+import {
+  Cancel01Icon,
+  FilterIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons';
+import { Button } from '@/components/ui/button';
 import MultiSelectFilter from './MultiSelectFilter';
 import ToggleFilter from './ToggleFilter';
 import type { FilterConfig, FilterFormData } from '@/types/filters';
@@ -91,7 +96,7 @@ const FILTERS: FilterConfig[] = [
 ];
 
 interface DoctorFiltersProps {
-  mode: 'doctor-find' | "doctors";
+  mode: 'doctor-find' | 'doctors';
 }
 
 const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
@@ -108,7 +113,7 @@ const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
     },
   });
 
-  // 📦 Manage single open accordion - only one ID at a time
+  // 📦 Manage single open accordion
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const {
@@ -119,21 +124,20 @@ const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
     register,
   } = methods;
 
-  // 🔄 Toggle accordion section - close if same, open if different
+  // 🔄 Toggle accordion section
   const toggleSection = (sectionId: string) => {
-    setOpenSection(prev => prev === sectionId ? null : sectionId);
+    setOpenSection(prev => (prev === sectionId ? null : sectionId));
   };
 
   // 🧹 Reset form and close all accordions
   const handleReset = () => {
     reset();
-    setOpenSection(null); // Close all accordions
+    setOpenSection(null);
   };
 
   // ✅ Handle form submission
   const handleApply = () => {
     console.log('✅ Applied Filters:', getValues());
-    // TODO: sync with URL or send to API
   };
 
   return (
@@ -142,39 +146,48 @@ const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
         <div className="p-4 hidden md:block rounded-xl border border-neutral-100 bg-white not-last:space-y-6">
           {/* 🎯 Header with reset button */}
           <div className="flex justify-between items-center mb-4">
-            <div className='flex items-center gap-x-2'>
+            <div className="flex items-center gap-x-2">
               <HugeiconsIcon icon={FilterIcon} />
               <h3 className="text-lg font-medium">فیلترها</h3>
             </div>
-            <button
+            <Button
               type="button"
               onClick={handleReset}
+              variant="ghost"
+              size="sm"
               className={clsx(
-                'text-sm flex items-center cursor-pointer gap-x-1 text-primary-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-primary-100 transition-colors',
+                'text-primary-600 bg-blue-50 hover:bg-primary-100 gap-x-1',
                 isDirty ? 'opacity-100' : 'opacity-0 pointer-events-none'
               )}
             >
               حذف همه فیلترها
               <HugeiconsIcon size={16} color="#4179F0" icon={Cancel01Icon} />
-            </button>
+            </Button>
           </div>
 
           {/* 🔍 Search input */}
-          {mode === "doctors" && <div className="pb-[18px] border-b border-neutral-100">
-            <div className="h-12 flex items-center px-4 border border-neutral-200 rounded-xl">
-              <input
-                {...register('search')}
-                placeholder="جستجو پزشک"
-                className="w-full h-full outline-none text-sm text-neutral-600"
-              />
-              <HugeiconsIcon icon={Search01Icon} color="#888888" size={24} className='size-5 lg:size-6' />
+          {mode === 'doctors' && (
+            <div className="pb-[18px] border-b border-neutral-100">
+              <div className="h-12 flex items-center px-4 border border-neutral-200 rounded-xl">
+                <input
+                  {...register('search')}
+                  placeholder="جستجو پزشک"
+                  className="w-full h-full outline-none text-sm text-neutral-600"
+                />
+                <HugeiconsIcon
+                  icon={Search01Icon}
+                  color="#888888"
+                  size={24}
+                  className="size-5 lg:size-6"
+                />
+              </div>
+              <p className="text-[11px] text-neutral-500 mt-1">
+                نام یا تخصص مورد نظرتان را وارد کنید.
+              </p>
             </div>
-            <p className="text-[11px] text-neutral-500 mt-1">
-              نام یا تخصص مورد نظرتان را وارد کنید.
-            </p>
-          </div>}
+          )}
 
-          {/* 🎛️ Render all accordion filters */}
+          {/* 🎛️ Render all filters */}
           {FILTERS.map(filter => (
             <MultiSelectFilter
               key={filter.id}
@@ -184,26 +197,26 @@ const DoctorFilters = ({ mode }: DoctorFiltersProps) => {
             />
           ))}
 
-          {/* 👤 Gender filter (no accordion) */}
+          {/* 👤 Gender filter */}
           <ToggleFilter />
 
-          {/* ✅ Apply button — disabled if no changes */}
-          <button
+          {/* ✅ Apply button */}
+          <Button
             disabled={!isDirty}
             type="submit"
             className={clsx(
-              'w-full text-white py-3 rounded-lg transition-colors',
+              'w-full',
               isDirty
-                ? 'bg-primary-500 cursor-pointer hover:bg-primary-700'
+                ? 'bg-primary-500 hover:bg-primary-700'
                 : 'bg-primary-100 cursor-not-allowed'
             )}
           >
             اعمال فیلتر
-          </button>
+          </Button>
         </div>
       </form>
     </FormProvider>
   );
-}
+};
 
 export default DoctorFilters;

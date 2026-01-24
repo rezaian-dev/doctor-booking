@@ -2,7 +2,7 @@
 import { Trash2, Upload } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
-import Button from "./Button";
+import { Button } from "@/components/ui/button";
 
 // 📸 Avatar component props type
 interface AvatarProps {
@@ -24,20 +24,20 @@ const Avatar = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 📸 Image validation utility
- const validateImage = (file: File): { valid: boolean; error?: string } => {
-  const maxSize = 2 * 1024 * 1024;
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const validateImage = (file: File): { valid: boolean; error?: string } => {
+    const maxSize = 2 * 1024 * 1024;
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'فرمت تصویر باید JPG، PNG یا WEBP باشد' };
-  }
+    if (!allowedTypes.includes(file.type)) {
+      return { valid: false, error: "فرمت تصویر باید JPG، PNG یا WEBP باشد" };
+    }
 
-  if (file.size > maxSize) {
-    return { valid: false, error: 'حجم تصویر نباید بیشتر از ۲ مگابایت باشد' };
-  }
+    if (file.size > maxSize) {
+      return { valid: false, error: "حجم تصویر نباید بیشتر از ۲ مگابایت باشد" };
+    }
 
-  return { valid: true };
-};
+    return { valid: true };
+  };
 
   // 📂 Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +96,7 @@ const Avatar = ({
             <Button
               variant="outline"
               onClick={onImageRemove}
-              className="text-red-600 hover:bg-red-50 hover:border-red-300"
+              className="text-red-600 hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950/20 dark:hover:border-red-800"
             >
               <Trash2 size={18} />
             </Button>
@@ -115,7 +115,7 @@ const Avatar = ({
 
       {/* ℹ️ Info text (only in edit mode) */}
       {isEditing && (
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           JPG, PNG یا WEBP • حداکثر ۲ مگابایت
         </p>
       )}

@@ -1,8 +1,13 @@
 'use client';
 
 import { FilterConfig, FilterFormData } from '@/types/filters';
-import { CancelSquareIcon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
+import {
+  CancelSquareIcon,
+  FilterIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -100,10 +105,14 @@ const FILTERS: FilterConfig[] = [
 interface DoctorFiltersSheetProps {
   onApply: (data: FilterFormData) => void;
   setIsOpen: (isOpen: boolean) => void;
-  mode:"/doctors" | "/find-doctor";
+  mode: '/doctors' | '/find-doctor';
 }
 
-const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps) => {
+const DoctorFiltersSheet = ({
+  onApply,
+  setIsOpen,
+  mode,
+}: DoctorFiltersSheetProps) => {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const methods = useForm<FilterFormData>({
@@ -118,10 +127,15 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps
     },
   });
 
-  const { handleSubmit, reset, formState: { isDirty }, register } = methods;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+    register,
+  } = methods;
 
   const toggleSection = (sectionId: string) => {
-    setOpenSection(prev => prev === sectionId ? null : sectionId);
+    setOpenSection(prev => (prev === sectionId ? null : sectionId));
   };
 
   const handleReset = () => {
@@ -136,8 +150,14 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps
 
   return (
     <FormProvider {...methods}>
-      <SheetContent side="right" className="p-0 max-w-[360px] sm:max-w-[320px]">
-        <form onSubmit={handleSubmit(handleApply)} className="flex h-full flex-col">
+      <SheetContent
+        side="right"
+        className="p-0 max-w-[360px] sm:max-w-[320px]"
+      >
+        <form
+          onSubmit={handleSubmit(handleApply)}
+          className="flex h-full flex-col"
+        >
           {/* 🎯 Header */}
           <SheetHeader className="relative px-4 py-4 border-b border-neutral-100">
             <SheetTitle className="flex items-center justify-center gap-x-2 text-lg font-medium">
@@ -149,32 +169,39 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps
             </SheetDescription>
 
             <SheetClose asChild>
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 transition-colors rounded-full"
-                aria-label="Close filter sheet"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+                aria-label="بستن صفحه فیلترها"
               >
                 <HugeiconsIcon icon={CancelSquareIcon} size={20} />
-              </button>
+              </Button>
             </SheetClose>
           </SheetHeader>
 
           {/* 📜 Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* 🔍 Search */}
-            {mode ==="/doctors" && <div className="pb-5 border-b border-neutral-100">
-              <div className="h-12 flex items-center px-3 xs:px-4 border border-neutral-200 rounded-xl">
-                <input
-                  {...register('search')}
-                  placeholder="جستجو پزشک"
-                  className="w-full h-full outline-none text-sm text-neutral-600 placeholder:text-neutral-400"
-                />
-                <HugeiconsIcon icon={Search01Icon} color="#888888" size={20} />
+            {mode === '/doctors' && (
+              <div className="pb-5 border-b border-neutral-100">
+                <div className="h-12 flex items-center px-3 xs:px-4 border border-neutral-200 rounded-xl">
+                  <input
+                    {...register('search')}
+                    placeholder="جستجو پزشک"
+                    className="w-full h-full outline-none text-sm text-neutral-600 placeholder:text-neutral-400"
+                  />
+                  <HugeiconsIcon
+                    icon={Search01Icon}
+                    color="#888888"
+                    size={20}
+                  />
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-1">
+                  نام یا تخصص مورد نظرتان را وارد کنید.
+                </p>
               </div>
-              <p className="text-[11px] text-neutral-500 mt-1">
-                نام یا تخصص مورد نظرتان را وارد کنید.
-              </p>
-            </div>}
+            )}
 
             {/* 🎛️ Filters */}
             {FILTERS.map(filter => (
@@ -192,32 +219,31 @@ const DoctorFiltersSheet = ({ onApply, setIsOpen,mode }: DoctorFiltersSheetProps
           {/* ✅ Footer */}
           <SheetFooter className="border-t border-neutral-100 p-4">
             <div className="flex items-center gap-x-3 w-full">
-              <button
+              <Button
                 type="button"
                 onClick={handleReset}
                 disabled={!isDirty}
+                variant="outline"
                 className={clsx(
-                  'flex-1 h-10 text-xs xs:text-sm font-medium w-full rounded-lg transition-colors',
-                  isDirty
-                    ? 'text-neutral-700 bg-white border border-neutral-200 hover:bg-neutral-50'
-                    : 'text-neutral-400 bg-neutral-100 cursor-not-allowed'
+                  'flex-1 h-10 text-xs xs:text-sm',
+                  !isDirty && 'text-neutral-400 cursor-not-allowed'
                 )}
               >
                 حذف همه فیلترها
-              </button>
-              
-              <button
+              </Button>
+
+              <Button
                 type="submit"
                 disabled={!isDirty}
                 className={clsx(
-                  'flex-1 h-10 text-white text-xs xs:text-sm w-full font-medium rounded-lg transition-colors',
+                  'flex-1 h-10 text-xs xs:text-sm',
                   isDirty
                     ? 'bg-primary-500 hover:bg-primary-600'
                     : 'bg-primary-100 cursor-not-allowed'
                 )}
               >
                 اعمال فیلتر
-              </button>
+              </Button>
             </div>
           </SheetFooter>
         </form>

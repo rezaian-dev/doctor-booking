@@ -61,7 +61,7 @@ const DoctorProfile = ({ mode }: DoctorProfileProps) => {
               priority
             />
 
-            {/*  Doctor Info */}
+            {/* 📝 Doctor Info */}
             <div className="flex items-start justify-between grow px-3 pt-3">
               <div className="flex flex-col gap-y-3">
                 <h1 className="text-black font-medium text-lg">{DOCTOR_DATA.name}</h1>

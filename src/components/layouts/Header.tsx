@@ -54,7 +54,7 @@ export const Header = () => {
 
         {/* 🔐 Authentication CTA – consistent across all viewports */}
         <Link
-          href="/login"
+          href="/auth/login"
           className="text-primary-500 text-sm font-medium hover:text-primary-600 transition-colors"
         >
           ورود / ثبت نام

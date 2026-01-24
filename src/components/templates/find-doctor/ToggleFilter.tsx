@@ -1,7 +1,7 @@
 'use client';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { toggleArrayItem } from '@/components/utils/filters';
+import { toggleArrayItem } from '@/utils/filters';
 import { Controller } from 'react-hook-form';
 
 /**
@@ -23,7 +23,7 @@ const ToggleFilter = () => (
           {[
             { id: 'male', label: 'مرد' },
             { id: 'female', label: 'زن' },
-          ].map((opt) => (
+          ].map(opt => (
             <label
               key={opt.id}
               className="flex items-center gap-2 cursor-pointer"

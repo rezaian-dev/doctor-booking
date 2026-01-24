@@ -1,7 +1,8 @@
 import React from 'react';
 import { Add01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import ContinueButton from '../../ContinueButton';
+import { Button } from '@/components/ui/button';
+import { IoIosArrowBack } from 'react-icons/io';
 
 /**
  * 🧑‍💼 Patient Selection UI Component
@@ -48,17 +49,23 @@ const PatientSelector: React.FC = () => {
         </fieldset>
 
         {/* ➕ Button to add another patient */}
-        <button
+        <Button
           type="button"
-          className="text-primary-500 cursor-pointer flex items-center justify-center gap-x-1 mx-auto font-medium text-xs mt-3"
+          variant="ghost"
+          className="text-primary-500 hover:text-primary-600 hover:bg-transparent flex items-center justify-center gap-x-1 mx-auto font-medium text-xs h-auto p-0"
         >
           دریافت نوبت برای شخص دیگر
-          <HugeiconsIcon icon={Add01Icon} size={16} color="#4179F0" />
-        </button>
+          <HugeiconsIcon icon={Add01Icon} size={16} color="currentColor" />
+        </Button>
       </div>
 
       {/* ▶️ Continue button to proceed to the next step */}
-      <ContinueButton text={"ادامه"} mode={'default'} />
+      <Button
+        className="w-full max-w-[394px] h-10 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium mx-auto flex items-center justify-center gap-x-1.5"
+      >
+        ادامه
+        <IoIosArrowBack size={20} className="text-white" />
+      </Button>
     </>
   );
 };

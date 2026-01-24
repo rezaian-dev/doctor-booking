@@ -3,6 +3,7 @@
 import DoctorProfile from '@/components/DoctorProfile';
 import { FilterIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import { useState, useEffect } from 'react';
 import DoctorFiltersSheet from './DoctorFiltersSheet';
@@ -12,7 +13,7 @@ import SortSheet from './SortSheet';
 import Pagination from '@/components/Pagination';
 import { usePathname } from 'next/navigation';
 
-// 📋 Static sort options for doctor listing
+// 📋 Static sort options
 const SORT_OPTIONS = [
   { id: 'default', label: 'پیش‌فرض' },
   { id: 'popular', label: 'محبوب‌ترین' },
@@ -26,22 +27,20 @@ interface DoctorResultsProps {
 }
 
 /**
- * 🧑‍⚕️ Main container for displaying doctor search results
- * - Handles sorting (desktop + mobile)
- * - Manages filter/sort sheet visibility
- * - Renders paginated doctor profiles
+ * 🧑‍⚕️ DoctorResults – Refactored with Shadcn Button
+ * ✅ Clean sorting controls | ✅ Type-safe | ✅ Accessible
  */
 const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
-  // 🔧 Client-only rendering guard (avoids hydration mismatch)
+  // 🔧 Client-only rendering guard
   const [isClient, setIsClient] = useState(false);
-  
+
   // 🗂️ State for active sorting option
   const [activeSort, setActiveSort] = useState<SortOption>('default');
-  
+
   // 📱 Sheet visibility states
-  const [isOpen, setIsOpen] = useState(false);        // Filter sheet
+  const [isOpen, setIsOpen] = useState(false); // Filter sheet
   const [isSortOpen, setIsSortOpen] = useState(false); // Sort sheet
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // ✅ Mark as client after hydration
   useEffect(() => {
@@ -51,7 +50,7 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
   // 🎯 Callback when filters are applied
   const handleApplyFilters = (data: FilterFormData) => {
     console.log('✅ Applied Filters:', data);
-    setIsOpen(false); // Close filter sheet after apply
+    setIsOpen(false);
   };
 
   return (
@@ -63,55 +62,47 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
         </div>
         <div className="flex items-center gap-x-3 lg:gap-x-[18px]">
           {SORT_OPTIONS.map(option => (
-            <button
+            <Button
               key={option.id}
-              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveSort(option.id)}
               className={clsx(
-                'text-[13px] lg:text-sm transition-colors cursor-pointer',
+                'text-[13px] lg:text-sm h-auto p-0 hover:bg-transparent',
                 activeSort === option.id
-                  ? 'font-medium text-primary-500' // ✅ Active state style
+                  ? 'font-medium text-primary-500'
                   : 'hover:text-primary-600'
               )}
             >
               {option.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
-      {/* 📱 Mobile action bar (filter + sort) */}
+      {/* 📱 Mobile action bar */}
       <div className="flex md:hidden h-12 items-center justify-center relative">
         {/* 🔍 Filter button */}
         <div className="flex w-1/2 justify-center">
           {isClient ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-x-2"
-                  aria-label="Open filter menu"
-                >
+                <Button variant="ghost" size="sm" className="gap-x-2">
                   <HugeiconsIcon icon={FilterIcon} size={24} color="#262626" />
                   <span className="text-black text-sm">فیلترها</span>
-                </button>
+                </Button>
               </SheetTrigger>
               <DoctorFiltersSheet
                 onApply={handleApplyFilters}
                 setIsOpen={setIsOpen}
-                mode={pathname as ("/doctors" | "/find-doctor") }
+                mode={pathname as '/doctors' | '/find-doctor'}
               />
             </Sheet>
           ) : (
-            // 🌀 Fallback during SSR (no interactive sheet)
-            <button
-              type="button"
-              className="flex items-center gap-x-2"
-              aria-label="Open filter menu"
-            >
+            <Button variant="ghost" size="sm" className="gap-x-2">
               <HugeiconsIcon icon={FilterIcon} size={24} color="#262626" />
               <span className="text-black text-sm">فیلترها</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -127,7 +118,7 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
           )}
         </div>
 
-        {/* ➗ Divider between filter/sort */}
+        {/* ➗ Divider */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-neutral-100 -translate-x-1/2" />
       </div>
 
@@ -138,8 +129,8 @@ const DoctorResults = ({ totalPages = 8 }: DoctorResultsProps) => {
         ))}
       </div>
 
-      {/* 📄 Pagination controls */}
-      <Pagination totalPages={totalPages} className='mt-5 mb-0' />
+      {/* 📄 Pagination */}
+      <Pagination totalPages={totalPages} className="mt-5 mb-0" />
     </div>
   );
 };

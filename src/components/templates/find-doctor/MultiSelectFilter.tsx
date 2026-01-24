@@ -1,8 +1,13 @@
 'use client';
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toggleArrayItem } from '@/components/utils/filters';
+import { toggleArrayItem } from '@/utils/filters';
 import { FilterConfig } from '@/types/filters';
 import { Controller } from 'react-hook-form';
 
@@ -19,21 +24,27 @@ interface MultiSelectFilterProps {
  * - Syncs checkbox selections with form state ✅
  * - Supports smooth toggle logic using `toggleArrayItem` 🔄
  */
-const MultiSelectFilter = ({ filter, isOpen, onToggle }: MultiSelectFilterProps) => {
+const MultiSelectFilter = ({
+  filter,
+  isOpen,
+  onToggle,
+}: MultiSelectFilterProps) => {
   return (
     <Controller
       name={filter.id}
       render={({ field: { value = [], onChange } }) => (
         <div className="border-b border-neutral-100 pb-4">
           {/* 🏷️ Section title */}
-          <h4 className="font-medium text-sm xs:text-base text-neutral-950 my-4">{filter.title}</h4>
+          <h4 className="font-medium text-sm xs:text-base text-neutral-950 my-4">
+            {filter.title}
+          </h4>
 
           {/* 🗂️ Controlled Accordion: open state driven by parent */}
           <Accordion
             type="single"
             collapsible
-            value={isOpen ? filter.id : ""} // 🔑 Only open if parent says so
-            onValueChange={onToggle}        // 🔄 Notify parent on toggle
+            value={isOpen ? filter.id : ''} // 🔑 Only open if parent says so
+            onValueChange={onToggle} // 🔄 Notify parent on toggle
           >
             <AccordionItem
               value={filter.id}
@@ -52,7 +63,9 @@ const MultiSelectFilter = ({ filter, isOpen, onToggle }: MultiSelectFilterProps)
                     <Checkbox
                       checked={value.includes(opt.id)}
                       // 🔄 Toggle selection in array on click
-                      onCheckedChange={() => onChange(toggleArrayItem(value, opt.id))}
+                      onCheckedChange={() =>
+                        onChange(toggleArrayItem(value, opt.id))
+                      }
                       className="data-[state=checked]:bg-primary-700 data-[state=checked]:border-primary-700"
                     />
                     <span className="text-xs xs:text-sm">{opt.label}</span>

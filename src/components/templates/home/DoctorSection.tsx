@@ -107,13 +107,6 @@ const DoctorSection = ({ title }: DoctorSectionProps) => {
       items={doctors}
       renderItem={(doctor) => <DoctorCard {...doctor} />}
       getItemKey={(doctor) => doctor.id}
-      breakpoints={{
-        640: { slidesPerView: 2, spaceBetween: 16 },
-        768: { slidesPerView: 3, spaceBetween: 20 },
-        1024: { slidesPerView: 4, spaceBetween: 24 },
-      }}
-      defaultSlidesPerView={1}
-      defaultSpaceBetween={16}
     />
     </section>
   );

@@ -105,7 +105,7 @@ function SwiperSection<T>({
       </div>
 
       {/* 🎠 Swiper Carousel */}
-      <div className={clsx('mt-[18px] relative', className)}>
+      <div className={clsx('mt-4.5 relative', className)}>
         <Swiper
           ref={swiperRef}
           modules={[Navigation, Pagination]}

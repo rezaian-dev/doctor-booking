@@ -1,18 +1,20 @@
-import React from 'react';
-import Header from '@/components/layouts/Header';
-import Hero from '@/components/templates/home/Hero';
-import InfoCards from '@/components/templates/home/InfoCards';
-import SearchHero from '@/components/templates/home/SearchHero';
-import SpecialtyGrid from '@/components/templates/home/SpecialtyGrid';
-import HealthCTA from '@/components/templates/home/HealthCTA';
-import DoctorSection from '@/components/DoctorSection';
-import UserTestimonials from '@/components/templates/home/UserTestimonials';
-import MedicalArticles from '@/components/templates/home/MedicalArticles';
-import Footer from '@/components/layouts/Footer';
-import FooterMobile from '@/components/layouts/FooterMobile';
-import FaqAccordion from '@/components/FaqAccordion';
+import { FC } from 'react';
 
-const LandingPage: React.FC = () => {
+import FaqAccordion from '@/components/shared/faq-accordion';
+
+import Hero from '@/components/features/home/hero';
+import InfoCards from '@/components/features/home/info-cards';
+import SearchHero from '@/components/features/home/search-hero';
+import SpecialtyGrid from '@/components/features/home/specialty-grid';
+import DoctorSection from '@/components/shared/doctor-section';
+import HealthCTA from '@/components/features/home/health-cta';
+import UserTestimonials from '@/components/features/home/user-testimonials';
+import MedicalArticles from '@/components/features/home/medical-articles';
+import Footer from '@/components/layout/footer';
+import FooterMobile from '@/components/layout/footer-mobile';
+import { Header } from '@/components/layout/header';
+
+const Page: FC = () => {
   return (
     <>
       <Header />
@@ -32,4 +34,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default Page;

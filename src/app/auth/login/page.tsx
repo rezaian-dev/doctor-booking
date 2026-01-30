@@ -1,106 +1,61 @@
 'use client';
 
-import { FC, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { FC } from 'react';
 import { useRouter } from 'next/navigation';
-import { Toaster } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { AuthForm } from '@/components/auth/AuthForm';
-import { LoginPhoneStep } from '@/components/auth/LoginPhoneStep';
-import { OTPInput } from '@/components/auth/OTPInput';
-import { SubmitButton } from '@/components/auth/SubmitButton';
-import { ResendTimer } from '@/components/auth/ResendTimer';
+import { useForm } from 'react-hook-form';
 import {
   LoginPhoneInput,
-  OtpInput,
   loginPhoneSchema,
-  otpSchema,
-} from '@/lib/validations/auth';
-import {
-  sendLoginOtp,
-  verifyLoginOtp,
-  resendOtp,
-} from '@/services/auth.service';
-import {
-  showOtpSentSuccess,
-  showOtpSentError,
-  showOtpResendSuccess,
-  showOtpResendError,
-  showLoginSuccess,
-  showInvalidOtpError,
-} from '@/utils/toast-messages';
-import Footer from '@/components/layouts/Footer';
-import FooterMobile from '@/components/layouts/FooterMobile';
-import Header from '@/components/layouts/Header';
+} from '@/lib/validations/validation-auth';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+
+import { AuthForm } from '@/components/features/auth/auth-form';
+import { LoginPhoneStep } from '@/components/features/auth/login-phone-step';
+import Footer from '@/components/layout/footer';
+import FooterMobile from '@/components/layout/footer-mobile';
+import { Header } from '@/components/layout/header';
 
 /**
- * 📱 Two-step login flow: Phone → OTP → Redirect to /profile
+ * 📱 Direct login flow: Phone → Redirect to /profile
  * ✨ Form validation via react-hook-form + yup
  * 🔔 Real-time feedback with sonner toasts
- * 🔄 Full UX support: back, resend, loading, error states
+ * ✅ No OTP required - direct login
  */
-const LoginPage: FC = () => {
+const Page: FC = () => {
   const router = useRouter();
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
-
   // 📞 Phone form setup
   const {
     register: registerPhone,
     handleSubmit: handleSubmitPhone,
     formState: { errors: errorsPhone, isSubmitting: isSubmittingPhone },
   } = useForm<LoginPhoneInput>({
-    resolver: yupResolver(loginPhoneSchema),
+    resolver: zodResolver(loginPhoneSchema),
   });
 
-  // 🔑 OTP form setup
-  const {
-    setValue: setOtpValue,
-    watch: watchOtp,
-    handleSubmit: handleSubmitOtp,
-    formState: { errors: errorsOtp, isSubmitting: isSubmittingOtp },
-  } = useForm<OtpInput>({
-    resolver: yupResolver(otpSchema),
-  });
-
-  const otpValue = watchOtp('otp') || '';
-
-  // 📤 Submit phone → request OTP
+  // 📤 Submit phone → API login & redirect
   const onSubmitPhone = async (data: LoginPhoneInput) => {
     try {
-      await sendLoginOtp(data);
-      setPhoneNumber(data.phone);
-      setStep('otp');
-      showOtpSentSuccess(data.phone);
-    } catch {
-      showOtpSentError();
-    }
-  };
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-  // 🔍 Verify OTP → login & redirect
-  const onSubmitOtp = async (data: OtpInput) => {
-    try {
-      await verifyLoginOtp(data);
-      showLoginSuccess();
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error(result.error || 'خطا در ورود');
+        return;
+      }
+
+      toast.success('با موفقیت وارد شدید!');
       setTimeout(() => router.replace('/profile'), 1000);
     } catch {
-      showInvalidOtpError();
+      toast.error('خطا در ارتباط با سرور');
     }
   };
-
-  // 🔄 Resend OTP
-  const handleResendOtp = async () => {
-    try {
-      await resendOtp();
-      showOtpResendSuccess();
-    } catch {
-      showOtpResendError();
-    }
-  };
-
-  // ↩️ Back to phone input
-  const handleBackToPhone = () => setStep('phone');
 
   return (
     <>
@@ -108,48 +63,17 @@ const LoginPage: FC = () => {
       <Header />
       <AuthForm
         title="ورود به دکتر رزرو"
-        description={
-          step === 'phone'
-            ? 'شماره موبایل خود را وارد کنید'
-            : 'کد ارسال شده را وارد کنید'
-        }
+        description="شماره موبایل خود را وارد کنید"
         footerText="حساب کاربری ندارید؟"
         footerLinkText="ثبت‌نام کنید"
-        footerLinkHref="/auth/signup"
+        footerLinkHref="/auth/register"
       >
-        {step === 'phone' ? (
-          <LoginPhoneStep
-            register={registerPhone}
-            errors={errorsPhone}
-            isSubmitting={isSubmittingPhone}
-            onSubmit={handleSubmitPhone(onSubmitPhone)}
-          />
-        ) : (
-          <form onSubmit={handleSubmitOtp(onSubmitOtp)} className="space-y-1.5">
-            <OTPInput
-              value={otpValue}
-              onChange={(value) => setOtpValue('otp', value)}
-              error={errorsOtp.otp?.message}
-              disabled={isSubmittingOtp}
-              phoneNumber={phoneNumber}
-            />
-            <SubmitButton
-              isLoading={isSubmittingOtp}
-              disabled={otpValue.length !== 5}
-              loadingText="در حال تأیید..."
-              buttonText="تأیید و ورود"
-            />
-            <ResendTimer onResend={handleResendOtp} />
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleBackToPhone}
-              className="w-full text-neutral-600 hover:text-neutral-900"
-            >
-              تغییر شماره موبایل
-            </Button>
-          </form>
-        )}
+        <LoginPhoneStep
+          register={registerPhone}
+          errors={errorsPhone}
+          isSubmitting={isSubmittingPhone}
+          onSubmit={handleSubmitPhone(onSubmitPhone)}
+        />
       </AuthForm>
       <Footer />
       <FooterMobile />
@@ -157,4 +81,4 @@ const LoginPage: FC = () => {
   );
 };
 
-export default LoginPage;
+export default Page;

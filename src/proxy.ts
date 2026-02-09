@@ -11,6 +11,7 @@ export async function proxy(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
   // 🔄 Auto-refresh for all requests
+  
   if (!accessToken && refreshToken) {
     const payload = await verifyRefreshToken(refreshToken);
 

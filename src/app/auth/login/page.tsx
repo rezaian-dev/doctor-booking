@@ -1,41 +1,33 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import {
-  LoginPhoneInput,
-  loginPhoneSchema,
-} from '@/lib/validations/validation-auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Toaster } from '@/components/ui/sonner';
-
+import { LoginPhoneInput, loginPhoneSchema } from '@/lib/validations/validation-auth';
 import { AuthForm } from '@/components/features/auth/auth-form';
 import { LoginPhoneStep } from '@/components/features/auth/login-phone-step';
+import { Toaster } from '@/components/ui/sonner';
+import { useAuth } from '@/lib/providers/auth-provider';
 import Footer from '@/components/layout/footer';
 import FooterMobile from '@/components/layout/footer-mobile';
 import { Header } from '@/components/layout/header';
 
-/**
- * 📱 Direct login flow: Phone → Redirect to /profile
- * ✨ Form validation via react-hook-form + yup
- * 🔔 Real-time feedback with sonner toasts
- * ✅ No OTP required - direct login
- */
-const Page: FC = () => {
+const LoginPage: FC = () => {
   const router = useRouter();
-  // 📞 Phone form setup
+  const { mutate } = useAuth();
+  const [isPending, startTransition] = useTransition();
+
   const {
-    register: registerPhone,
-    handleSubmit: handleSubmitPhone,
-    formState: { errors: errorsPhone, isSubmitting: isSubmittingPhone },
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
   } = useForm<LoginPhoneInput>({
     resolver: zodResolver(loginPhoneSchema),
   });
 
-  // 📤 Submit phone → API login & redirect
-  const onSubmitPhone = async (data: LoginPhoneInput) => {
+  const onSubmit = async (data: LoginPhoneInput) => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -51,8 +43,14 @@ const Page: FC = () => {
       }
 
       toast.success('با موفقیت وارد شدید!');
-      setTimeout(() => router.replace('/profile'), 1000);
-    } catch {
+
+      // ✅ Optimistic navigation با revalidation
+      startTransition(async () => {
+        await mutate(); // ✅ به‌روزرسانی فوری user
+        router.push('/profile');
+        router.refresh(); // ✅ server-side revalidation
+      });
+    } catch (error) {
       toast.error('خطا در ارتباط با سرور');
     }
   };
@@ -69,10 +67,10 @@ const Page: FC = () => {
         footerLinkHref="/auth/register"
       >
         <LoginPhoneStep
-          register={registerPhone}
-          errors={errorsPhone}
-          isSubmitting={isSubmittingPhone}
-          onSubmit={handleSubmitPhone(onSubmitPhone)}
+          register={register}
+          errors={errors}
+          isSubmitting={isSubmitting || isPending}
+          onSubmit={handleSubmit(onSubmit)}
         />
       </AuthForm>
       <Footer />
@@ -81,4 +79,4 @@ const Page: FC = () => {
   );
 };
 
-export default Page;
+export default LoginPage;

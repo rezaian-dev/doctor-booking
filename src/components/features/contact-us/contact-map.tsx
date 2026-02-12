@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { FC } from 'react';
 
 // 🗺️ Static map preview with location info & secure external link
@@ -9,14 +10,19 @@ const ContactMap: FC = () => {
   return (
     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div className="relative h-full min-h-150">
-        <img
+        <Image
           src="/images/map.webp"
           alt="نقشه موقعیت مکانی: تهران، خیابان شریعتی، خیابان ملک، خیابان ورنوابی، پلاک ۱۳"
+          width={1200}
+          height={600}
           className="w-full h-full object-cover"
           loading="lazy"
+          sizes="100vw"
         />
         <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-          <h3 className="font-bold text-lg text-gray-800 mb-2">📍 موقعیت مکانی</h3>
+          <h3 className="font-bold text-lg text-gray-800 mb-2">
+            📍 موقعیت مکانی
+          </h3>
           <p className="text-gray-600 text-sm leading-relaxed">
             تهران، خیابان شریعتی، خیابان ملک، خیابان ورنوابی، پلاک ۱۳
           </p>

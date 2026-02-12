@@ -1,45 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/db-connect";
-import { verifyOTP } from "@/lib/auth/auth-otp";
+import { verifySignupSchema } from "@/lib/validations/validation-auth";
+import { verifyOTP } from "@/lib/auth/otp/service";
 import { User } from "@/lib/db/models/user.model";
 import { createAccessToken, createRefreshToken } from "@/lib/auth/auth-jwt";
 import { setAccessCookie, setRefreshCookie } from "@/lib/auth/auth-cookies";
+import { checkDuplicates } from "@/lib/auth/auth-validation";
+import { err, success } from "@/lib/auth/auth-utils";
 
-// 🛡️ Error helper
-const err = (msg: string, status = 400) =>
-  NextResponse.json({ error: msg }, { status });
-
-// 🔐 Verify OTP & create user
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    const { firstName, lastName, phone, email, password, otp } = await req.json();
+    //  Validate request
+    const body = await req.json();
+    const parsed = verifySignupSchema.safeParse(body);
+    if (!parsed.success) return err(parsed.error.issues[0].message);
 
-    // ✅ Validate required fields
-    if (!firstName || !lastName || !phone || !password || !otp) {
-      return err("تمام فیلدهای الزامی را پر کنید");
-    }
+    const { firstName, lastName, phone, email, password, otp } = parsed.data;
 
-    // ✅ Verify OTP first
-    if (!verifyOTP(phone, otp)) {
-      return err("کد تایید نادرست یا منقضی شده است");
-    }
+    // 🔍 Check duplicates
+    const duplicate = await checkDuplicates(phone, email);
+    if (duplicate.exists) return err(duplicate.message!, 409);
 
-    // 🔍 Double-check for race condition
-    const query: any = { phone };
-    if (email?.trim()) query.$or = [{ phone }, { email: email.trim() }];
-
-    const exists = await User.findOne(query);
-    if (exists) {
-      return err("این شماره یا ایمیل قبلاً ثبت شده است", 409);
-    }
+    // ✅ Verify OTP
+    const result = await verifyOTP(phone, otp);
+    if (!result.success) return err(result.error!, 401);
 
     // 🔒 Hash password
     const hash = await bcrypt.hash(password, 12);
 
-    // 👑 First user = admin
+    // 👑 Determine role
     const count = await User.countDocuments();
     const role = count === 0 ? "admin" : "user";
 
@@ -59,8 +51,8 @@ export async function POST(req: NextRequest) {
       createRefreshToken(user._id.toString()),
     ]);
 
-    // 🍪 Set cookies
-    const res = NextResponse.json(
+    // ✅ Success response
+    const res = success(
       {
         message: "ثبت‌نام با موفقیت انجام شد",
         user: {
@@ -71,22 +63,16 @@ export async function POST(req: NextRequest) {
           lastName: user.lastName,
         },
       },
-      { status: 201 }
+      201
     );
 
     setAccessCookie(res, access);
     setRefreshCookie(res, refresh);
 
     return res;
-
   } catch (error: any) {
-    console.error("❌ Verify error:", error);
-
-    // 🔍 Handle duplicate key error
-    if (error.code === 11000) {
-      return err("این شماره یا ایمیل قبلاً ثبت شده است", 409);
-    }
-
-    return err("خطای سرور", 500);
+    console.error("❌ Verification Error:", error);
+    if (error.code === 11000) return err("اطلاعات تکراری است", 409);
+    return err("خطای سرور. لطفاً بعداً تلاش کنید", 500);
   }
 }

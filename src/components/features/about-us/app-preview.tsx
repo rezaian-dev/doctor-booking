@@ -16,15 +16,17 @@ const AppPreview = () => {
       <div className="flex flex-col-reverse md:flex-row items-center gap-6 md:gap-y-0 justify-between">
         {/* 🖼️ Responsive image container with native aspect ratio */}
         <div className="w-full max-w-125 aspect-498/541">
-          <Image
-            src="/images/doctors.png"
-            alt="گروهی از پزشکان در حال استفاده از نرم‌افزارهای هوشمند سلامت"
-            width={498}
-            height={541}
-            className="object-contain md:min-w-75 md:min-h-75"
-            sizes="(max-width: 768px) 100vw, 500px"
-            loading="lazy"
-          />
+        <Image
+        src="/images/doctors.png"
+        alt="گروهی از پزشکان در حال استفاده از نرم‌افزارهای هوشمند سلامت"
+        width={498}
+        height={541}
+        // ✅ راه‌حل: h-auto اضافه شده تا aspect ratio حفظ شود
+        className="h-auto w-full object-contain"
+        sizes="(max-width: 768px) 100vw, 500px"
+        loading="lazy"
+        priority={false}
+      />
         </div>
 
         {/* 📝 Content section with optimized typography */}

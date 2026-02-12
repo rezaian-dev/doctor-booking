@@ -1,53 +1,34 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  OtpInput,
-  otpSchema,
-  SignupInput,
-  signupSchema,
-} from '@/lib/validations/validation-auth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
+import { SignupInput, signupSchema, OtpInput, otpSchema } from '@/lib/validations/validation-auth';
 import { AuthForm } from '@/components/features/auth/auth-form';
 import { SignupFormStep } from '@/components/features/auth/signup-form-step';
 import { OTPVerificationStep } from '@/components/features/auth/otp-verification-step';
+import { Toaster } from 'sonner';
+import { useAuth } from '@/lib/providers/auth-provider';
 import Footer from '@/components/layout/footer';
 import FooterMobile from '@/components/layout/footer-mobile';
 import { Header } from '@/components/layout/header';
 
-/**
- * 📝 Two-step signup: Form → OTP → Profile
- * ✅ Fixed resend throttling (30sec cooldown)
- * ✅ Clear OTP when going back to form
- * ✅ Reset throttle timer on back to form
- */
-const Page: FC = () => {
+const RegisterPage: FC = () => {
   const router = useRouter();
+  const { mutate } = useAuth();
+  const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [userData, setUserData] = useState<SignupInput | null>(null);
 
-  const {
-    register: registerSignup,
-    handleSubmit: handleSubmitSignup,
-    formState: { errors: errorsSignup, isSubmitting: isSubmittingSignup },
-  } = useForm<SignupInput>({
-    resolver: zodResolver(signupSchema) as any,
+  const signupForm = useForm<SignupInput>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const {
-    setValue: setOtpValue,
-    watch: watchOtp,
-    handleSubmit: handleSubmitOtp,
-    reset: resetOtp,
-    formState: { errors: errorsOtp, isSubmitting: isSubmittingOtp },
-  } = useForm<OtpInput>({
-    resolver: zodResolver(otpSchema) as any,
+  const otpForm = useForm<OtpInput>({
+    resolver: zodResolver(otpSchema),
   });
-
-  const otpValue = watchOtp('otp') || '';
 
   const apiCall = async (url: string, data: unknown) => {
     const res = await fetch(url, {
@@ -75,8 +56,15 @@ const Page: FC = () => {
   const onSubmitOtp = async (data: OtpInput) => {
     try {
       await apiCall('/api/auth/verify-otp', { ...userData, otp: data.otp });
+
       toast.success('ثبت‌نام موفق!');
-      router.replace('/profile');
+
+      // ✅ Optimistic navigation
+      startTransition(async () => {
+        await mutate();
+        router.push('/profile');
+        router.refresh();
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'کد نادرست');
     }
@@ -97,9 +85,8 @@ const Page: FC = () => {
   };
 
   const handleBackToForm = async () => {
-    resetOtp(); // 🧹 پاک کردن مقدار OTP
+    otpForm.reset();
 
-    // 🔄 Reset throttle timer on server
     if (userData?.phone) {
       try {
         await fetch('/api/auth/reset-throttle', {
@@ -121,29 +108,25 @@ const Page: FC = () => {
       <Header />
       <AuthForm
         title="ثبت‌نام در دکتر رزرو"
-        description={
-          step === 'form'
-            ? 'اطلاعات خود را وارد کنید'
-            : 'کد ارسال شده را وارد کنید'
-        }
+        description={step === 'form' ? 'اطلاعات خود را وارد کنید' : 'کد ارسال شده را وارد کنید'}
         footerText="قبلاً ثبت‌نام کرده‌اید؟"
         footerLinkText="وارد شوید"
         footerLinkHref="/auth/login"
       >
         {step === 'form' ? (
           <SignupFormStep
-            register={registerSignup}
-            errors={errorsSignup}
-            isSubmitting={isSubmittingSignup}
-            onSubmit={handleSubmitSignup(onSubmitSignup)}
+            register={signupForm.register}
+            errors={signupForm.formState.errors}
+            isSubmitting={signupForm.formState.isSubmitting}
+            onSubmit={signupForm.handleSubmit(onSubmitSignup)}
           />
         ) : (
           <OTPVerificationStep
-            otpValue={otpValue}
-            onOtpChange={value => setOtpValue('otp', value)}
-            otpError={errorsOtp.otp?.message}
-            isSubmitting={isSubmittingOtp}
-            onSubmit={handleSubmitOtp(onSubmitOtp)}
+            otpValue={otpForm.watch('otp') || ''}
+            onOtpChange={(value) => otpForm.setValue('otp', value)}
+            otpError={otpForm.formState.errors.otp?.message}
+            isSubmitting={otpForm.formState.isSubmitting || isPending}
+            onSubmit={otpForm.handleSubmit(onSubmitOtp)}
             onResend={handleResendOtp}
             onBack={handleBackToForm}
             phoneNumber={userData?.phone || ''}
@@ -157,4 +140,4 @@ const Page: FC = () => {
   );
 };
 
-export default Page;
+export default RegisterPage;

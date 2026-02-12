@@ -29,7 +29,6 @@ const CONTACT_CARDS: ContactCard[] = [
   },
 ];
 
-
 // 📱 Main contact section component
 const ContactSection: FC = () => {
   return (
@@ -40,21 +39,32 @@ const ContactSection: FC = () => {
       {/* 📇 Contact cards grid with decorative element */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
         {/* 🔄 Render contact cards dynamically */}
-        {CONTACT_CARDS.map((card) => (
-          <div key={card.id} className={'flex items-center flex-col sm:flex-row justify-center gap-y-6 sm:justify-between drop-shadow-[0_-8px_32px_rgba(0,0,0,0.05)] px-10 bg-white rounded-[10px] h-44.75 sm:h-34 border border-neutral-100'}>
+        {CONTACT_CARDS.map(card => (
+          <div
+            key={card.id}
+            className={
+              'flex items-center flex-col sm:flex-row justify-center gap-y-6 sm:justify-between drop-shadow-[0_-8px_32px_rgba(0,0,0,0.05)] px-10 bg-white rounded-[10px] h-44.75 sm:h-34 border border-neutral-100'
+            }
+          >
             {/* 🏷️ Label section with icon */}
             <div className="flex items-center gap-x-2">
               <HugeiconsIcon
                 icon={card.icon}
-                color={"#3D3D3D"}
+                color={'#3D3D3D'}
                 size={24}
                 className={card.iconClassName}
               />
-              <span className={'text-black font-medium text-base sm:text-lg'}>{card.label}</span>
+              <span className={'text-black font-medium text-base sm:text-lg'}>
+                {card.label}
+              </span>
             </div>
 
             {/* 📞 Phone numbers list */}
-            <div className={'flex flex-col text-black font-medium text-base sm:text-lg'}>
+            <div
+              className={
+                'flex flex-col text-black font-medium text-base sm:text-lg'
+              }
+            >
               {card.phones.map((phone, index) => (
                 <span key={`${card.id}-phone-${index}`} dir="ltr">
                   {phone}
@@ -71,8 +81,9 @@ const ContactSection: FC = () => {
             alt="Decorative group illustration"
             width={196}
             height={159}
-            priority={false}
-            className='w-49 h-39.75'
+            loading="lazy"
+            className="w-49 h-39.75"
+            sizes="196px"
           />
         </div>
       </div>

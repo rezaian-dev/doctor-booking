@@ -76,10 +76,11 @@ const DoctorCard = ({
           src={image}
           alt={`${name}، ${specialty} در ${city}`}
           fill
+          loading="eager"
+          fetchPriority="high"
           className={cn(
             'object-cover transform transition-all duration-500 group-hover:scale-105'
           )}
-          loading="lazy"
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 

@@ -1,129 +1,196 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { mutate } from 'swr';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/providers/auth-provider';
 import { UserProfile } from '@/types/profile-types';
-import { ProfileFormData, profileSchema } from '@/lib/validations/validation-profile';
+import { profileSchema } from '@/lib/validations/validation-profile';
 
-type AvatarState = {
+interface AvatarState {
   file: File | null;
   preview: string;
   shouldDelete: boolean;
-};
+}
 
 export function useProfileForm(initialProfile: UserProfile) {
+  const { updateUser, user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState(initialProfile);
+  const [isPending, startTransition] = useTransition();
   const [avatar, setAvatar] = useState<AvatarState>({
     file: null,
-    preview: profile.imageUrl || '',
-    shouldDelete: false
+    preview: initialProfile.imageUrl || '',
+    shouldDelete: false,
   });
 
-  const form = useForm<ProfileFormData>({
+  const form = useForm({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: profile.firstName || '',
-      lastName: profile.lastName || '',
-      phone: profile.phone || '',
-      nationalCode: profile.nationalCode || '',
-      email: profile.email || '',
-      birthDate: profile.birthDate || '',
-      gender: profile.gender || '',
-      city: profile.city || '',
-      password: '',
-    }
+    defaultValues: initialProfile,
   });
 
-  const { reset } = form;
-
-  // 🎯 Cancel handler
+  // ❌ Cancel and reset
   const handleCancel = () => {
-    reset();
-    setAvatar({ file: null, preview: profile.imageUrl || '', shouldDelete: false });
+    form.reset(initialProfile);
+    setAvatar({
+      file: null,
+      preview: initialProfile.imageUrl || '',
+      shouldDelete: false,
+    });
     setIsEdit(false);
   };
 
-  // 📤 Upload avatar
-  const uploadAvatar = async (): Promise<string> => {
-    if (avatar.shouldDelete) return '';
-    if (!avatar.file) return profile.imageUrl || '';
-
-    const fd = new FormData();
-    fd.append('file', avatar.file);
-
-    const res = await fetch('/api/profile/upload-avatar', { method: 'POST', body: fd });
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || 'خطا در آپلود تصویر');
-    return data.imageUrl;
+  // 🔐 Check authentication before making request
+  const checkAuth = (): boolean => {
+    if (!isAuthenticated || !user) {
+      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      router.push('/login');
+      return false;
+    }
+    return true;
   };
 
-  // 💾 Submit handler
-  const onSubmit = form.handleSubmit(async (data) => {
-    setLoading(true);
-    try {
-      const avatarUrl = await uploadAvatar();
+  // 📤 Upload avatar with auth check
+  const uploadAvatar = async (file: File): Promise<string> => {
+    if (!checkAuth()) throw new Error('Unauthorized');
 
-      const payload = {
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        phone: data.phone.trim(),
-        avatar: avatarUrl,
-        email: data.email?.trim() || '',
-        nationalCode: data.nationalCode?.trim() || '',
-        birthDate: data.birthDate || '',
-        gender: data.gender || '',
-        city: data.city?.trim() || '',
-        ...(data.password?.trim() && { password: data.password.trim() })
-      };
+    const formData = new FormData();
+    formData.append('avatar', file);
 
-      const res = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    const res = await fetch('/api/profile/upload-avatar', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
 
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || 'خطا در بروزرسانی');
-      }
-
-      // ✅ Map response with proper types
-      const updated: UserProfile = {
-        firstName: result.user.firstName || '',
-        lastName: result.user.lastName || '',
-        phone: result.user.phone || '',
-        email: result.user.email || '',
-        nationalCode: result.user.nationalCode || '',
-        birthDate: result.user.birthDate || '',
-        gender: (result.user.gender || '') as 'male' | 'female' | '',
-        city: result.user.city || '',
-        imageUrl: result.user.avatar || '',
-      };
-
-      setProfile(updated);
-      reset({ ...updated, password: '' });
-      setAvatar({ file: null, preview: updated.imageUrl || '', shouldDelete: false });
-
-      toast.success('اطلاعات با موفقیت بروزرسانی شد ✅');
-      setIsEdit(false);
-
-    } catch (err: any) {
-      toast.error(err.message || 'خطا در بروزرسانی');
-    } finally {
-      setLoading(false);
+    if (res.status === 401) {
+      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      router.push('/login');
+      throw new Error('Unauthorized');
     }
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'آپلود تصویر ناموفق بود');
+    }
+
+    const data = await res.json();
+    return data.avatar;
+  };
+
+  // 🗑️ Delete avatar with auth check
+  const deleteAvatar = async (): Promise<void> => {
+    if (!checkAuth()) throw new Error('Unauthorized');
+
+    const res = await fetch('/api/profile/upload-avatar', {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+
+    if (res.status === 401) {
+      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      router.push('/login');
+      throw new Error('Unauthorized');
+    }
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'حذف تصویر ناموفق بود');
+    }
+  };
+
+  // 💾 Submit handler with comprehensive error handling
+  const onSubmit = form.handleSubmit((data) => {
+    if (!checkAuth()) return;
+
+    startTransition(async () => {
+      try {
+        let newAvatar = initialProfile.imageUrl || '';
+
+        // 🖼️ Handle avatar changes
+        try {
+          if (avatar.shouldDelete) {
+            await deleteAvatar();
+            newAvatar = '';
+          } else if (avatar.file) {
+            newAvatar = await uploadAvatar(avatar.file);
+          }
+        } catch (avatarError: any) {
+          if (avatarError.message === 'Unauthorized') return;
+          console.error('Avatar error:', avatarError);
+          toast.error(avatarError.message || 'خطا در پردازش تصویر');
+        }
+
+        // 📝 Update profile data
+        const res = await fetch('/api/profile', {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        // 🚨 Handle authentication error
+        if (res.status === 401) {
+          toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+          router.push('/login');
+          return;
+        }
+
+        if (!res.ok) {
+          const error = await res.json();
+
+          if (res.status === 409) {
+            if (error.field === 'phone') {
+              toast.error('شماره موبایل قبلاً ثبت شده است');
+            } else if (error.field === 'email') {
+              toast.error('ایمیل قبلاً ثبت شده است');
+            } else {
+              toast.error(error.error || 'خطا در به‌روزرسانی');
+            }
+            return;
+          }
+
+          if (res.status === 400) {
+            toast.error(error.error || 'اطلاعات وارد شده نامعتبر است');
+            return;
+          }
+
+          throw new Error(error.error || 'خطا در به‌روزرسانی پروفایل');
+        }
+
+        const { user: updatedUser } = await res.json();
+
+        // ⚡ Optimistic update auth context
+        updateUser({
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          avatar: newAvatar || undefined,
+        });
+
+        // 🔄 Revalidate profile cache
+        await mutate('/api/profile');
+
+        toast.success('پروفایل با موفقیت به‌روزرسانی شد');
+        setIsEdit(false);
+        setAvatar({ file: null, preview: newAvatar, shouldDelete: false });
+      } catch (error: any) {
+        console.error('Profile update error:', error);
+
+        if (error.message !== 'Unauthorized') {
+          toast.error(error.message || 'خطا در به‌روزرسانی پروفایل');
+        }
+      }
+    });
   });
 
   return {
     form,
     isEdit,
     setIsEdit,
-    loading,
-    profile,
+    loading: isPending,
     avatar,
     setAvatar,
     handleCancel,

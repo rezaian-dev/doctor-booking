@@ -1,38 +1,70 @@
-// 🧱 Root Layout — RTL, Vazirmatn Font & Core Styles ✨
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import '../styles/globals.css';
+import { AuthProvider } from '@/lib/providers/auth-provider';
+import { getServerUser } from '@/lib/auth/auth-get-server-user';
+import { cn } from '@/lib/utils/cn';
 
-// 🖋️ Load Vazirmatn font (optimized .woff2 files for Persian support)
+/**
+ * 🖋️ Vazirmatn font configuration
+ * ✅ Optimized .woff2 files for Persian
+ */
 const vazirmatn = localFont({
   src: [
     { path: '../assets/fonts/Vazirmatn-Regular.woff2', weight: '400' },
     { path: '../assets/fonts/Vazirmatn-Medium.woff2', weight: '500' },
     { path: '../assets/fonts/Vazirmatn-Bold.woff2', weight: '700' },
   ],
-  variable: '--font-vazirmatn', // CSS variable for global use
-  display: 'swap', // Prevent FOIT (Flash of Invisible Text)
+  variable: '--font-vazirmatn',
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
-// 📄 SEO metadata — title, description & favicon
+/**
+ * 📄 SEO metadata
+ */
 export const metadata: Metadata = {
   title: 'دکتر رزرو',
   description: 'وقت ویزیت با بهترین پزشکان — سریع، آسان و مطمئن.',
-  icons: {
-    icon: '/favicon.ico', // Favicon from /public
-  },
+  icons: { icon: '/favicon.ico' },
 };
 
-// 🌐 Main layout wrapper — applies to all pages
-export default function RootLayout({
+/**
+ * 📱 Viewport configuration
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#0066FF',
+};
+
+/**
+ * 🌐 Root Layout
+ * ✨ RTL Persian layout with auth state hydration
+ * 🔐 Fetches user on server, passes to client with zero flicker
+ * ⚡ suppressHydrationWarning prevents false positives
+ */
+export default async function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
+  // 🔐 Fetch user session on server-side
+  const user = await getServerUser();
+
   return (
-    <html lang="fa" dir="rtl">
+    <html lang="fa" dir="rtl" className={vazirmatn.variable}>
       <body
-        className={`${vazirmatn.variable} min-w-[320px] overflow-x-hidden! min-h-screen antialiased`}
+        className={cn(
+          'min-w-[320px] min-h-screen antialiased',
+          'overflow-x-hidden',
+          'font-sans'
+        )}
+        suppressHydrationWarning
       >
-        {children}
+        <AuthProvider initialUser={user}>{children}</AuthProvider>
       </body>
     </html>
   );

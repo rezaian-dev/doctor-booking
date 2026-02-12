@@ -27,13 +27,21 @@ const Footer: React.FC = () => {
   // Social media links data 🧠
   const socialLinks = [
     { href: 'https://wa.me/yournumber', icon: WhatsappIcon, label: 'واتساپ' },
-    { href: 'https://instagram.com/yourhandle', icon: InstagramIcon, label: 'اینستاگرام' },
+    {
+      href: 'https://instagram.com/yourhandle',
+      icon: InstagramIcon,
+      label: 'اینستاگرام',
+    },
     { href: 'https://t.me/yourchannel', icon: TelegramIcon, label: 'تلگرام' },
-    { href: 'https://linkedin.com/company/yourcompany', icon: Linkedin01Icon, label: 'لینکدین' },
+    {
+      href: 'https://linkedin.com/company/yourcompany',
+      icon: Linkedin01Icon,
+      label: 'لینکدین',
+    },
   ] as const;
 
   // Contact numbers data 📱
-  const mobileNumbers:readonly ContactItem[] = [
+  const mobileNumbers: readonly ContactItem[] = [
     { number: '۰۹۱۲ ۳۴۵ ۶۷۸۹', link: 'tel:09123456789' },
     { number: '۰۹۱۲ ۳۴۵ ۶۷۹۰', link: 'tel:09123456790' },
   ] as const;
@@ -48,7 +56,7 @@ const Footer: React.FC = () => {
 
   // ✅ Fixed: Render contact list with correct typing, RTL-aware text rendering 📞
   const renderContactList = (
-    items:readonly ContactItem[],
+    items: readonly ContactItem[],
     icon: IconSvgElement,
     iconColor: string = '#3D3D3D'
   ) => (
@@ -64,7 +72,7 @@ const Footer: React.FC = () => {
         <a
           key={link}
           href={link}
-          dir='ltr'
+          dir="ltr"
           className="text-neutral-850 text-sm hover:text-primary-500 transition-colors duration-200"
         >
           {number}
@@ -82,7 +90,9 @@ const Footer: React.FC = () => {
           <div className="flex flex-col justify-between md:flex-row gap-y-8 grow">
             {/* Quick links 🔗 */}
             <div>
-              <h4 className="text-neutral-850 font-bold text-base mb-4">لینک‌های سریع</h4>
+              <h4 className="text-neutral-850 font-bold text-base mb-4">
+                لینک‌های سریع
+              </h4>
               <ul className="flex flex-col gap-y-3">
                 {quickLinks.map(({ href, label }) => (
                   <li key={href}>
@@ -99,9 +109,13 @@ const Footer: React.FC = () => {
 
             {/* Legal info ⚖️ */}
             <div>
-              <h4 className="text-neutral-850 font-bold text-base mb-4">اطلاعات حقوقی</h4>
+              <h4 className="text-neutral-850 font-bold text-base mb-4">
+                اطلاعات حقوقی
+              </h4>
               <ul className="flex flex-col gap-y-3">
-                <li className="text-sm text-neutral-850">تمامی حقوق محفوظ است.</li>
+                <li className="text-sm text-neutral-850">
+                  تمامی حقوق محفوظ است.
+                </li>
                 <li className="text-sm text-neutral-850">سال تأسیس: 2025</li>
               </ul>
             </div>
@@ -109,12 +123,12 @@ const Footer: React.FC = () => {
             {/* Contact info 📱 */}
             <div className="flex flex-col gap-y-9">
               <div>
-                <h4 className="text-neutral-850 font-bold text-base mb-4">شماره همراه</h4>
+                <h4 className="text-neutral-850 font-bold text-base mb-4">
+                  شماره همراه
+                </h4>
                 {renderContactList(mobileNumbers, SmartPhone01Icon)}
               </div>
-              <div>
-                {renderContactList(officeNumbers, Call02Icon)}
-              </div>
+              <div>{renderContactList(officeNumbers, Call02Icon)}</div>
             </div>
           </div>
 
@@ -123,7 +137,7 @@ const Footer: React.FC = () => {
             <h4 className="text-base/7 text-dark-blue">مشترک شوید</h4>
             <form
               className="flex items-center border-[1.5px] border-light-gray bg-white rounded-[6px] h-11"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={e => e.preventDefault()}
             >
               <input
                 className="w-full outline-none h-full px-3 text-sm text-dark-blue placeholder:text-medium-gray"
@@ -137,11 +151,17 @@ const Footer: React.FC = () => {
                 type="submit"
                 aria-label="ثبت ایمیل"
               >
-                <HugeiconsIcon icon={ArrowLeft02Icon} size={24} color="#fff" aria-hidden="true" />
+                <HugeiconsIcon
+                  icon={ArrowLeft02Icon}
+                  size={24}
+                  color="#fff"
+                  aria-hidden="true"
+                />
               </button>
             </form>
             <p className="text-medium-gray text-sm/7 mt-2">
-              اپلیکیشن رزرو نوبت برای گرفتن نوبت سریع و غیرحضوری و بهترین دکترهای متخصص با دکتر رزرو.
+              اپلیکیشن رزرو نوبت برای گرفتن نوبت سریع و غیرحضوری و بهترین
+              دکترهای متخصص با دکتر رزرو.
             </p>
           </div>
         </div>
@@ -159,7 +179,12 @@ const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer" // ✅ Already correct — well done!
               >
-                <HugeiconsIcon icon={icon} size={26} color="#141B34" aria-hidden="true" />
+                <HugeiconsIcon
+                  icon={icon}
+                  size={26}
+                  color="#141B34"
+                  aria-hidden="true"
+                />
               </a>
             ))}
           </div>
@@ -172,7 +197,8 @@ const Footer: React.FC = () => {
               height={28}
               alt="لوگو دکتر رزرو"
               className="w-7.5 h-7 object-contain"
-              priority // ✅ Added for critical logo — improves LCP
+              loading="lazy"
+              sizes="30px"
             />
             <h2 className="text-2xl font-bold">
               دکتر<span className="text-primary-500"> رزرو </span>

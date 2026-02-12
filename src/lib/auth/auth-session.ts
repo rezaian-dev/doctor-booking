@@ -1,16 +1,16 @@
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from './auth-jwt';
+import { verifyAccessToken } from "@/lib/auth/auth-jwt";
+import { connectDB } from "@/lib/db/db-connect";
+import { User } from "@/lib/db/models/user.model";
+import { NextRequest } from "next/server";
 
-/**
- * 🔐 Get authenticated user ID from cookies
- * Returns user ID if authenticated, null otherwise
- */
-export async function getAuthUserId(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-
+// 🔒 Get authenticated user from JWT
+export default async function getAuthenticatedUser(req: NextRequest) {
+  const token = req.cookies.get('accessToken')?.value;
   if (!token) return null;
 
   const payload = await verifyAccessToken(token);
-  return payload?.userId || null;
+  if (!payload?.userId) return null;
+
+  await connectDB();
+  return User.findById(payload.userId);
 }

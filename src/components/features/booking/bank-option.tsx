@@ -29,6 +29,8 @@ const BankOption: React.FC<BankOptionProps> = ({
         height={24}
         alt={`لوگوی بانک ${bankName}`}
         className="shrink-0"
+        loading="lazy"
+        sizes="24px"
       />
       <span className="text-sm font-medium text-neutral-850">{bankName}</span>
     </label>

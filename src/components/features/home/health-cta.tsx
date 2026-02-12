@@ -65,6 +65,8 @@ const HealthCTA: React.FC = () => {
               width={134}
               height={101}
               className="w-12 h-12 xl:w-33.5 xl:h-25.25"
+              loading="lazy"
+              sizes="(max-width: 1280px) 48px, 134px"
             />
           </div>
 
@@ -76,6 +78,8 @@ const HealthCTA: React.FC = () => {
               width={157}
               height={150}
               className="w-10 h-10 md:w-39.25 md:h-37.5"
+              loading="lazy"
+              sizes="(max-width: 768px) 40px, 157px"
             />
           </div>
         </div>

@@ -13,7 +13,7 @@ export const loginPhoneSchema = z.object({
   password: z.string().min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد"),
 });
 
-// 📝 Signup schema
+// 📝 Signup schema (without OTP)
 export const signupSchema = z.object({
   firstName: z.string().trim().min(2, "نام باید حداقل ۲ حرف باشد").regex(PERSIAN_NAME, "نام باید فقط شامل حروف فارسی باشد"),
   lastName: z.string().trim().min(2, "نام خانوادگی باید حداقل ۲ حرف باشد").regex(PERSIAN_NAME, "نام خانوادگی باید فقط شامل حروف فارسی باشد"),
@@ -22,12 +22,18 @@ export const signupSchema = z.object({
   email: z.string().regex(EMAIL_REGEX, "فرمت ایمیل صحیح نیست").optional().or(z.literal('')),
 });
 
-// 🔑 OTP schema
+// ✅ Verify OTP schema (signup + OTP)
+export const verifySignupSchema = signupSchema.extend({
+  otp: z.string().regex(OTP, "کد تأیید باید ۵ رقم باشد"),
+});
+
+// 🔑 Standalone OTP schema
 export const otpSchema = z.object({
   otp: z.string().regex(OTP, "کد تأیید باید ۵ رقم باشد"),
 });
 
 // 🔷 Inferred types
-export type LoginPhoneInput = z.input<typeof loginPhoneSchema>;
-export type SignupInput = z.input<typeof signupSchema>;
-export type OtpInput = z.input<typeof otpSchema>;
+export type LoginPhoneInput = z.infer<typeof loginPhoneSchema>;
+export type SignupInput = z.infer<typeof signupSchema>;
+export type VerifySignupInput = z.infer<typeof verifySignupSchema>;
+export type OtpInput = z.infer<typeof otpSchema>;

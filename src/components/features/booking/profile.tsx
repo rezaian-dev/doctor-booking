@@ -47,6 +47,7 @@ const Profile = ({ showBio = true }: ProfileProps) => {
               alt={doctorData.name}
               className="xs:rounded-tr-[6px] min-h-full w-full xs:w-46.5 sm:aspect-186/153 object-cover xs:rounded-br-[6px]"
               priority
+              sizes="(max-width: 640px) 100vw, 186px"
             />
 
             {/* 📝 Doctor info header */}

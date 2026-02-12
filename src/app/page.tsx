@@ -1,7 +1,6 @@
 import { FC } from 'react';
 
 import FaqAccordion from '@/components/shared/faq-accordion';
-
 import Hero from '@/components/features/home/hero';
 import InfoCards from '@/components/features/home/info-cards';
 import SearchHero from '@/components/features/home/search-hero';

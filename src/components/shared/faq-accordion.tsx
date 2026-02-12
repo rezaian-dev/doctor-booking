@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 import { MdOutlineKeyboardArrowLeft } from 'react-icons/md';
 import clsx from 'clsx';
+import Image from 'next/image';
 
 // 📚 Static FAQ data (in Persian)
 const faqs = [
@@ -78,12 +79,14 @@ const faqs = [
       'در صفحه جستجوی پزشک، می‌توانید شهر خود را انتخاب کنید و سپس با فیلتر کردن بر اساس فاصله (نزدیک‌ترین)، پزشکان را بر اساس فاصله از محل شما مرتب کنید. همچنین می‌توانید از نقشه برای مشاهده موقعیت دقیق پزشکان استفاده کنید.',
   },
   {
-    question: 'آیا می‌توانم نسخه‌های الکترونیکی خود را از طریق وبسایت دریافت کنم؟',
+    question:
+      'آیا می‌توانم نسخه‌های الکترونیکی خود را از طریق وبسایت دریافت کنم؟',
     answer:
       'بله، پس از ویزیت، پزشک می‌تواند نسخه الکترونیکی را برای شما ارسال کند. شما می‌توانید این نسخه‌ها را در بخش «نسخه‌های من» در پروفایل خود مشاهده و دانلود کنید.',
   },
   {
-    question: 'در صورت بروز مشکل در رزرو نوبت، چگونه می‌توانم با پشتیبانی تماس بگیرم؟',
+    question:
+      'در صورت بروز مشکل در رزرو نوبت، چگونه می‌توانم با پشتیبانی تماس بگیرم؟',
     answer:
       'در صورت بروز هرگونه مشکل، می‌توانید از طریق بخش «تماس با ما» در بالای صفحه، با مرکز پشتیبانی ما تماس بگیرید یا از طریق ایمیل و چت آنلاین با ما در ارتباط باشید. تیم پشتیبانی ما ۲۴ ساعته آماده پاسخگویی به شماست.',
   },
@@ -112,7 +115,7 @@ const FaqAccordion = ({ mode, className }: FaqAccordionProps) => {
       )}
     >
       {/* 📌 Header: always show title, conditionally show "View All" */}
-          {mode === 'preview' && (
+      {mode === 'preview' && (
         <div className="flex items-center justify-between">
           <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">
             سوالات متداول
@@ -151,9 +154,20 @@ const FaqAccordion = ({ mode, className }: FaqAccordionProps) => {
           </AccordionItem>
         ))}
       </Accordion>
-      {mode ==="full" && <div className='absolute top-24 left-12 md:left-64 m-auto w-45.5 h-max md:w-max md:h-max -z-1 pointer-events-none'>
-        <img src="/images/faq.png" alt="faq" />
-      </div>}
+      {mode === 'full' && (
+        <div className="absolute top-24 left-12 md:left-64 m-auto w-45.5 h-max md:w-max md:h-max -z-1 pointer-events-none">
+          <Image
+            src="/images/faq.png"
+            alt="سوالات متداول - تصویر توضیحی"
+            width={400}
+            height={400}
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 400px"
+            className="w-auto h-auto"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+        </div>
+      )}
     </section>
   );
 };

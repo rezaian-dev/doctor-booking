@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ProfileMode } from '@/types/doctor-profile-types';
+import { ProfileMode } from '@/types/doctor';
 import Link from 'next/link';
 import { IoIosArrowBack } from 'react-icons/io';
 

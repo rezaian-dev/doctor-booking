@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import clsx from 'clsx';
 
-// 🧠 Quiz data structure
+// 📋 Quiz data structure
 interface QuizOption {
   label: string;
   value: string;
@@ -142,22 +142,22 @@ const quizData: QuizQuestion[] = [
   },
 ];
 
-// 💬 Props for controlling dialog state
+//  Props interface
 interface HeartHealthQuizProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-// ❤️ Heart health quiz modal (client-only)
+// ❤️ Heart health quiz modal component
 const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
   isOpen,
   onOpenChange,
 }) => {
-  // 🎮 State: current step & user answers
+  // 🎯 State: current question index & user answers
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
-  // 🔄 Reset state when closing
+  // 🔄 Reset quiz state on close
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setCurrentStep(0);
@@ -166,7 +166,7 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
     onOpenChange(open);
   };
 
-  // ⏭️ Handle next step or submit
+  // ⏭️ Navigate to next question or submit
   const handleNext = () => {
     if (currentStep < quizData.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -182,29 +182,38 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
     }
   };
 
-  // ⏮️ Go back to previous question
+  // ⏮️ Navigate to previous question
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
   };
 
-  // ✅ Select an answer
+  // ✅ Save user's answer
   const handleAnswerSelect = (value: string) => {
+    const currentQuestion = quizData[currentStep];
+    if (!currentQuestion) return;
+
     setAnswers(prev => ({
       ...prev,
-      [quizData[currentStep].id]: value,
+      [currentQuestion.id]: value,
     }));
   };
 
+  // 📌 Get current question & answer
   const currentQuestion = quizData[currentStep];
-  const currentAnswer = answers[currentQuestion.id];
+  const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+
+  // 🛡️ Guard: prevent render if no valid question
+  if (!currentQuestion) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      {/* 🪟 Dialog content with a11y-compliant title & description */}
+      {/* 📦 Dialog container */}
       <DialogContent className="max-w-[95vw] sm:max-w-[85vw] md:max-w-137.5 lg:max-w-150 p-0 gap-0 bg-white border-0 [&>button]:hidden">
-        {/* 🗣️ Hidden but accessible to screen readers */}
+        {/* ♿ A11y labels (hidden visually) */}
         <DialogTitle className="sr-only">
           تست سلامت اولیه قلب و عروق
         </DialogTitle>
@@ -212,9 +221,9 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
           پاسخ دهی به ۱۰ سوال برای ارزیابی سلامت قلب و عروق
         </DialogDescription>
 
-        {/* 📄 Main quiz UI */}
+        {/* 🎨 Main quiz UI */}
         <div className="p-4 sm:p-5 md:p-6 lg:p-7" dir="rtl">
-          {/* 🧭 Header with close button */}
+          {/* 🔝 Header with close button */}
           <div className="flex items-center justify-between mb-4 sm:mb-5">
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 flex-1 text-center ml-8">
               تست سلامت اولیه قلب و عروق
@@ -240,7 +249,7 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
             </p>
           </div>
 
-          {/* 🖼️ Emoji illustration */}
+          {/* 🎭 Emoji illustration */}
           <div className="flex justify-center my-3 sm:my-4">
             <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 flex items-center justify-center text-5xl sm:text-6xl md:text-7xl">
               {currentQuestion.illustration}
@@ -266,7 +275,7 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
             ))}
           </div>
 
-          {/* 🧭 Navigation buttons */}
+          {/* 🎮 Navigation buttons */}
           <div className="flex gap-2 mb-3 sm:mb-4">
             {currentStep > 0 && (
               <Button
@@ -291,7 +300,7 @@ const HeartHealthQuiz: React.FC<HeartHealthQuizProps> = ({
             </Button>
           </div>
 
-          {/* 📊 Progress bar */}
+          {/* 📊 Progress indicator */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs text-gray-600">

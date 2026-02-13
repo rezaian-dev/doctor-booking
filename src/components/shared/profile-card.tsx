@@ -11,8 +11,8 @@ import MedicalCodeBadge from '@/components/features/doctor-profile/medical-code-
 import PaymentDetailsTable from '@/components/features/doctor-profile/payment-details-table';
 import ActionButtons from '@/components/features/doctor-profile/action-buttons';
 import StarRating from '@/components/features/doctor-profile/star-rating';
-import { DoctorData, ProfileMode } from '@/types/doctor-profile-types';
 import BioSection from '@/components/features/booking/bio-section';
+import { DoctorData, ProfileMode } from '@/types/doctor';
 
 interface DoctorProfileProps {
   mode: ProfileMode;

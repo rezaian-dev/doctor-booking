@@ -1,6 +1,6 @@
 import { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from 'react-hook-form';
 import { FormField } from './form-field';
-import { ProfileFormData } from '@/lib/validations/validation-profile';
+import { ProfileFormData } from '@/lib/validations/profile.zod';
 
 const FIELDS = [
   { name: 'firstName' as const, label: 'نام', required: true },
@@ -15,8 +15,8 @@ const FIELDS = [
     type: 'select' as const,
     options: [
       { value: 'male', label: 'آقا' },
-      { value: 'female', label: 'خانم' }
-    ]
+      { value: 'female', label: 'خانم' },
+    ],
   },
   { name: 'birthDate' as const, label: 'تاریخ تولد', type: 'datepicker' as const },
 ];
@@ -29,16 +29,11 @@ type ProfileFormFieldsProps = {
   isEditMode: boolean;
 };
 
-export function ProfileFormFields({
-  register,
-  setValue,
-  watch,
-  errors,
-  isEditMode
-}: ProfileFormFieldsProps) {
+// 📝 All profile form fields
+export function ProfileFormFields({ register, setValue, watch, errors, isEditMode }: ProfileFormFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {FIELDS.map((field) => (
+      {FIELDS.map(field => (
         <FormField
           key={field.name}
           name={field.name}
@@ -49,7 +44,7 @@ export function ProfileFormFields({
           placeholder={field.placeholder}
           options={field.options}
           value={field.type === 'select' || field.type === 'datepicker' ? watch(field.name) : undefined}
-          onChange={field.type === 'select' || field.type === 'datepicker' ? (v) => setValue(field.name, v) : undefined}
+          onChange={field.type === 'select' || field.type === 'datepicker' ? v => setValue(field.name, v) : undefined}
           register={register}
           errors={errors}
           isEditMode={isEditMode}

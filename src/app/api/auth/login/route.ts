@@ -1,38 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { createAccessToken, createRefreshToken } from "@/lib/auth/auth-jwt";
-import { setAccessCookie, setRefreshCookie } from "@/lib/auth/auth-cookies";
-import { connectDB } from "@/lib/db/db-connect";
-import { loginPhoneSchema } from "@/lib/validations/validation-auth";
-import { User } from "@/lib/db/models/user.model";
+import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { createAccessToken, createRefreshToken } from '@/lib/auth/auth-jwt';
+import { setAccessCookie, setRefreshCookie } from '@/lib/auth/auth-cookies';
+import { connectDB } from '@/lib/db/connection';
+import { loginPhoneSchema } from '@/lib/validations/auth.zod';
+import { User } from '@/lib/db/models/user.model';
 
-// 🔐 POST - Login with phone and password
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    // ✅ Validate request body
+    // ✅ Validate credentials
     const body = await req.json();
-    const { error, data } = loginPhoneSchema.safeParse(body);
-    if (error) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    const parsed = loginPhoneSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message }, { status: 400 });
     }
 
-    // 🔍 Find user and verify password
-    const user = await User.findOne({ phone: data.phone }).select("+password");
-    if (!user || !(await bcrypt.compare(data.password, user.password))) {
-      return NextResponse.json({ error: "شماره یا رمز عبور نادرست است" }, { status: 401 });
+    // 🔍 Find user and verify
+    const user = await User.findOne({ phone: parsed.data.phone }).select('+password');
+    if (!user || !(await bcrypt.compare(parsed.data.password, user.password))) {
+      return NextResponse.json({ error: 'شماره یا رمز نادرست' }, { status: 401 });
     }
 
-    // 🎟️ Generate tokens
-    const [accessToken, refreshToken] = await Promise.all([
+    // 🎟️ Generate JWT tokens
+    const [access, refresh] = await Promise.all([
       createAccessToken(user._id.toString(), user.role),
       createRefreshToken(user._id.toString()),
     ]);
 
-    // 🍪 Set cookies and return response
-    const response = NextResponse.json({
-      message: "ورود موفق",
+    // 🍪 Set cookies and respond
+    const res = NextResponse.json({
+      message: 'ورود موفق',
       user: {
         id: user._id.toString(),
         phone: user.phone,
@@ -42,12 +41,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    setAccessCookie(response, accessToken);
-    setRefreshCookie(response, refreshToken);
-
-    return response;
-  } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json({ error: "خطای سرور" }, { status: 500 });
+    setAccessCookie(res, access);
+    setRefreshCookie(res, refresh);
+    return res;
+  } catch {
+    return NextResponse.json({ error: 'خطای سرور' }, { status: 500 });
   }
 }

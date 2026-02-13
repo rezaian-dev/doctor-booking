@@ -1,8 +1,7 @@
-// src/proxy.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyRefreshToken, createAccessToken } from "@/lib/auth/auth-jwt";
-import { connectDB } from "@/lib/db/db-connect";
+import { createAccessToken, verifyRefreshToken, } from "@/lib/auth/auth-jwt";
+import { connectDB } from "@/lib/db/connection";
 import { User } from "@/lib/db/models/user.model";
 
 export async function proxy(request: NextRequest) {
@@ -20,7 +19,7 @@ export async function proxy(request: NextRequest) {
         const user = await User.findById(payload.userId);
 
         if (user) {
-          const newAccessToken = await createAccessToken(user._id.toString());
+          const newAccessToken = await createAccessToken(user._id.toString(), user.role);
           const response = NextResponse.next();
 
           response.cookies.set('accessToken', newAccessToken, {

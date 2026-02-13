@@ -20,7 +20,7 @@ import {
   SheetContent,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { FilterConfig, FilterFormData } from '@/types/filter.types';
+import { FilterConfig, FilterFormData } from '@/types/filters';
 
 const FILTERS: FilterConfig[] = [
   {

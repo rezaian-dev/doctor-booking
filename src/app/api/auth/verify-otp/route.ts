@@ -1,78 +1,98 @@
-import { NextRequest } from "next/server";
-import bcrypt from "bcryptjs";
-import { connectDB } from "@/lib/db/db-connect";
-import { verifySignupSchema } from "@/lib/validations/validation-auth";
-import { verifyOTP } from "@/lib/auth/otp/service";
-import { User } from "@/lib/db/models/user.model";
-import { createAccessToken, createRefreshToken } from "@/lib/auth/auth-jwt";
-import { setAccessCookie, setRefreshCookie } from "@/lib/auth/auth-cookies";
-import { checkDuplicates } from "@/lib/auth/auth-validation";
-import { err, success } from "@/lib/auth/auth-utils";
+import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { connectDB } from '@/lib/db/connection';
+import { verifyOTP } from '@/lib/otp/service';
+import { User } from '@/lib/db/models/user.model';
+import { createAccessToken, createRefreshToken } from '@/lib/auth/auth-jwt';
+import { setAccessCookie, setRefreshCookie } from '@/lib/auth/auth-cookies';
+import { verifySignupSchema } from '@/lib/validations/auth.zod';
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    //  Validate request
-    const body = await req.json();
+    // ✅ Validate input data
+    const body = await req.json().catch(() => null);
     const parsed = verifySignupSchema.safeParse(body);
-    if (!parsed.success) return err(parsed.error.issues[0].message);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || 'داده نامعتبر' },
+        { status: 400 }
+      );
+    }
 
-    const { firstName, lastName, phone, email, password, otp } = parsed.data;
+    const { phone, otp, firstName, lastName, email, password } = parsed.data;
 
-    // 🔍 Check duplicates
-    const duplicate = await checkDuplicates(phone, email);
-    if (duplicate.exists) return err(duplicate.message!, 409);
+    // 🔐 Verify OTP code
+    const verification = await verifyOTP(phone, otp);
+    if (!verification.success) {
+      return NextResponse.json(
+        { error: verification.error, attemptsLeft: verification.attemptsLeft },
+        { status: 401 }
+      );
+    }
 
-    // ✅ Verify OTP
-    const result = await verifyOTP(phone, otp);
-    if (!result.success) return err(result.error!, 401);
+    // 🔒 Hash password securely
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 🔒 Hash password
-    const hash = await bcrypt.hash(password, 12);
+    // 👑 First user becomes admin
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'user';
 
-    // 👑 Determine role
-    const count = await User.countDocuments();
-    const role = count === 0 ? "admin" : "user";
+    // 💾 Create user account
+    let user;
+    try {
+      user = await User.create({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone,
+        email: email?.trim() || undefined,
+        password: hashedPassword,
+        role,
+      });
+    } catch (err: any) {
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyPattern || {})[0];
+        return NextResponse.json(
+         { error: field === 'phone' ? 'این شمارهٔ موبایل قبلاً ثبت شده است.' : 'این ایمیل قبلاً استفاده شده است.' },
+         { status: 409 }
+        );
+      }
+      throw err;
+    }
 
-    // 💾 Create user
-    const user = await User.create({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      phone,
-      password: hash,
-      role,
-      ...(email?.trim() && { email: email.trim() }),
-    });
-
-    // 🎟️ Generate tokens
-    const [access, refresh] = await Promise.all([
-      createAccessToken(user._id.toString(), user.role),
-      createRefreshToken(user._id.toString()),
+    // 🎟️ Generate JWT tokens
+    const userId = user._id.toString();
+    const [accessToken, refreshToken] = await Promise.all([
+      createAccessToken(userId, user.role),
+      createRefreshToken(userId),
     ]);
 
-    // ✅ Success response
-    const res = success(
+    // 📦 Build response with user
+    const response = NextResponse.json(
       {
-        message: "ثبت‌نام با موفقیت انجام شد",
+        success: true,
+        message: 'ثبت‌نام انجام شد',
         user: {
-          id: user._id.toString(),
+          id: userId,
           phone: user.phone,
           role: user.role,
           firstName: user.firstName,
           lastName: user.lastName,
+          email: user.email || null,
         },
       },
-      201
+      { status: 201 }
     );
 
-    setAccessCookie(res, access);
-    setRefreshCookie(res, refresh);
-
-    return res;
-  } catch (error: any) {
-    console.error("❌ Verification Error:", error);
-    if (error.code === 11000) return err("اطلاعات تکراری است", 409);
-    return err("خطای سرور. لطفاً بعداً تلاش کنید", 500);
+    // 🍪 Set auth cookies
+    setAccessCookie(response, accessToken);
+    setRefreshCookie(response, refreshToken);
+    return response;
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'خطای سرور' },
+      { status: 500 }
+    );
   }
 }

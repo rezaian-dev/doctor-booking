@@ -1,4 +1,4 @@
-import { DoctorData } from '@/types/comment.types';
+import { DoctorData } from '@/types/doctor';
 import { Sparkles } from 'lucide-react';
 import Image from 'next/image';
 

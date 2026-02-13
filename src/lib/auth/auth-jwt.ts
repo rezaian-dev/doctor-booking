@@ -1,81 +1,55 @@
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify } from 'jose';
 
-// 🔑 Secret keys from environment variables
-const ACCESS_TOKEN_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET);
-
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET);
-
-// ⏱️ Token expiration times
-const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutes ⚡
-const REFRESH_TOKEN_EXPIRY = "7d"; // 7 days 🔄
-
-// 🎯 Token payload interface
-export interface TokenPayload {
-  userId: string;
-  role?: string;
-}
+// 🔑 Encode secrets once at startup for performance & security
+const ACCESS_SECRET = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET!);
+const REFRESH_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET!);
 
 /**
- * ✅ Create Access Token
+ * 🪪 Issues a short-lived access token (15m) containing user identity and role.
+ * Used for authenticating API requests.
  */
-export async function createAccessToken(userId: string, role?: string): Promise<string> {
-  return await new SignJWT({ userId, role })
-    .setProtectedHeader({ alg: "HS256" })
+export async function createAccessToken(userId: string, role: string): Promise<string> {
+  return new SignJWT({ userId, role })
+    .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(ACCESS_TOKEN_EXPIRY)
-    .sign(ACCESS_TOKEN_SECRET);
+    .setExpirationTime('15m')
+    .sign(ACCESS_SECRET);
 }
 
 /**
- * ✅ Create Refresh Token
+ * ♻️ Issues a long-lived refresh token (7d) containing only the user ID.
+ * Used to obtain new access tokens without re-authentication.
  */
 export async function createRefreshToken(userId: string): Promise<string> {
-  return await new SignJWT({ userId })
-    .setProtectedHeader({ alg: "HS256" })
+  return new SignJWT({ userId })
+    .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(REFRESH_TOKEN_EXPIRY)
-    .sign(REFRESH_TOKEN_SECRET);
+    .setExpirationTime('7d')
+    .sign(REFRESH_SECRET);
 }
 
 /**
- * 🔍 Verify Access Token
+ * 🔍 Verifies an access token and returns its payload if valid.
+ * Returns `null` if expired, malformed, or tampered.
  */
-export async function verifyAccessToken(token: string): Promise<TokenPayload | null> {
+export async function verifyAccessToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, ACCESS_TOKEN_SECRET);
-    return {
-      userId: payload.userId as string,
-      role: payload.role as string | undefined,
-    };
-  } catch (error) {
+    const { payload } = await jwtVerify(token, ACCESS_SECRET);
+    return payload;
+  } catch {
     return null;
   }
 }
 
 /**
- * 🔍 Verify Refresh Token
+ * 🔄 Verifies a refresh token and returns its payload if valid.
+ * Returns `null` if expired, invalid, or signature mismatch.
  */
-export async function verifyRefreshToken(token: string): Promise<TokenPayload | null> {
+export async function verifyRefreshToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, REFRESH_TOKEN_SECRET);
-    return {
-      userId: payload.userId as string,
-    };
-  } catch (error) {
+    const { payload } = await jwtVerify(token, REFRESH_SECRET);
+    return payload;
+  } catch {
     return null;
   }
-}
-
-/**
- * ✅ Generate Access Token (alternative name for consistency)
- */
-export async function generateAccessToken(payload: TokenPayload): Promise<string> {
-  return await createAccessToken(payload.userId, payload.role);
-}
-
-/**
- * ✅ Generate Refresh Token (alternative name for consistency)
- */
-export async function generateRefreshToken(payload: TokenPayload): Promise<string> {
-  return await createRefreshToken(payload.userId);
 }

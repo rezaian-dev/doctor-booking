@@ -2,154 +2,90 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import getAuthenticatedUser from '@/lib/auth/auth-session';
+import { cookies } from 'next/headers';
+import { getAuthUserDoc } from '@/lib/auth/auth-session';
 
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads', 'avatars');
+const DIR = join(process.cwd(), 'public', 'uploads', 'avatars');
+const MAX_SIZE = 5 * 1024 * 1024;
+const TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-// 🗑️ Safe file deletion helper
-async function safeDeleteFile(avatarPath?: string): Promise<void> {
-  if (!avatarPath) return;
-
+// 🗑️ Remove file from disk
+async function deleteFile(path?: string) {
+  if (!path) return;
   try {
-    const fullPath = join(process.cwd(), 'public', avatarPath);
-    if (existsSync(fullPath)) {
-      await unlink(fullPath);
-      console.log('✅ Deleted old avatar:', avatarPath);
-    }
-  } catch (error) {
-    console.warn('⚠️ Failed to delete avatar:', error);
-  }
+    const full = join(process.cwd(), 'public', path);
+    if (existsSync(full)) await unlink(full);
+  } catch {}
 }
 
-// 📁 Ensure upload directory exists
-async function ensureUploadDir(): Promise<void> {
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true });
-    console.log('✅ Created upload directory:', UPLOAD_DIR);
-  }
+// 📁 Create directory if missing
+async function ensureDir() {
+  if (!existsSync(DIR)) await mkdir(DIR, { recursive: true });
 }
 
-// 📸 POST /api/profile/upload-avatar - Upload avatar
+// 📸 Upload avatar image
 export async function POST(req: NextRequest) {
   try {
-    // 🔐 Authenticate user
-    const user = await getAuthenticatedUser(req);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
 
+    const user = await getAuthUserDoc(token || '');
     if (!user) {
-      console.warn('🔐 Unauthorized access attempt to POST /api/profile/upload-avatar');
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Session expired. Please login again' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('✅ Authenticated user for avatar upload:', user._id);
+    const form = await req.formData();
+    const file = form.get('avatar') as File | null;
 
-    const formData = await req.formData();
-    const avatarFile = formData.get('avatar') as File | null;
-
-    if (!avatarFile || avatarFile.size === 0) {
-      console.warn('⚠️ No file provided in upload request');
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+    // ✅ Validate uploaded file
+    if (!file || file.size === 0) {
+      return NextResponse.json({ error: 'فایلی ارسال نشد' }, { status: 400 });
+    }
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'حجم فایل بیش از ۵MB' }, { status: 400 });
+    }
+    if (!TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'فقط JPEG, PNG, WebP' }, { status: 400 });
     }
 
-    // ✅ Validate file size (max 5MB)
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    if (avatarFile.size > MAX_SIZE) {
-      console.warn('⚠️ File too large:', avatarFile.size);
-      return NextResponse.json(
-        { error: 'File size must be less than 5MB' },
-        { status: 400 }
-      );
-    }
-
-    // ✅ Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(avatarFile.type)) {
-      console.warn('⚠️ Invalid file type:', avatarFile.type);
-      return NextResponse.json(
-        { error: 'Only JPEG, PNG, and WebP images are allowed' },
-        { status: 400 }
-      );
-    }
-
-    console.log('📁 Uploading file:', {
-      name: avatarFile.name,
-      type: avatarFile.type,
-      size: avatarFile.size
-    });
-
-    // 📁 Prepare upload directory
-    await ensureUploadDir();
-
-    // 💾 Save new avatar
-    const buffer = Buffer.from(await avatarFile.arrayBuffer());
-    const filename = `${Date.now()}-${avatarFile.name.replace(/\s+/g, '-')}`;
-    const filepath = join(UPLOAD_DIR, filename);
-    const avatarUrl = `/uploads/avatars/${filename}`;
+    // 💾 Save to disk
+    await ensureDir();
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    const filepath = join(DIR, filename);
+    const url = `/uploads/avatars/${filename}`;
 
     await writeFile(filepath, buffer);
-    console.log('✅ Avatar saved:', avatarUrl);
 
-    // 🗑️ Delete old avatar after successful upload
-    const oldAvatar = user.avatar;
-    await safeDeleteFile(oldAvatar);
-
-    // ✅ Update database
-    user.avatar = avatarUrl;
+    // 🗑️ Remove old avatar
+    await deleteFile(user.avatar);
+    user.avatar = url;
     await user.save();
 
-    console.log('✅ Avatar updated in database for user:', user._id);
-
-    return NextResponse.json({
-      success: true,
-      avatar: avatarUrl
-    });
-  } catch (error: any) {
-    console.error('❌ Avatar upload error:', error);
-
-    return NextResponse.json(
-      { error: 'Failed to upload avatar' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, avatar: url });
+  } catch (e) {
+    return NextResponse.json({ error: 'آپلود ناموفق' }, { status: 500 });
   }
 }
 
-// 🗑️ DELETE /api/profile/upload-avatar - Delete avatar
-export async function DELETE(req: NextRequest) {
+// 🗑️ Delete avatar image
+export async function DELETE() {
   try {
-    // 🔐 Authenticate user
-    const user = await getAuthenticatedUser(req);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
 
+    const user = await getAuthUserDoc(token || '');
     if (!user) {
-      console.warn('🔐 Unauthorized access attempt to DELETE /api/profile/upload-avatar');
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Session expired. Please login again' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('✅ Authenticated user for avatar deletion:', user._id);
-
-    // 🗑️ Delete file and clear database reference
-    await safeDeleteFile(user.avatar);
+    // 🗑️ Remove file and clear
+    await deleteFile(user.avatar);
     user.avatar = undefined;
     await user.save();
 
-    console.log('✅ Avatar deleted for user:', user._id);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Avatar deleted successfully'
-    });
-  } catch (error) {
-    console.error('❌ Avatar deletion error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete avatar' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, message: 'تصویر حذف شد' });
+  } catch (e) {
+    return NextResponse.json({ error: 'حذف ناموفق' }, { status: 500 });
   }
 }

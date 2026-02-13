@@ -5,9 +5,8 @@ import { ProfileHeader } from '@/components/features/profile/profile-header';
 import { ProfileFormFields } from '@/components/features/profile/profile-form-fields';
 import { ProfilePasswordField } from '@/components/features/profile/profile-password-field';
 import { ProfileSubmitButton } from '@/components/features/profile/profile-submit-button';
-
-import { UserProfile } from '@/types/profile-types';
 import { useProfileForm } from '@/hooks/use-profile-form';
+import { UserProfile } from '@/types/patient';
 
 /**
  * 👤 Profile Card Component

@@ -1,7 +1,7 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormInput } from './form-input';
 import { SubmitButton } from './submit-button';
-import { LoginPhoneInput } from '@/lib/validations/validation-auth';
+import { LoginPhoneInput } from '@/lib/validations/auth.zod';
 
 interface LoginPhoneStepProps {
   register: UseFormRegister<LoginPhoneInput>;

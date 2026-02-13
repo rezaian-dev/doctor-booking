@@ -76,7 +76,7 @@ const FooterMobile: React.FC = () => {
               لینک‌های سریع
             </h4>
             <ul className="flex flex-col gap-y-1.5">
-              {quickLinks.map((link, index) => (
+              {quickLinks.map((link) => (
                 <li key={link.href}> {/* Changed key to href for better uniqueness */}
                   <Link href={link.href} className="text-xs text-neutral-850 hover:text-primary-500 transition-colors duration-200">
                     {link.label}
@@ -118,7 +118,7 @@ const FooterMobile: React.FC = () => {
               ما را دنبال کنید
             </h4>
             <div className="flex items-center gap-x-3">
-              {socialLinks.map((social, index) => (
+              {socialLinks.map((social) => (
                 <a
                   key={social.href} // Using href as key for better uniqueness
                   href={social.href}

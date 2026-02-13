@@ -1,4 +1,4 @@
-import { DoctorData } from '@/types/doctor-profile-types';
+import { DoctorData } from "@/types/doctor";
 
 // 📋 Payment Details Table
 const PaymentDetailsTable = ({ data }: { data: DoctorData }) => {

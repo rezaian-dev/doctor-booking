@@ -2,13 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import '../styles/globals.css';
 import { AuthProvider } from '@/lib/providers/auth-provider';
-import { getServerUser } from '@/lib/auth/auth-get-server-user';
 import { cn } from '@/lib/utils/cn';
+import { getAuthUser } from '@/lib/auth/auth-session';
 
-/**
- * 🖋️ Vazirmatn font configuration
- * ✅ Optimized .woff2 files for Persian
- */
+// 🖋️ Vazirmatn font configuration
 const vazirmatn = localFont({
   src: [
     { path: '../assets/fonts/Vazirmatn-Regular.woff2', weight: '400' },
@@ -21,18 +18,14 @@ const vazirmatn = localFont({
   fallback: ['system-ui', 'arial'],
 });
 
-/**
- * 📄 SEO metadata
- */
+// 📄 SEO metadata
 export const metadata: Metadata = {
   title: 'دکتر رزرو',
   description: 'وقت ویزیت با بهترین پزشکان — سریع، آسان و مطمئن.',
   icons: { icon: '/favicon.ico' },
 };
 
-/**
- * 📱 Viewport configuration
- */
+// 📱 Viewport configuration
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -40,30 +33,13 @@ export const viewport: Viewport = {
   themeColor: '#0066FF',
 };
 
-/**
- * 🌐 Root Layout
- * ✨ RTL Persian layout with auth state hydration
- * 🔐 Fetches user on server, passes to client with zero flicker
- * ⚡ suppressHydrationWarning prevents false positives
- */
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // 🔐 Fetch user session on server-side
-  const user = await getServerUser();
+// 🌐 Root layout with auth
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getAuthUser();
 
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
-      <body
-        className={cn(
-          'min-w-[320px] min-h-screen antialiased',
-          'overflow-x-hidden',
-          'font-sans'
-        )}
-        suppressHydrationWarning
-      >
+      <body className={cn('min-w-[320px] min-h-screen antialiased overflow-x-hidden font-sans')} suppressHydrationWarning>
         <AuthProvider initialUser={user}>{children}</AuthProvider>
       </body>
     </html>

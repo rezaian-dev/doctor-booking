@@ -1,12 +1,13 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormField } from './form-field';
-import { ProfileFormData } from '@/lib/validations/validation-profile';
+import { ProfileFormData } from '@/lib/validations/profile.zod';
 
 type ProfilePasswordFieldProps = {
   register: UseFormRegister<ProfileFormData>;
   errors: FieldErrors<ProfileFormData>;
 };
 
+// 🔒 Password field component
 export function ProfilePasswordField({ register, errors }: ProfilePasswordFieldProps) {
   return (
     <FormField

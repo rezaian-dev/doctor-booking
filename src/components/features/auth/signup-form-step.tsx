@@ -1,11 +1,12 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormInput } from './form-input';
 import { SubmitButton } from './submit-button';
-import { SignupInput } from '@/lib/validations/validation-auth';
+import { RegisterInput, VerifySignupInput } from '@/lib/validations/auth.zod';
+
 
 interface SignupFormStepProps {
-  register: UseFormRegister<SignupInput>;
-  errors: FieldErrors<SignupInput>;
+  register: UseFormRegister<RegisterInput>;
+  errors: FieldErrors<VerifySignupInput>;
   isSubmitting: boolean;
   onSubmit: () => void;
 }

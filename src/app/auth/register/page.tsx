@@ -4,102 +4,77 @@ import { FC, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import { SignupInput, signupSchema, OtpInput, otpSchema } from '@/lib/validations/validation-auth';
+import { toast, Toaster } from 'sonner';
+import { RegisterInput, registerSchema, OtpInput, otpSchema } from '@/lib/validations/auth.zod';
 import { AuthForm } from '@/components/features/auth/auth-form';
 import { SignupFormStep } from '@/components/features/auth/signup-form-step';
 import { OTPVerificationStep } from '@/components/features/auth/otp-verification-step';
-import { Toaster } from 'sonner';
 import { useAuth } from '@/lib/providers/auth-provider';
 import Footer from '@/components/layout/footer';
 import FooterMobile from '@/components/layout/footer-mobile';
 import { Header } from '@/components/layout/header';
 
-const RegisterPage: FC = () => {
+type Step = 'form' | 'otp';
+
+ const Page:FC = () => {
   const router = useRouter();
   const { mutate } = useAuth();
   const [isPending, startTransition] = useTransition();
-  const [step, setStep] = useState<'form' | 'otp'>('form');
-  const [userData, setUserData] = useState<SignupInput | null>(null);
+  const [step, setStep] = useState<Step>('form');
+  const [userData, setUserData] = useState<RegisterInput | null>(null);
 
-  const signupForm = useForm<SignupInput>({
-    resolver: zodResolver(signupSchema),
-  });
+  const signupForm = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+  const otpForm = useForm<OtpInput>({ resolver: zodResolver(otpSchema) });
 
-  const otpForm = useForm<OtpInput>({
-    resolver: zodResolver(otpSchema),
-  });
-
-  const apiCall = async (url: string, data: unknown) => {
+  // 🌐 Generic POST request handler
+  const post = async (url: string, data: unknown) => {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error);
-    return result;
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'خطا در سرور');
+    return json;
   };
 
-  const onSubmitSignup = async (data: SignupInput) => {
+  // 📝 Step 1: Submit registration data
+  const handleSignup = async (data: RegisterInput) => {
     try {
-      await apiCall('/api/auth/register', data);
+      await post('/api/auth/register', data);
       setUserData(data);
       setStep('otp');
-      toast.success('کد تایید ارسال شد');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'خطا در ثبت‌نام');
+      toast.success('کد تأیید ارسال شد');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'خطا');
     }
   };
 
-  const onSubmitOtp = async (data: OtpInput) => {
+  // ✅ Step 2: Verify OTP code
+  const handleVerify = async (data: OtpInput) => {
+    if (!userData) return;
     try {
-      await apiCall('/api/auth/verify-otp', { ...userData, otp: data.otp });
-
-      toast.success('ثبت‌نام موفق!');
-
-      // ✅ Optimistic navigation
+      await post('/api/auth/verify-otp', { ...userData, otp: data.otp });
+      toast.success('حساب ایجاد شد');
       startTransition(async () => {
         await mutate();
         router.push('/profile');
         router.refresh();
       });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'کد نادرست');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'خطا');
     }
   };
 
-  const handleResendOtp = async () => {
-    if (!userData) {
-      toast.error('اطلاعات کاربر یافت نشد');
-      return;
-    }
-
+  // 🔁 Resend OTP code
+  const handleResend = async () => {
+    if (!userData) return;
     try {
-      await apiCall('/api/auth/register', userData);
-      toast.success('کد جدید ارسال شد');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'خطا در ارسال');
+      await post('/api/auth/register', userData);
+      toast.success('کد مجدداً ارسال شد');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'خطا');
     }
-  };
-
-  const handleBackToForm = async () => {
-    otpForm.reset();
-
-    if (userData?.phone) {
-      try {
-        await fetch('/api/auth/reset-throttle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: userData.phone }),
-        });
-      } catch (error) {
-        console.error('Failed to reset throttle:', error);
-      }
-    }
-
-    setStep('form');
   };
 
   return (
@@ -118,17 +93,20 @@ const RegisterPage: FC = () => {
             register={signupForm.register}
             errors={signupForm.formState.errors}
             isSubmitting={signupForm.formState.isSubmitting}
-            onSubmit={signupForm.handleSubmit(onSubmitSignup)}
+            onSubmit={signupForm.handleSubmit(handleSignup)}
           />
         ) : (
           <OTPVerificationStep
             otpValue={otpForm.watch('otp') || ''}
-            onOtpChange={(value) => otpForm.setValue('otp', value)}
+            onOtpChange={v => otpForm.setValue('otp', v)}
             otpError={otpForm.formState.errors.otp?.message}
             isSubmitting={otpForm.formState.isSubmitting || isPending}
-            onSubmit={otpForm.handleSubmit(onSubmitOtp)}
-            onResend={handleResendOtp}
-            onBack={handleBackToForm}
+            onSubmit={otpForm.handleSubmit(handleVerify)}
+            onResend={handleResend}
+            onBack={() => {
+              otpForm.reset();
+              setStep('form');
+            }}
             phoneNumber={userData?.phone || ''}
             userInfo={`ثبت‌نام با نام ${userData?.firstName} ${userData?.lastName}`}
           />
@@ -138,6 +116,6 @@ const RegisterPage: FC = () => {
       <FooterMobile />
     </>
   );
-};
+}
 
-export default RegisterPage;
+export default Page;

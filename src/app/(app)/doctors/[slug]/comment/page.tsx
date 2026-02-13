@@ -1,7 +1,7 @@
 'use client';
 
 import { FC } from 'react';
-import { ReviewFormData } from '@/types/comment.types';
+import { ReviewFormData } from '@/types/comment-types';
 import { DoctorData } from '@/types/doctor-profile-types';
 import Header from '@/components/layout/header';
 import DoctorReview from '@/components/features/comment/doctor-review';

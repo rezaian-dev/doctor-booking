@@ -1,5 +1,6 @@
 import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils/cn';
 
 type ProfileSubmitButtonProps = {
   loading: boolean;
@@ -12,7 +13,10 @@ export function ProfileSubmitButton({ loading }: ProfileSubmitButtonProps) {
         type="submit"
         disabled={loading}
         size="lg"
-        className="gap-2 min-w-50 bg-primary-500 hover:bg-primary-600"
+        className={cn(
+          'gap-2 min-w-50 bg-primary-500 hover:bg-primary-600 text-white transition-all',
+          loading && 'opacity-80 cursor-not-allowed'
+        )}
       >
         {loading ? (
           <>

@@ -40,8 +40,10 @@ const getJalaliDisplay = (date: Date) => {
 // 🔁 Sort time slots chronologically
 const sortedTimeSlots = () => {
   // 🔄 Convert Persian digits to standard format for comparison
-  const toHHMM = (time: string)=> {
-    const [h, m] = time.split(':');
+  const toHHMM = (time: string) => {
+    const parts = time.split(':');
+    const h = parts[0] ?? '0';
+    const m = parts[1] ?? '0';
     return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
   };
 

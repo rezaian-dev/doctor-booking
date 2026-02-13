@@ -12,7 +12,7 @@ import MultiSelectFilter from './multi-select-filter';
 import ToggleFilter from './toggle-filter';
 import clsx from 'clsx';
 import { useState } from 'react';
-import { FilterConfig, FilterFormData } from '@/types/filter.types';
+import { FilterConfig, FilterFormData } from '@/types/filters';
 
 // 📋 Static filter configuration
 const FILTERS: FilterConfig[] = [

@@ -94,78 +94,45 @@ const faqs = [
 
 // 📦 Props for flexible usage
 interface FaqAccordionProps {
-  mode: 'preview' | 'full'; // 🧪 'preview' = show 7 items + link, 'full' = show all
-  className?: string; // 🎨 Optional extra classes
+  mode: 'preview' | 'full';
+  className?: string;
 }
 
-// 🏗️ Reusable, route-agnostic FAQ accordion
 const FaqAccordion = ({ mode, className }: FaqAccordionProps) => {
-  // 🎯 Display 7 items in preview, all in full mode
   const displayedFaqs = mode === 'preview' ? faqs.slice(0, 7) : faqs;
 
   return (
-    // 📐 Responsive container with conditional top margin (only in preview)
-    <section
-      className={clsx(
-        'container relative z-0 px-4 md:px-8',
-        {
-          'mt-7.5 md:mt-23.5': mode === 'preview', // ⏫ Spacing only on homepage/preview
-        },
-        className
-      )}
-    >
-      {/* 📌 Header: always show title, conditionally show "View All" */}
+    <section className={clsx('container relative z-0 px-4 md:px-8', { 'mt-7.5 md:mt-23.5': mode === 'preview' }, className)} suppressHydrationWarning>
       {mode === 'preview' && (
         <div className="flex items-center justify-between">
           <h2 className="font-medium text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-wide text-neutral-975 line-clamp-2">
             سوالات متداول
           </h2>
           <div className="flex items-center gap-x-1.5">
-            <Link
-              href="/faq"
-              className="font-medium text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors whitespace-nowrap"
-              aria-label="View all frequently asked questions"
-            >
+            <Link href="/faq" className="font-medium text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors whitespace-nowrap">
               مشاهده همه
             </Link>
-            <MdOutlineKeyboardArrowLeft
-              size={20}
-              className="text-neutral-400"
-              aria-hidden="true"
-            />
+            <MdOutlineKeyboardArrowLeft size={20} className="text-neutral-400" aria-hidden="true" />
           </div>
         </div>
       )}
 
-      {/* 🗂️ Accordion: single-open, clean UI */}
-      <Accordion
-        type="single"
-        collapsible
-        className="w-full mt-4.5 p-6 border-[1.5px] rounded-2xl border-neutral-100"
-      >
-        {displayedFaqs.map(({ question, answer }) => (
-          <AccordionItem key={question} value={question}>
-            <AccordionTrigger className="font-medium text-sm text-right sm:text-base py-5 cursor-pointer sm:px-5 text-black no-underline!">
-              {question}
+      <Accordion type="single" collapsible className="w-full mt-4.5 p-6 border-[1.5px] rounded-2xl border-neutral-100" suppressHydrationWarning>
+        {displayedFaqs.map((faq, index) => (
+          <AccordionItem key={`faq-${index}`} value={`faq-${index}`}> {/* ✅ Unique stable value */}
+            <AccordionTrigger className="font-medium text-sm text-right sm:text-base py-5 cursor-pointer sm:px-5 text-black no-underline!" suppressHydrationWarning>
+              {faq.question}
             </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4 sm:px-5">
-              <p className="text-sm leading-7 text-neutral-975">{answer}</p>
+              <p className="text-sm leading-7 text-neutral-975">{faq.answer}</p>
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
+
       {mode === 'full' && (
         <div className="absolute top-24 left-12 md:left-64 m-auto w-45.5 h-max md:w-max md:h-max -z-1 pointer-events-none">
-          <Image
-            src="/images/faq.png"
-            alt="سوالات متداول - تصویر توضیحی"
-            width={400}
-            height={400}
-            loading="lazy"
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="w-auto h-auto"
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
+          <Image src="/images/faq.png" alt="سوالات متداول" width={400} height={400} loading="lazy" className="w-auto h-auto" />
         </div>
       )}
     </section>

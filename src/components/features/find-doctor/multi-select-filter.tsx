@@ -8,8 +8,8 @@ import {
 } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { toggleArrayItem } from '@/lib/utils/filter-utils';
-import { FilterConfig } from '@/types/filter.types';
+import { toggleArrayItem } from '@/lib/utils/array-utils';
+import { FilterConfig } from '@/types/filters';
 import { Controller } from 'react-hook-form';
 
 // 📦 Props for controlled accordion behavior

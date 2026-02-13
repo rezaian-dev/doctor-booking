@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 import { mutate } from 'swr';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/providers/auth-provider';
-import { UserProfile } from '@/types/profile-types';
-import { profileSchema } from '@/lib/validations/validation-profile';
+import { profileSchema } from '@/lib/validations/profile.zod';
+import { UserProfile } from '@/types/patient';
 
 interface AvatarState {
   file: File | null;
@@ -32,7 +32,7 @@ export function useProfileForm(initialProfile: UserProfile) {
     defaultValues: initialProfile,
   });
 
-  // ❌ Cancel and reset
+  // ❌ Reset form state
   const handleCancel = () => {
     form.reset(initialProfile);
     setAvatar({
@@ -43,17 +43,17 @@ export function useProfileForm(initialProfile: UserProfile) {
     setIsEdit(false);
   };
 
-  // 🔐 Check authentication before making request
+  // 🔐 Validate user session
   const checkAuth = (): boolean => {
     if (!isAuthenticated || !user) {
-      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      toast.error('نشست منقضی شده است');
       router.push('/login');
       return false;
     }
     return true;
   };
 
-  // 📤 Upload avatar with auth check
+  // 📤 Upload avatar to server
   const uploadAvatar = async (file: File): Promise<string> => {
     if (!checkAuth()) throw new Error('Unauthorized');
 
@@ -67,21 +67,21 @@ export function useProfileForm(initialProfile: UserProfile) {
     });
 
     if (res.status === 401) {
-      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      toast.error('نشست منقضی شده است');
       router.push('/login');
       throw new Error('Unauthorized');
     }
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || 'آپلود تصویر ناموفق بود');
+      throw new Error(error.error || 'آپلود ناموفق');
     }
 
     const data = await res.json();
     return data.avatar;
   };
 
-  // 🗑️ Delete avatar with auth check
+  // 🗑️ Delete avatar from server
   const deleteAvatar = async (): Promise<void> => {
     if (!checkAuth()) throw new Error('Unauthorized');
 
@@ -91,18 +91,18 @@ export function useProfileForm(initialProfile: UserProfile) {
     });
 
     if (res.status === 401) {
-      toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+      toast.error('نشست منقضی شده است');
       router.push('/login');
       throw new Error('Unauthorized');
     }
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || 'حذف تصویر ناموفق بود');
+      throw new Error(error.error || 'حذف ناموفق');
     }
   };
 
-  // 💾 Submit handler with comprehensive error handling
+  // 💾 Submit profile updates
   const onSubmit = form.handleSubmit((data) => {
     if (!checkAuth()) return;
 
@@ -110,7 +110,7 @@ export function useProfileForm(initialProfile: UserProfile) {
       try {
         let newAvatar = initialProfile.imageUrl || '';
 
-        // 🖼️ Handle avatar changes
+        // 🖼️ Process avatar changes
         try {
           if (avatar.shouldDelete) {
             await deleteAvatar();
@@ -120,7 +120,6 @@ export function useProfileForm(initialProfile: UserProfile) {
           }
         } catch (avatarError: any) {
           if (avatarError.message === 'Unauthorized') return;
-          console.error('Avatar error:', avatarError);
           toast.error(avatarError.message || 'خطا در پردازش تصویر');
         }
 
@@ -132,9 +131,9 @@ export function useProfileForm(initialProfile: UserProfile) {
           body: JSON.stringify(data),
         });
 
-        // 🚨 Handle authentication error
+        // 🚨 Handle auth errors
         if (res.status === 401) {
-          toast.error('نشست شما منقضی شده است. لطفاً دوباره وارد شوید');
+          toast.error('نشست منقضی شده است');
           router.push('/login');
           return;
         }
@@ -143,27 +142,27 @@ export function useProfileForm(initialProfile: UserProfile) {
           const error = await res.json();
 
           if (res.status === 409) {
-            if (error.field === 'phone') {
-              toast.error('شماره موبایل قبلاً ثبت شده است');
-            } else if (error.field === 'email') {
-              toast.error('ایمیل قبلاً ثبت شده است');
-            } else {
-              toast.error(error.error || 'خطا در به‌روزرسانی');
-            }
+            toast.error(
+              error.field === 'phone'
+                ? 'این شمارهٔ موبایل قبلاً ثبت شده است.'
+                : error.field === 'email'
+                  ? 'این ایمیل قبلاً ثبت شده است.'
+                  : error.error || 'خطایی رخ داده است.'
+            );
             return;
           }
 
           if (res.status === 400) {
-            toast.error(error.error || 'اطلاعات وارد شده نامعتبر است');
+            toast.error(error.error || 'داده نامعتبر');
             return;
           }
 
-          throw new Error(error.error || 'خطا در به‌روزرسانی پروفایل');
+          throw new Error(error.error || 'خطا در به‌روزرسانی');
         }
 
         const { user: updatedUser } = await res.json();
 
-        // ⚡ Optimistic update auth context
+        // ⚡ Update auth context optimistically
         updateUser({
           firstName: updatedUser.firstName,
           lastName: updatedUser.lastName,
@@ -173,14 +172,12 @@ export function useProfileForm(initialProfile: UserProfile) {
         // 🔄 Revalidate profile cache
         await mutate('/api/profile');
 
-        toast.success('پروفایل با موفقیت به‌روزرسانی شد');
+        toast.success('پروفایل به‌روزرسانی شد');
         setIsEdit(false);
         setAvatar({ file: null, preview: newAvatar, shouldDelete: false });
       } catch (error: any) {
-        console.error('Profile update error:', error);
-
         if (error.message !== 'Unauthorized') {
-          toast.error(error.message || 'خطا در به‌روزرسانی پروفایل');
+          toast.error(error.message || 'خطا');
         }
       }
     });

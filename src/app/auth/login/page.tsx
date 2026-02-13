@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { LoginPhoneInput, loginPhoneSchema } from '@/lib/validations/validation-auth';
+import { LoginPhoneInput, loginPhoneSchema } from '@/lib/validations/auth.zod';
 import { AuthForm } from '@/components/features/auth/auth-form';
 import { LoginPhoneStep } from '@/components/features/auth/login-phone-step';
 import { Toaster } from '@/components/ui/sonner';
@@ -14,19 +14,16 @@ import Footer from '@/components/layout/footer';
 import FooterMobile from '@/components/layout/footer-mobile';
 import { Header } from '@/components/layout/header';
 
-const LoginPage: FC = () => {
+const Page:FC =() => {
   const router = useRouter();
   const { mutate } = useAuth();
   const [isPending, startTransition] = useTransition();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginPhoneInput>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginPhoneInput>({
     resolver: zodResolver(loginPhoneSchema),
   });
 
+  // 🔐 Handle login submission
   const onSubmit = async (data: LoginPhoneInput) => {
     try {
       const res = await fetch('/api/auth/login', {
@@ -42,15 +39,15 @@ const LoginPage: FC = () => {
         return;
       }
 
-      toast.success('با موفقیت وارد شدید!');
+      toast.success('ورود موفق!');
 
-      // ✅ Optimistic navigation با revalidation
+      // ⚡ Navigate and update auth
       startTransition(async () => {
-        await mutate(); // ✅ به‌روزرسانی فوری user
+        await mutate();
         router.push('/profile');
-        router.refresh(); // ✅ server-side revalidation
+        router.refresh();
       });
-    } catch (error) {
+    } catch {
       toast.error('خطا در ارتباط با سرور');
     }
   };
@@ -77,6 +74,5 @@ const LoginPage: FC = () => {
       <FooterMobile />
     </>
   );
-};
-
-export default LoginPage;
+}
+export default Page;

@@ -1,7 +1,6 @@
-"use client"
+'use client';
 
 import { useState } from 'react';
-import { DoctorData, ReviewFormData } from '@/types/comment.types';
 import { useForm } from 'react-hook-form';
 import { clsx } from 'clsx';
 import Success from '@/components/features/comment/success';
@@ -12,16 +11,29 @@ import RecommendButton from '@/components/features/comment/recommend-button';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
-import { reviewSchema } from '@/lib/validations/validation-review';
+import { reviewSchema } from '@/lib/validations/review.zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { DoctorData } from '@/types/doctor';
+import { ReviewFormData } from '@/types/review';
 
 // 📝 Main review component
-const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; onSubmitReview?: (data: ReviewFormData) => Promise<void> }) => {
+const DoctorReview = ({
+  doctorData,
+  onSubmitReview,
+}: {
+  doctorData: DoctorData;
+  onSubmitReview?: (data: ReviewFormData) => Promise<void>;
+}) => {
   const [mode, setMode] = useState<'review' | 'submitted'>('review');
   const [loading, setLoading] = useState(false);
 
-  const { handleSubmit, watch, setValue, reset, formState: { errors, isValid } } = useForm<ReviewFormData>({
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema) as any,
     mode: 'onChange',
     defaultValues: { rating: 0, recommendation: '' as any, comment: '' },
@@ -33,7 +45,9 @@ const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; 
   const onSubmit = async (data: ReviewFormData) => {
     setLoading(true);
     try {
-      onSubmitReview ? await onSubmitReview(data) : await new Promise(r => setTimeout(r, 1500));
+      onSubmitReview
+        ? await onSubmitReview(data)
+        : await new Promise(r => setTimeout(r, 1500));
       setMode('submitted');
     } finally {
       setLoading(false);
@@ -43,7 +57,12 @@ const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; 
   return (
     <div className="w-full max-w-2xl mx-auto p-3 sm:p-4 md:p-6" dir="rtl">
       {mode === 'submitted' ? (
-        <Success onReset={() => { reset(); setMode('review'); }} />
+        <Success
+          onReset={() => {
+            reset();
+            setMode('review');
+          }}
+        />
       ) : (
         <div className="bg-neutral-30 rounded-2xl sm:rounded-3xl shadow-2xl shadow-primary-200/50 overflow-hidden animate-fade-in">
           <DoctorHeader data={doctorData} />
@@ -52,7 +71,9 @@ const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; 
             {/* ⭐ Using StarRatingInput instead of StarRating */}
             <StarRatingInput
               value={rating}
-              onRate={(s: number) => setValue('rating', s, { shouldValidate: true })}
+              onRate={(s: number) =>
+                setValue('rating', s, { shouldValidate: true })
+              }
               error={errors.rating?.message}
             />
 
@@ -65,12 +86,20 @@ const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; 
                 <RecommendButton
                   type="recommend"
                   selected={recommendation === 'recommend'}
-                  onClick={() => setValue('recommendation', 'recommend', { shouldValidate: true })}
+                  onClick={() =>
+                    setValue('recommendation', 'recommend', {
+                      shouldValidate: true,
+                    })
+                  }
                 />
                 <RecommendButton
                   type="not-recommend"
                   selected={recommendation === 'not-recommend'}
-                  onClick={() => setValue('recommendation', 'not-recommend', { shouldValidate: true })}
+                  onClick={() =>
+                    setValue('recommendation', 'not-recommend', {
+                      shouldValidate: true,
+                    })
+                  }
                 />
               </div>
               {/* ⚠️ Fixed height error container */}
@@ -86,21 +115,32 @@ const DoctorReview = ({ doctorData, onSubmitReview }: { doctorData: DoctorData; 
             {/* 💬 Comment textarea section */}
             <div className="space-y-2 sm:space-y-3">
               <Label className="text-sm sm:text-base font-bold text-neutral-900">
-                نظر شما <span className="text-xs sm:text-sm text-neutral-500 font-normal">(اختیاری)</span>
+                نظر شما{' '}
+                <span className="text-xs sm:text-sm text-neutral-500 font-normal">
+                  (اختیاری)
+                </span>
               </Label>
               <Textarea
                 value={comment || ''}
-                onChange={(e) => setValue('comment', e.target.value, { shouldValidate: true })}
+                onChange={e =>
+                  setValue('comment', e.target.value, { shouldValidate: true })
+                }
                 rows={4}
                 placeholder="تجربه خود را بنویسید..."
                 className="text-sm sm:text-base resize-none"
               />
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 text-xs sm:text-sm">
-                <span className="text-neutral-500">از ذکر اطلاعات شخصی خودداری کنید</span>
-                <span className={clsx(
-                  'font-semibold transition-colors',
-                  (comment?.length ?? 0) > 900 ? 'text-danger-500' : 'text-neutral-500'
-                )}>
+                <span className="text-neutral-500">
+                  از ذکر اطلاعات شخصی خودداری کنید
+                </span>
+                <span
+                  className={clsx(
+                    'font-semibold transition-colors',
+                    (comment?.length ?? 0) > 900
+                      ? 'text-danger-500'
+                      : 'text-neutral-500'
+                  )}
+                >
                   {comment?.length ?? 0} / 1000
                 </span>
               </div>

@@ -18,7 +18,6 @@ interface UserTestimonialCardProps {
 const UserTestimonialCard: React.FC<UserTestimonialCardProps> = ({
   userName,
   userImage,
-  rating,
   date,
   comment,
   doctorName,

@@ -1,155 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
-import getAuthenticatedUser from '@/lib/auth/auth-session';
-import { checkDuplicatesForUpdate } from '@/lib/utils/check-duplicates-utils';
+import { cookies } from 'next/headers';
+import { getAuthUserDoc } from '@/lib/auth/auth-session';
+import { checkDuplicatesForUpdate } from '@/lib/utils/check-duplicates';
 
-// 📄 GET /api/profile - Fetch user profile
-export async function GET(req: NextRequest) {
+const ALLOWED = ['firstName', 'lastName', 'email', 'phone', 'nationalCode', 'birthDate', 'gender', 'city'] as const;
+
+// 📄 Fetch user profile
+export async function GET() {
   try {
-    const user = await getAuthenticatedUser(req);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
 
+    const user = await getAuthUserDoc(token || '');
     if (!user) {
-      console.warn('🔐 Unauthorized access attempt to GET /api/profile');
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Please login to access your profile' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json({ user });
-  } catch (error) {
-    console.error('❌ Profile fetch error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    const { password, ...data } = user.toObject();
+    return NextResponse.json({ success: true, user: data });
+  } catch (e) {
+    return NextResponse.json({ error: 'خطای سرور' }, { status: 500 });
   }
 }
 
-// ✏️ PATCH /api/profile - Update user profile
+// ✏️ Update user profile
 export async function PATCH(req: NextRequest) {
   try {
-    // 🔐 Authenticate user
-    const user = await getAuthenticatedUser(req);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
 
+    const user = await getAuthUserDoc(token || '');
     if (!user) {
-      console.warn('🔐 Unauthorized access attempt to PATCH /api/profile');
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Session expired. Please login again' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    console.log('✅ Authenticated user:', user._id);
 
     const body = await req.json();
 
-    // 🔍 Check for duplicates (phone & email)
-    const isPhoneChanged = body.phone && body.phone !== user.phone;
-    const isEmailChanged = body.email && body.email !== user.email;
+    // 🔍 Check for duplicate phone/email
+    const phoneChanged = body.phone && body.phone !== user.phone;
+    const emailChanged = body.email && body.email !== user.email;
 
-    if (isPhoneChanged || isEmailChanged) {
-      console.log('🔍 Checking duplicates:', {
-        phone: isPhoneChanged ? body.phone : 'unchanged',
-        email: isEmailChanged ? body.email : 'unchanged'
-      });
-
-      const duplicateCheck = await checkDuplicatesForUpdate(
+    if (phoneChanged || emailChanged) {
+      const dup = await checkDuplicatesForUpdate(
         user._id.toString(),
-        isPhoneChanged ? body.phone : undefined,
-        isEmailChanged ? body.email : undefined
+        phoneChanged ? body.phone : undefined,
+        emailChanged ? body.email : undefined
       );
-
-      if (duplicateCheck.exists) {
-        console.warn('⚠️ Duplicate found:', duplicateCheck.field);
+      if (dup.exists) {
         return NextResponse.json(
-          {
-            error: duplicateCheck.message,
-            field: duplicateCheck.field
-          },
+          { error: dup.message, field: dup.field },
           { status: 409 }
         );
       }
     }
 
-    // 📝 Build update object (exclude empty strings)
+    // 📝 Build update object
     const updates: Record<string, any> = {};
-    const allowedFields = [
-      'firstName',
-      'lastName',
-      'email',
-      'phone',
-      'nationalCode',
-      'birthDate',
-      'gender',
-      'city'
-    ];
-
-    allowedFields.forEach(field => {
-      if (body[field] !== undefined) {
-        updates[field] = body[field] === '' ? undefined : body[field];
-      }
+    ALLOWED.forEach(f => {
+      if (f in body) updates[f] = body[f] || undefined;
     });
-
-    // 🔐 Hash password if provided
     if (body.password?.trim()) {
-      console.log('🔐 Password update requested');
-      updates.password = await hash(body.password, 10);
+      updates.password = await hash(body.password.trim(), 12);
     }
 
-    console.log('📝 Updating fields:', Object.keys(updates));
-
-    // ✅ Apply updates
+    // 💾 Save changes
     Object.assign(user, updates);
     await user.save();
 
-    console.log('✅ Profile updated successfully for user:', user._id);
-
-    // 📦 Return updated profile
-    return NextResponse.json({
-      success: true,
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        nationalCode: user.nationalCode,
-        birthDate: user.birthDate,
-        gender: user.gender,
-        city: user.city,
-        avatar: user.avatar,
-      },
-    });
+    const { password, ...data } = user.toObject();
+    return NextResponse.json({ success: true, user: data });
   } catch (error: any) {
-    console.error('❌ Profile update error:', error);
-
-    // 🚨 Handle MongoDB duplicate key error (fallback)
+    // 🚫 Duplicate key error
     if (error.code === 11000) {
       const field = error.keyPattern?.email ? 'email' : 'phone';
-      const message = field === 'email'
-        ? 'ایمیل قبلاً ثبت شده است'
-        : 'شماره موبایل قبلاً ثبت شده است';
-
-      console.warn('⚠️ MongoDB duplicate key:', field);
-
       return NextResponse.json(
-        { error: message, field },
+        {error: field === 'email' ? 'این ایمیل قبلاً ثبت شده است.' : 'این شمارهٔ موبایل قبلاً ثبت شده است.',field },
         { status: 409 }
       );
     }
 
-    // 🚨 Handle validation errors
+    // ❌ Validation error
     if (error.name === 'ValidationError') {
-      console.warn('⚠️ Validation error:', error.message);
-      return NextResponse.json(
-        { error: 'Invalid data provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'داده نامعتبر' }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: 'Failed to update profile' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'خطای سرور' }, { status: 500 });
   }
 }

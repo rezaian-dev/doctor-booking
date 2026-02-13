@@ -53,7 +53,6 @@ const DoctorCard = ({
   isAvailable = true,
   isVerified = false,
   specialtyBadgeVariant = 'secondary',
-  className,
   onCardClick,
 }: DoctorCardProps) => {
   const handleCardClick = () => {

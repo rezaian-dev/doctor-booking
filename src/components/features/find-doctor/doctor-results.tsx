@@ -11,7 +11,7 @@ import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 import SortSheet from './sort-sheet';
 import Pagination from '@/components/shared/pagination';
 import { usePathname } from 'next/navigation';
-import { FilterFormData } from '@/types/filter.types';
+import { FilterFormData } from '@/types/filters';
 
 // 📋 Static sort options
 const SORT_OPTIONS = [

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { contactSchema } from '@/lib/validations/validation-contact';
+import { contactSchema } from '@/lib/validations/contact.zod';
 import SuccessMessage from '@/components/features/contact-us/success-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 

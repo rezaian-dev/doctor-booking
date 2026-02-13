@@ -63,7 +63,6 @@ const ArticleCard = ({
   readingTime,
   author,
   isFeatured = false,
-  className,
   onCardClick,
 }: ArticleCardProps) => {
   const handleClick = () => {

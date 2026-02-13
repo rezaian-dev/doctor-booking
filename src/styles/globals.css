@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 🎨 Custom color palette & design tokens */
+/* 🎨 Custom color palette */
 @theme {
   /* 🟦 Primary: Blue */
   --color-primary-50: #f0f5fe;
@@ -45,7 +45,7 @@
   --color-danger-900: #881414;
   --color-danger-950: #4a0505;
 
-  /* ⚪⚫ Neutral: Gray scale */
+  /* ⚪ Neutral: Gray scale */
   --color-neutral-30: #fcfcfc;
   --color-neutral-50: #fafafa;
   --color-neutral-75: #f0f0f0;
@@ -64,32 +64,27 @@
   --color-neutral-900: #333333;
   --color-neutral-950: #262626;
   --color-neutral-975: #2e2e2e;
-  --color-neutral-990: #1D1D1D;
+  --color-neutral-990: #1d1d1d;
 
-  /* 🟨 Special: Alert / Accent */
+  /* 🟨 Special colors */
   --color-alert: #ffb800;
-
-  /* 🔵 Additional: Custom blue */
-  --color-custom-blue: #203C86;
-
-  --color-dark-blue: #0A142F;
-    /* ⚪ Additional: Light gray */
-  --color-light-gray: #E7E8F2;
-  --color-medium-gray: #4F4F4F;
-  --color-gray-100: #F7F7F7;
+  --color-custom-blue: #203c86;
+  --color-dark-blue: #0a142f;
+  --color-light-gray: #e7e8f2;
+  --color-medium-gray: #4f4f4f;
+  --color-gray-100: #f7f7f7;
 }
 
-/* 📦 Custom utility: centered container */
+/* 📦 Container utility */
 @utility container {
   margin: 0 auto;
 }
 
-/* 🖼️ Swiper base styles – minimal & semantic */
+/* 🖼️ Swiper styles */
 .swiper {
   width: 100%;
   height: 100%;
 }
-
 
 .swiper-slide img {
   display: block;
@@ -98,26 +93,15 @@
   object-fit: cover;
 }
 
-
-/* 🌀 Accordion animations – required for smooth expand/collapse with Radix UI */
+/* 🌀 Accordion animations */
 @keyframes accordion-down {
-  from {
-    height: 0;
-  }
-
-  to {
-    height: var(--radix-accordion-content-height);
-  }
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
 }
 
 @keyframes accordion-up {
-  from {
-    height: var(--radix-accordion-content-height);
-  }
-
-  to {
-    height: 0;
-  }
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
 }
 
 .animate-accordion-down {
@@ -128,6 +112,7 @@
   animation: accordion-up 300ms cubic-bezier(0.87, 0, 0.13, 1);
 }
 
+/* 🎨 Design system tokens */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -164,9 +149,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-    --breakpoint-xs: 25rem;
+  --breakpoint-xs: 25rem;
 }
 
+/* 🌞 Light theme */
 :root {
   --radius: 0.625rem;
   --card: oklch(1 0 0);
@@ -202,6 +188,7 @@
   --foreground: oklch(0.145 0 0);
 }
 
+/* 🌙 Dark theme */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

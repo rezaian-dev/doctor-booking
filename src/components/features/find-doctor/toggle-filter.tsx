@@ -2,7 +2,7 @@
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { toggleArrayItem } from '@/lib/utils/filter-utils';
+import { toggleArrayItem } from '@/lib/utils/array-utils';
 import { Controller } from 'react-hook-form';
 
 /**

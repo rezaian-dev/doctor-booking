@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersianDatePicker } from './persian-date-picker';
 import { cn } from '@/lib/utils/cn';
-import { ProfileFormData } from '@/lib/validations/validation-profile';
+import { ProfileFormData } from '@/lib/validations/profile.zod';
 
-// 📝 Component props type
 type FormFieldProps = {
   name: keyof ProfileFormData;
   label: string;
@@ -39,7 +38,7 @@ export function FormField({
   onChange,
   register,
   errors,
-  isEditMode
+  isEditMode,
 }: FormFieldProps) {
   const [show, setShow] = useState(false);
   const error = errors[name];
@@ -53,24 +52,19 @@ export function FormField({
           {required && <span className="text-red-500 mr-1">*</span>}
         </Label>
         <Select value={value || ''} onValueChange={onChange} disabled={!isEditMode}>
-          <SelectTrigger className="disabled:bg-gray-50 disabled:cursor-not-allowed">
+          <SelectTrigger className={cn(!isEditMode && 'bg-gray-50 cursor-not-allowed')}>
             <SelectValue placeholder="انتخاب کنید" />
           </SelectTrigger>
           <SelectContent>
-            {options?.map((opt) => (
+            {options?.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {/* Fixed height error container */}
         <div className="h-5">
-          {error && (
-            <p className="text-xs text-red-500 transition-opacity duration-200">
-              {error.message as string}
-            </p>
-          )}
+          {error && <p className="text-xs text-red-500 transition-opacity duration-200">{error.message as string}</p>}
         </div>
       </div>
     );
@@ -84,18 +78,9 @@ export function FormField({
           {label}
           {required && <span className="text-red-500 mr-1">*</span>}
         </Label>
-        <PersianDatePicker
-          value={value}
-          onChange={onChange!}
-          disabled={!isEditMode}
-        />
-        {/* Fixed height error container */}
+        <PersianDatePicker value={value} onChange={onChange!} disabled={!isEditMode} />
         <div className="h-5">
-          {error && (
-            <p className="text-xs text-red-500 transition-opacity duration-200">
-              {error.message as string}
-            </p>
-          )}
+          {error && <p className="text-xs text-red-500 transition-opacity duration-200">{error.message as string}</p>}
         </div>
       </div>
     );
@@ -127,18 +112,9 @@ export function FormField({
             {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
         </div>
-        {/* Fixed height hint container */}
         <div className="h-5">
-          {hint && !error && (
-            <p className="text-xs text-neutral-500 transition-opacity duration-200">
-              {hint}
-            </p>
-          )}
-          {error && (
-            <p className="text-xs text-red-500 transition-opacity duration-200">
-              {error.message as string}
-            </p>
-          )}
+          {hint && !error && <p className="text-xs text-neutral-500 transition-opacity duration-200">{hint}</p>}
+          {error && <p className="text-xs text-red-500 transition-opacity duration-200">{error.message as string}</p>}
         </div>
       </div>
     );
@@ -157,15 +133,10 @@ export function FormField({
         maxLength={maxLength}
         placeholder={placeholder}
         disabled={!isEditMode}
-        className={cn('disabled:bg-gray-50 disabled:cursor-not-allowed')}
+        className={cn(!isEditMode && 'bg-gray-50 cursor-not-allowed')}
       />
-      {/* Fixed height error container */}
       <div className="h-5">
-        {error && (
-          <p className="text-xs text-red-500 transition-opacity duration-200">
-            {error.message as string}
-          </p>
-        )}
+        {error && <p className="text-xs text-red-500 transition-opacity duration-200">{error.message as string}</p>}
       </div>
     </div>
   );

@@ -26,4 +26,5 @@ export interface VerifyResult {
   success: boolean;
   error?: string;
   attemptsLeft?: number;
+  requireResend?: boolean; // 🔁 code is gone (expired/invalidated) — prompt a fresh request
 }

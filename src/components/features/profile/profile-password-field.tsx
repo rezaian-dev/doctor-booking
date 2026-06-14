@@ -1,6 +1,6 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormField } from './form-field';
-import { ProfileFormData } from '@/lib/validations/profile.zod';
+import { ProfileFormData } from '@/lib/validations/profile';
 
 type ProfilePasswordFieldProps = {
   register: UseFormRegister<ProfileFormData>;

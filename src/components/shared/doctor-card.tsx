@@ -1,195 +1,138 @@
+// 🧠 Client Component — interactive doctor card with auth guard.
+// ✨ No AOS (it conflicts with Swiper's DOM management) — pure CSS transitions instead. 🚫
 'use client';
-import { Location04Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+
 import Image from 'next/image';
-import Link from 'next/link';
-import { FaStar } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
+import { Star, MapPin } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils/cn';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
+import { NO_IMAGE } from '@/lib/utils/profile-card';
 
-/**
- * 🧩 DoctorCard – Enhanced doctor profile card with shadcn/ui
- *
- * Features:
- * ✅ Smooth hover animations with framer-motion
- * ✅ Tooltip for truncated information
- * ✅ Badge for specialty categorization
- * ✅ Enhanced accessibility with ARIA labels
- * ✅ Skeleton loading state support
- * ✅ RTL-ready | Mobile-first | TypeScript strict
- */
-
-interface DoctorCardProps {
-  id: number;
-  name: string;
-  specialty: string;
-  rating: string;
-  reviewsCount: number;
-  city: string;
-  image: string;
-  isAvailable?: boolean;
-  isVerified?: boolean;
-  specialtyBadgeVariant?: 'default' | 'secondary' | 'outline';
-  className?: string;
-  onCardClick?: (id: number) => void;
+export interface DoctorCardProps {
+  _id:              string;
+  name:             string;
+  specialty:        string;
+  city:             string;
+  photo:            string;
+  hasOnlineVisit:   boolean;
+  hasInPersonVisit: boolean;
+  isAvailable:      boolean;
+  reviewCount:      number;
+  avgRating:        number;
+  index?:           number;
+  isLoggedIn?:      boolean;
 }
 
-const DoctorCard = ({
-  id,
-  name,
-  specialty,
-  rating,
-  reviewsCount,
-  city,
-  image,
-  isAvailable = true,
-  isVerified = false,
-  specialtyBadgeVariant = 'secondary',
-  onCardClick,
-}: DoctorCardProps) => {
-  const handleCardClick = () => {
-    onCardClick?.(id);
+export default function DoctorCard({
+  _id, name, specialty, city, photo,
+  hasOnlineVisit, hasInPersonVisit,
+  isAvailable, reviewCount, avgRating,
+  isLoggedIn,
+}: DoctorCardProps) {
+  const router = useRouter();
+  const { guard } = useAuthGuard(isLoggedIn);
+
+  // 📷 Real photo vs. the "/images/no-image.png" fallback (callers pass it pre-resolved)
+  const hasPhoto = Boolean(photo) && photo !== NO_IMAGE;
+
+  // 🔐 Auth guard: show toast if not authenticated
+  const handleBooking = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isAvailable) return;
+    guard(() => router.push(`/doctors/${_id}`));
   };
 
   return (
-    <Card
-      className={cn(
-        'overflow-hidden group border border-neutral-200 bg-white',
-        'transition-all duration-300',
-        'hover:shadow-lg hover:border-primary-300',
-        'cursor-pointer'
-      )}
-      onClick={handleCardClick}
-    >
-      {/* 🖼️ Image Section with Status Overlay */}
-      <div className="relative aspect-289/200 w-full overflow-hidden">
-        <Image
-          src={image}
-          alt={`${name}، ${specialty} در ${city}`}
-          fill
-          loading="eager"
-          fetchPriority="high"
-          className={cn(
-            'object-cover transform transition-all duration-500 group-hover:scale-105'
-          )}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+    <Card className="overflow-hidden h-full group border border-neutral-200 bg-white transition-all duration-300 hover:shadow-lg hover:border-primary-300 gap-0">
 
-        {/* Gradient Overlay for better text readability */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Status Badges on Image */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {isVerified && (
-            <Badge
-              variant="default"
-              className="bg-primary-500 text-white shadow-md"
-            >
-              تایید شده
-            </Badge>
-          )}
-          {!isAvailable && (
-            <Badge variant="destructive" className="shadow-md">
-              نوبت تکمیل
-            </Badge>
-          )}
-        </div>
+      {/* 🖼️ Doctor photo — smart fit:
+          • real photo → shown in FULL (object-contain), never cropped; a blurred copy
+            fills the frame so any aspect ratio looks intentional (no empty bars).
+          • no photo  → the placeholder fills the frame cleanly (blurring it looks odd). */}
+      <div className="relative aspect-289/200 w-full overflow-hidden bg-neutral-100">
+        {hasPhoto ? (
+          <>
+            {/* 🌫️ Backdrop: blurred + zoomed copy paints the empty sides */}
+            <Image
+              src={photo}
+              alt=""
+              aria-hidden
+              fill
+              className="scale-125 object-cover blur-2xl brightness-95"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+            {/* 🩺 Foreground: full doctor photo, contained → never cropped */}
+            <Image
+              src={photo}
+              alt={name}
+              fill
+              className="relative z-1 object-contain transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          </>
+        ) : (
+          /* 🚫 No photo → placeholder fills the frame, no blur trickery */
+          <Image
+            src={NO_IMAGE}
+            alt={name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        )}
+        {!isAvailable && (
+          <div className="absolute top-3 left-3 z-2">
+            {/* 🚫 "danger" maps to the red badge variant defined in badge.tsx */}
+            <Badge variant="danger">نوبت تکمیل</Badge>
+          </div>
+        )}
       </div>
 
-      {/* 📝 Content Section */}
       <CardContent className="p-3 sm:p-4 space-y-3">
-        {/* ⭐ Name & Rating Row */}
+        {/* ⭐ Name + rating */}
         <div className="flex items-start justify-between gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <h3
-                  className={cn(
-                    'font-semibold text-sm sm:text-base text-neutral-900',
-                    'line-clamp-1 cursor-help'
-                  )}
-                >
-                  {name}
-                </h3>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <p>{name}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <div
-            className="flex items-center gap-1 shrink-0 bg-amber-50 px-2 py-1 rounded-md"
-            role="img"
-            aria-label={`امتیاز ${rating} از ${reviewsCount} نظر`}
-          >
-            <FaStar className="text-amber-500" size={12} aria-hidden="true" />
-            <span className="text-[10px] sm:text-xs font-medium text-neutral-700">
-              {rating}
-            </span>
-            <span className="text-[10px] sm:text-xs text-neutral-500">
-              ({reviewsCount.toLocaleString('fa-IR')}) نظر
-            </span>
+          <h3 className="font-semibold text-sm sm:text-base text-neutral-900 line-clamp-1">{name}</h3>
+          <div className="flex items-center gap-1 shrink-0 bg-amber-50 px-2 py-1 rounded-md">
+            <Star className="text-amber-500 fill-amber-500" size={12} />
+            <span className="text-xs font-medium text-neutral-700">{avgRating.toFixed(1)}</span>
+            <span className="text-xs text-neutral-700">({reviewCount}) نظر</span>
           </div>
         </div>
 
-        {/* 📍 Specialty & Location Row */}
+        {/* 📍 Specialty + city */}
         <div className="flex items-center justify-between gap-2">
-          <Badge
-            variant={specialtyBadgeVariant}
-            className="text-xs sm:text-sm font-normal max-w-[60%] truncate"
-          >
-            {specialty}
-          </Badge>
-
-          <div className="flex items-center gap-1 shrink-0 text-neutral-600">
-            <HugeiconsIcon
-              icon={Location04Icon}
-              size={14}
-              className="text-neutral-500"
-              aria-hidden="true"
-            />
-            <span className="text-[10px] sm:text-xs whitespace-nowrap">
-              {city}
-            </span>
+          <Badge variant="secondary" className="text-xs font-normal max-w-[60%] truncate">{specialty}</Badge>
+          <div className="flex items-center gap-1 text-neutral-600">
+            <MapPin size={14} className="text-neutral-700" />
+            <span className="text-xs">{city}</span>
           </div>
+        </div>
+
+        {/* 🏥 Visit type badges */}
+        <div className="flex gap-1.5">
+          {hasInPersonVisit && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 border border-primary-200">حضوری</span>
+          )}
+          {hasOnlineVisit && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary-50 text-secondary-700 border border-secondary-200">آنلاین</span>
+          )}
         </div>
       </CardContent>
 
-      {/* 📅 CTA Footer */}
-      <CardFooter className="p-3 sm:p-4 pt-0">
+      {/* 🔗 CTA button */}
+      <CardFooter className="p-3 sm:p-4">
         <Button
-          asChild
           variant="outline"
-          className={cn(
-            'w-full h-9 sm:h-10',
-            'border-primary-500 text-primary-600 font-medium',
-            'hover:bg-primary-500 hover:text-white',
-            'transition-colors duration-200',
-            'focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-            !isAvailable && 'opacity-50 cursor-not-allowed'
-          )}
           disabled={!isAvailable}
+          onClick={handleBooking}
+          className="w-full h-9 sm:h-10 border-primary-500 text-primary-600 hover:bg-primary-500 hover:text-white transition-colors duration-200 cursor-pointer"
         >
-          <Link
-            href={`/doctor/${id}`}
-            aria-label={`دریافت نوبت از ${name}`}
-            onClick={e => !isAvailable && e.preventDefault()}
-          >
-            {isAvailable ? 'دریافت نوبت' : 'نوبت موجود نیست'}
-          </Link>
+          {isAvailable ? 'دریافت نوبت' : 'نوبت موجود نیست'}
         </Button>
       </CardFooter>
     </Card>
   );
-};
-
-export default DoctorCard;
+}

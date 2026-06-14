@@ -1,276 +1,176 @@
-'use client';
+"use client";
 
-import { FC, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
-import clsx from 'clsx';
-import { contactSchema } from '@/lib/validations/contact.zod';
-import SuccessMessage from '@/components/features/contact-us/success-message';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState }               from "react";
+import { useForm, Controller }    from "react-hook-form";
+import { zodResolver }            from "@hookform/resolvers/zod";
+import { Input }    from "@/components/ui/input";
+import { Label }    from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button }   from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { contactSchema, type ContactFormInput } from "@/lib/validations/contact";
+import { cn } from "@/lib/utils/cn";
 
-// 💬 Form data interface — explicit & type-safe
-interface FormData {
-  fullName: string;
-  requestType: string;
-  email: string;
-  phone: string;
-  message: string;
+const REQUEST_TYPES = [
+  { value: "appointment",  label: "نوبت‌دهی"   },
+  { value: "consultation", label: "مشاوره"     },
+  { value: "support",      label: "پشتیبانی"   },
+  { value: "complaint",    label: "شکایت"      },
+  { value: "other",        label: "سایر موارد" },
+] as const;
+
+// ⚠️ Always-present error row (opacity transition, zero layout shift). Allows undefined
+//    explicitly so callers can pass errors.field?.message under exactOptionalPropertyTypes.
+function FieldError({ message }: { message?: string | undefined }) {
+  return (
+    <p
+      role="alert"
+      aria-live="polite"
+      className="h-4 text-xs text-danger-500 transition-opacity duration-200"
+      style={{ opacity: message ? 1 : 0 }}
+    >
+      {message ?? "\u200c"}
+    </p>
+  );
 }
 
-// 📋 Predefined request options for consistent UX
-const REQUEST_TYPES = [
-  { value: 'appointment', label: 'نوبت‌دهی' },
-  { value: 'consultation', label: 'مشاوره' },
-  { value: 'support', label: 'پشتیبانی' },
-  { value: 'complaint', label: 'شکایت' },
-  { value: 'other', label: 'سایر موارد' },
-];
+export default function ContactForm() {
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-// 📝 Contact form with zero layout shift & smooth UX
-const ContactForm: FC = () => {
-  // ⏳ UI states for loading & feedback
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const { register, handleSubmit, formState: { errors }, reset, control } =
+    useForm<ContactFormInput>({ resolver: zodResolver(contactSchema), mode: "onChange" });
 
-  // 🧠 Form logic with Yup validation & real-time error tracking
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    control,
-  } = useForm<FormData>({
-    resolver: zodResolver(contactSchema) as any,
-    mode: 'onChange',
-  });
-
-  // 🚀 Handle submission with mock API delay
-  const onSubmit = async (FormData: FormData) => {
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500)); // ⏱️ Simulate network
-    console.log('📧 Form Data:', FormData);
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
-    // ✅ Auto-reset after showing success
-    setTimeout(() => {
-      setSubmitSuccess(false);
+  const onSubmit = async (data: ContactFormInput) => {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error();
+      setStatus("success");
       reset();
-    }, 3000);
+      setTimeout(() => setStatus("idle"), 4000);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
   };
 
- return (
-    <div className="bg-white rounded-3xl shadow-2xl p-8 min-h-167">
-      <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-        فرم ثبت بازخورد و درخواست
-      </h2>
-      <p className="text-neutral-600 mb-8">
-        در صورت نیاز به ارتباط فوری، از تماس تلفنی استفاده کنید.
-      </p>
-
-      {/* ✅ Success message */}
-      <div
-        className={clsx(
-          'mb-1 transition-opacity duration-300',
-          submitSuccess ? 'block' : 'hidden'
-        )}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <SuccessMessage />
+  // ✅ Success screen
+  if (status === "success") {
+    return (
+      <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center justify-center min-h-80 gap-4 text-center">
+        <div className="w-16 h-16 rounded-full bg-secondary-50 flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 text-secondary-600" />
+        </div>
+        <h3 className="text-lg font-bold text-neutral-900">پیام شما ارسال شد</h3>
+        <p className="text-sm text-neutral-600 max-w-xs">تیم پشتیبانی دکتر رزرو در اسرع وقت پاسخ خواهد داد.</p>
       </div>
+    );
+  }
 
-      {/* 📝 Form */}
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className={clsx(
-          'space-y-3 transition-opacity duration-300',
-          submitSuccess ? 'opacity-0 invisible' : 'opacity-100 visible'
-        )}
-        aria-hidden={submitSuccess}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 👤 Full Name */}
-          <div>
-            <Label htmlFor="fullName" className="text-sm mb-2 inline-block font-medium text-neutral-700">
-              نام و نام خانوادگی
-            </Label>
-            <Input
-              id="fullName"
-              placeholder="علی محمدی"
-              aria-invalid={!!errors.fullName}
-              {...register('fullName')}
-            />
-            <div className="min-h-5 mt-1">
-              <p
-                className={clsx(
-                  'text-xs text-danger-400 transition-opacity duration-200',
-                  errors.fullName
-                    ? 'opacity-100 visible'
-                    : 'opacity-0 invisible pointer-events-none'
-                )}
-                aria-live="polite"
-              >
-                {errors.fullName?.message}
-              </p>
-            </div>
-          </div>
+  return (
+    <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+      <h2 className="text-xl font-bold text-neutral-900 mb-1">فرم تماس با ما</h2>
+      <p className="text-sm text-neutral-600 mb-6">پیام خود را بنویسید — در اسرع وقت پاسخ می‌دهیم.</p>
 
-          {/* 📋 Request Type */}
-          <div>
-            <Label htmlFor="requestType" className="text-sm mb-2 inline-block font-medium text-neutral-700">
-              نوع درخواست
-            </Label>
-            <Controller
-              name="requestType"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger id="requestType" aria-invalid={!!errors.requestType}>
-                    <SelectValue placeholder="مثال: پشتیبانی" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REQUEST_TYPES.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <div className="min-h-5 mt-1">
-              <p
-                className={clsx(
-                  'text-xs text-danger-400 transition-opacity duration-200',
-                  errors.requestType
-                    ? 'opacity-100 visible'
-                    : 'opacity-0 invisible pointer-events-none'
-                )}
-                aria-live="polite"
-              >
-                {errors.requestType?.message}
-              </p>
-            </div>
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate>
+
+        {/* 👤 Full name */}
+        <div>
+          <Label htmlFor="fullName" className="mb-1.5 block">
+            نام و نام خانوادگی <span className="text-danger-500">*</span>
+          </Label>
+          <Input
+            id="fullName" dir="rtl" placeholder="مثال: علی احمدی"
+            {...register("fullName")}
+            className={cn(errors.fullName && "border-danger-400 focus-visible:ring-danger-200")}
+          />
+          <FieldError message={errors.fullName?.message} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 📧 Email */}
-          <div>
-            <Label htmlFor="email" className="text-sm mb-2 inline-block font-medium text-neutral-700">
-              ایمیل
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="email@gmail.com"
-              dir="ltr"
-              aria-invalid={!!errors.email}
-              {...register('email')}
-            />
-            <div className="min-h-5 mt-1">
-              <p
-                className={clsx(
-                  'text-xs text-danger-400 transition-opacity duration-200',
-                  errors.email
-                    ? 'opacity-100 visible'
-                    : 'opacity-0 invisible pointer-events-none'
-                )}
-                aria-live="polite"
-              >
-                {errors.email?.message}
-              </p>
-            </div>
-          </div>
+        {/* 📞 Phone number */}
+        <div>
+          <Label htmlFor="phone" className="mb-1.5 block">
+            شماره تماس <span className="text-danger-500">*</span>
+          </Label>
+          <Input
+            id="phone" dir="ltr" type="tel" placeholder="09xxxxxxxxx"
+            {...register("phone")}
+            className={cn(errors.phone && "border-danger-400 focus-visible:ring-danger-200")}
+          />
+          <FieldError message={errors.phone?.message} />
+        </div>
 
-          {/* 📱 Phone */}
-          <div>
-            <Label htmlFor="phone" className="text-sm mb-2 inline-block font-medium text-neutral-700">
-              شماره تماس
-            </Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="09123456789"
-              dir="ltr"
-              aria-invalid={!!errors.phone}
-              {...register('phone')}
-            />
-            <div className="min-h-5 mt-1">
-              <p
-                className={clsx(
-                  'text-xs text-danger-400 transition-opacity duration-200',
-                  errors.phone
-                    ? 'opacity-100 visible'
-                    : 'opacity-0 invisible pointer-events-none'
-                )}
-                aria-live="polite"
-              >
-                {errors.phone?.message}
-              </p>
-            </div>
-          </div>
+        {/* ✉️ Email */}
+        <div>
+          <Label htmlFor="email" className="mb-1.5 block">
+            ایمیل <span className="text-neutral-400 text-xs">(اختیاری)</span>
+          </Label>
+          <Input id="email" dir="ltr" type="email" placeholder="example@mail.com" {...register("email")} />
+          <FieldError message={errors.email?.message} />
+        </div>
+
+        {/* 🏷️ Request type */}
+        <div>
+          <Label className="mb-1.5 block">
+            نوع درخواست <span className="text-danger-500">*</span>
+          </Label>
+          <Controller
+            name="requestType"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                <SelectTrigger
+                  className={cn(
+                    errors.requestType && "border-danger-400 ring-1 ring-danger-200 focus:ring-danger-200"
+                  )}
+                >
+                  <SelectValue placeholder="انتخاب کنید..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {REQUEST_TYPES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <FieldError message={errors.requestType?.message} />
         </div>
 
         {/* 💬 Message */}
         <div>
-          <Label htmlFor="message" className="text-sm mb-2 inline-block font-medium text-neutral-700">
-            متن
+          <Label htmlFor="message" className="mb-1.5 block">
+            متن پیام <span className="text-danger-500">*</span>
           </Label>
           <Textarea
-            id="message"
-            placeholder="متن نمونه"
-            rows={5}
-            aria-invalid={!!errors.message}
-            {...register('message')}
+            id="message" dir="rtl" rows={4} placeholder="پیام خود را بنویسید..."
+            {...register("message")}
+            className={cn(errors.message && "border-danger-400 focus-visible:ring-danger-200")}
           />
-          <div className="min-h-5 mt-1">
-            <p
-              className={clsx(
-                'text-xs text-danger-400 transition-opacity duration-200',
-                errors.message
-                  ? 'opacity-100 visible'
-                  : 'opacity-0 invisible pointer-events-none'
-              )}
-              aria-live="polite"
-            >
-              {errors.message?.message}
-            </p>
-          </div>
+          <FieldError message={errors.message?.message} />
         </div>
 
-        {/* 🚀 Submit Button */}
+        {/* ⚠️ Server error */}
+        <p
+          className="text-sm text-danger-500 text-center transition-opacity duration-200"
+          style={{ opacity: status === "error" ? 1 : 0, minHeight: "1.25rem" }}
+        >
+          {status === "error" ? "خطایی رخ داد. دوباره تلاش کنید." : "\u200c"}
+        </p>
+
         <Button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full py-6 text-lg cursor-pointer font-bold bg-linear-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+          disabled={status === "loading"}
+          className="w-full h-12 bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm"
         >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              در حال ارسال...
-            </span>
-          ) : (
-            'ارسال'
-          )}
+          {status === "loading" ? <LoaderCircle className="w-4 h-4 animate-spin" /> : "ارسال پیام"}
         </Button>
       </form>
     </div>
   );
-};
-
-export default ContactForm;
+}

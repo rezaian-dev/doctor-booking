@@ -1,6 +1,5 @@
-import { FC } from 'react';
 import { LucideIcon } from 'lucide-react';
-import clsx from 'clsx';
+import { cn } from '@/lib/utils/cn';
 
 // 📇 Info card with icon — clean, accessible, and layout-stable
 interface InfoCardProps {
@@ -12,10 +11,10 @@ interface InfoCardProps {
   dir?: 'ltr' | 'rtl';
 }
 
-const InfoCard: FC<InfoCardProps> = ({ icon: Icon, label, value, bgColor, iconBg, dir }) => {
+const InfoCard = ({ icon: Icon, label, value, bgColor, iconBg, dir }: InfoCardProps) => {
   return (
-    <div className={clsx('flex items-center gap-4 p-4 rounded-xl transition-colors', bgColor)}>
-      <div className={clsx('p-3 rounded-full', iconBg)}>
+    <div className={cn('flex items-center gap-4 p-4 rounded-xl transition-colors', bgColor)}>
+      <div className={cn('p-3 rounded-full', iconBg)}>
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>

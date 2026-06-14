@@ -1,7 +1,6 @@
 'use client';
 
-import * as React from 'react';
-import * as SheetPrimitive from '@radix-ui/react-dialog';
+import { Dialog as SheetPrimitive } from 'radix-ui';
 
 import { cn } from '@/lib/utils/cn';
 
@@ -9,10 +8,17 @@ function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
+// 🩹 suppressHydrationWarning: same a11y-only Radix useId↔aria-controls drift as dialog.tsx
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
+  return (
+    <SheetPrimitive.Trigger
+      data-slot="sheet-trigger"
+      suppressHydrationWarning
+      {...props}
+    />
+  );
 }
 
 function SheetClose({

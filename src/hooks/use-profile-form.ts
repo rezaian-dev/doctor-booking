@@ -6,8 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { mutate } from 'swr';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/providers/auth-provider';
-import { profileSchema } from '@/lib/validations/profile.zod';
+import { profileSchema } from '@/lib/validations/profile';
 import { UserProfile } from '@/types/patient';
 
 interface AvatarState {
@@ -16,114 +15,86 @@ interface AvatarState {
   shouldDelete: boolean;
 }
 
+// 🚪 Thrown after a 401 so callers can bail out without re-toasting
+const UNAUTHORIZED = 'Unauthorized';
+
+// 📥 Extract `{ error }` from a failed response, falling back to a default message
+async function readError(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => null);
+  return data?.error || fallback;
+}
+
 export function useProfileForm(initialProfile: UserProfile) {
-  const { updateUser, user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [avatar, setAvatar] = useState<AvatarState>({
+
+  const blankAvatar = (preview = initialProfile.imageUrl || ''): AvatarState => ({
     file: null,
-    preview: initialProfile.imageUrl || '',
+    preview,
     shouldDelete: false,
   });
+
+  const [avatar, setAvatar] = useState<AvatarState>(blankAvatar);
 
   const form = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: initialProfile,
   });
 
-  // ❌ Reset form state
+  // 🔒 Centralized session-expired handling (toast + redirect)
+  const sessionExpired = () => {
+    toast.error('نشست منقضی شده است');
+    router.push('/auth/login');
+  };
+
   const handleCancel = () => {
     form.reset(initialProfile);
-    setAvatar({
-      file: null,
-      preview: initialProfile.imageUrl || '',
-      shouldDelete: false,
-    });
+    setAvatar(blankAvatar());
     setIsEdit(false);
   };
 
-  // 🔐 Validate user session
-  const checkAuth = (): boolean => {
-    if (!isAuthenticated || !user) {
-      toast.error('نشست منقضی شده است');
-      router.push('/login');
-      return false;
-    }
-    return true;
-  };
-
-  // 📤 Upload avatar to server
   const uploadAvatar = async (file: File): Promise<string> => {
-    if (!checkAuth()) throw new Error('Unauthorized');
-
-    const formData = new FormData();
-    formData.append('avatar', file);
-
+    const body = new FormData();
+    body.append('avatar', file);
     const res = await fetch('/api/profile/upload-avatar', {
       method: 'POST',
       credentials: 'include',
-      body: formData,
+      body,
     });
-
-    if (res.status === 401) {
-      toast.error('نشست منقضی شده است');
-      router.push('/login');
-      throw new Error('Unauthorized');
-    }
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || 'آپلود ناموفق');
-    }
-
-    const data = await res.json();
-    return data.avatar;
+    if (res.status === 401) { sessionExpired(); throw new Error(UNAUTHORIZED); }
+    if (!res.ok) throw new Error(await readError(res, 'آپلود ناموفق'));
+    return (await res.json()).avatar;
   };
 
-  // 🗑️ Delete avatar from server
   const deleteAvatar = async (): Promise<void> => {
-    if (!checkAuth()) throw new Error('Unauthorized');
-
     const res = await fetch('/api/profile/upload-avatar', {
       method: 'DELETE',
       credentials: 'include',
     });
-
-    if (res.status === 401) {
-      toast.error('نشست منقضی شده است');
-      router.push('/login');
-      throw new Error('Unauthorized');
-    }
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || 'حذف ناموفق');
-    }
+    if (res.status === 401) { sessionExpired(); throw new Error(UNAUTHORIZED); }
+    if (!res.ok) throw new Error(await readError(res, 'حذف ناموفق'));
   };
 
-  // 💾 Submit profile updates
-  const onSubmit = form.handleSubmit((data) => {
-    if (!checkAuth()) return;
+  // 🖼️ Resolve the avatar (delete / upload / keep) before saving the profile
+  const resolveAvatar = async (): Promise<string> => {
+    if (avatar.shouldDelete) { await deleteAvatar(); return ''; }
+    if (avatar.file) return uploadAvatar(avatar.file);
+    return initialProfile.imageUrl || '';
+  };
 
+  const onSubmit = form.handleSubmit((data) => {
     startTransition(async () => {
       try {
         let newAvatar = initialProfile.imageUrl || '';
-
-        // 🖼️ Process avatar changes
         try {
-          if (avatar.shouldDelete) {
-            await deleteAvatar();
-            newAvatar = '';
-          } else if (avatar.file) {
-            newAvatar = await uploadAvatar(avatar.file);
-          }
-        } catch (avatarError: any) {
-          if (avatarError.message === 'Unauthorized') return;
-          toast.error(avatarError.message || 'خطا در پردازش تصویر');
+          newAvatar = await resolveAvatar();
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'خطا در پردازش تصویر';
+          if (msg === UNAUTHORIZED) return;
+          toast.error(msg);
         }
 
-        // 📝 Update profile data
         const res = await fetch('/api/profile', {
           method: 'PATCH',
           credentials: 'include',
@@ -131,66 +102,32 @@ export function useProfileForm(initialProfile: UserProfile) {
           body: JSON.stringify(data),
         });
 
-        // 🚨 Handle auth errors
-        if (res.status === 401) {
-          toast.error('نشست منقضی شده است');
-          router.push('/login');
+        if (res.status === 401) { sessionExpired(); return; }
+        if (res.status === 409) {
+          const { field, error } = await res.json();
+          const conflict =
+            field === 'phone' ? 'این شمارهٔ موبایل قبلاً ثبت شده است.'
+            : field === 'email' ? 'این ایمیل قبلاً ثبت شده است.'
+            : error || 'خطایی رخ داده است.';
+          toast.error(conflict);
           return;
         }
+        if (!res.ok) throw new Error(await readError(res, 'خطا در به‌روزرسانی'));
 
-        if (!res.ok) {
-          const error = await res.json();
-
-          if (res.status === 409) {
-            toast.error(
-              error.field === 'phone'
-                ? 'این شمارهٔ موبایل قبلاً ثبت شده است.'
-                : error.field === 'email'
-                  ? 'این ایمیل قبلاً ثبت شده است.'
-                  : error.error || 'خطایی رخ داده است.'
-            );
-            return;
-          }
-
-          if (res.status === 400) {
-            toast.error(error.error || 'داده نامعتبر');
-            return;
-          }
-
-          throw new Error(error.error || 'خطا در به‌روزرسانی');
-        }
-
-        const { user: updatedUser } = await res.json();
-
-        // ⚡ Update auth context optimistically
-        updateUser({
-          firstName: updatedUser.firstName,
-          lastName: updatedUser.lastName,
-          avatar: newAvatar || undefined,
-        });
-
-        // 🔄 Revalidate profile cache
-        await mutate('/api/profile');
+        // 🔄 Revalidate the profile page AND the header payload (/api/auth/me) so the
+        //    avatar + name in the header update live — no manual refresh. ✨
+        await Promise.all([mutate('/api/profile'), mutate('/api/auth/me')]);
+        router.refresh(); // ✅ Re-sync server components with the new data
 
         toast.success('پروفایل به‌روزرسانی شد');
         setIsEdit(false);
-        setAvatar({ file: null, preview: newAvatar, shouldDelete: false });
-      } catch (error: any) {
-        if (error.message !== 'Unauthorized') {
-          toast.error(error.message || 'خطا');
-        }
+        setAvatar(blankAvatar(newAvatar));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'خطا';
+        if (msg !== UNAUTHORIZED) toast.error(msg);
       }
     });
   });
 
-  return {
-    form,
-    isEdit,
-    setIsEdit,
-    loading: isPending,
-    avatar,
-    setAvatar,
-    handleCancel,
-    onSubmit,
-  };
+  return { form, isEdit, setIsEdit, loading: isPending, avatar, setAvatar, handleCancel, onSubmit };
 }

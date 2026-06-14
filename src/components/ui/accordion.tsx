@@ -1,30 +1,28 @@
 'use client';
 
-import * as React from 'react';
-import * as AccordionPrimitive from '@radix-ui/react-accordion';
+import { Accordion as AccordionPrimitive } from 'radix-ui';
 import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
-// 🔧 Accordion Root
+// Accordion Root — no suppressHydrationWarning; Radix handles SSR data-state correctly
+// when controlled (value prop) or uncontrolled (defaultValue prop) are used correctly.
 function Accordion({ ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" suppressHydrationWarning {...props} />;
+  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
 }
 
-// 🔧 Accordion Item - removed useId, rely on parent's value prop
 function AccordionItem({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={cn('border-b last:border-b-0', className) }
+      className={cn('border-b last:border-b-0', className)}
       {...props}
     />
   );
 }
 
-// 🔧 Accordion Trigger
 function AccordionTrigger({ className, children, ...props }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
   return (
-    <AccordionPrimitive.Header className="flex" suppressHydrationWarning>
+    <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
@@ -40,12 +38,11 @@ function AccordionTrigger({ className, children, ...props }: React.ComponentProp
   );
 }
 
-// 🔧 Accordion Content
 function AccordionContent({ className, children, ...props }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm" suppressHydrationWarning
+      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
     >
       <div className={cn('pt-0 pb-4', className)}>{children}</div>

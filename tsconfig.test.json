@@ -1,0 +1,15 @@
+{
+  // 🧪 tsconfig.test.json — تایپ‌چکِ مجزای تست‌ها، جدا از `next build`.
+  //    همان سخت‌گیریِ پروژه (strict + exactOptionalPropertyTypes + …) را به ارث می‌برد،
+  //    ولی فقط tests/ و کانفیگ Playwright را بررسی می‌کند.
+  //    اجرا:  npx tsc -p tsconfig.test.json --noEmit
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  // ♻️ بازتعریف include/exclude تا فایل‌هایی که در tsconfig اصلی exclude شده‌اند،
+  //    اینجا دوباره وارد دامنهٔ بررسی شوند.
+  "include": ["tests/**/*.ts", "playwright.config.ts"],
+  "exclude": ["node_modules"]
+}

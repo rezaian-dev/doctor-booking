@@ -1,31 +1,25 @@
 import { DoctorData } from "@/types/doctor";
 
-// 📋 Payment Details Table
-const PaymentDetailsTable = ({ data }: { data: DoctorData }) => {
-  const rows = [
-    { label: 'آدرس مطب:', value: data.address },
-    { label: 'نوع نوبت:', value: 'حضوری' },
-    { label: 'زمان نوبت:', value: 'دوشنبه ۲۴ دی ساعت ۹:۳۰' },
-    { label: 'مراجعه کننده:', value: 'علی مهدوی' },
-  ];
+interface PaymentDetailsTableProps {
+  data: Partial<DoctorData>;
+}
 
+// 🔹 Single row — hidden when value is empty
+const Row = ({ label, value }: { label: string; value?: string | undefined }) =>
+  value ? (
+    <div className="flex items-start justify-between gap-x-4 text-sm">
+      <span className="text-neutral-500 shrink-0">{label}</span>
+      <span className="text-neutral-850 font-medium text-left">{value}</span>
+    </div>
+  ) : null;
+
+export default function PaymentDetailsTable({ data }: PaymentDetailsTableProps) {
   return (
-    <div className="space-y-2">
-      {rows.map((row, index) => (
-        <div
-          key={index}
-          className="flex justify-between items-center px-2 rounded-[6px]"
-        >
-          <span className="font-medium text-xs xs:text-sm text-neutral-600">
-            {row.label}
-          </span>
-          <span className="text-neutral-850 text-xs xs:text-sm font-medium">
-            {row.value}
-          </span>
-        </div>
-      ))}
+    <div className="space-y-3 mt-1">
+      <Row label="آدرس مطب:"      value={data.address}           />
+      <Row label="نوع نوبت:"      value={data.visitType}         />
+      <Row label="زمان نوبت:"     value={data.nextAvailableSlot} />
+      <Row label="مراجعه‌کننده:" value={data.patientName}       />
     </div>
   );
-};
-
-export default PaymentDetailsTable;
+}

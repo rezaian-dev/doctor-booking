@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import ProfileCard from '../../shared/profile-card';
 import Contact from '@/components/features/booking/contact';
 
@@ -7,7 +6,7 @@ import Contact from '@/components/features/booking/contact';
  * Renders the doctor's profile and contact information in sequence
  * This component serves as a container for displaying essential doctor information
  */
-const DoctorOverview: FC = () => {
+const DoctorOverview = () => {
   return (
     <>
       {/* Doctor's profile section 👤 */}

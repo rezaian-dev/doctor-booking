@@ -1,132 +1,167 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { toJalaali } from 'jalaali-js';
-import { Button } from '@/components/ui/button';
+
+import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { toast } from 'sonner';
+import { Button }   from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { clsx } from 'clsx';
+import { cn } from '@/lib/utils/cn';
+import {
+  dateToJalaliStr,
+  jalaliDisplayDate,
+  jalaliStrToDate,
+  toFarsiTime,
+} from '@/hooks/use-jalaali';
 
-// 🗓️ Jalali months name mapping
-const JALALI_MONTHS = [
-  'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-  'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
-] as const;
+interface Schedule { date: string; times: string[] }
+interface Props     { schedule?: Schedule[]; doctorId?: string; isLoggedIn?: boolean }
 
+// 👤 Shared /api/auth/me cache (same key as the header) → deduped, no extra request
+const meFetcher = (url: string): Promise<{ user: unknown | null }> => fetch(url).then(r => r.json());
 
-// 🕒 Static time slots configuration
-const TIME_SLOTS_DATA = [
-  { id: '1', time: '۹:۱۵', isAvailable: false },
-  { id: '2', time: '۹:۳۰', isAvailable: false },
-  { id: '3', time: '۹:۴۵', isAvailable: false },
-  { id: '4', time: '۱۰:۰۰', isAvailable: false },
-  { id: '5', time: '۱۰:۱۵', isAvailable: true },
-  { id: '6', time: '۱۰:۳۰', isAvailable: true },
-  { id: '7', time: '۱۰:۴۵', isAvailable: false },
-  { id: '8', time: '۱۱:۰۰', isAvailable: false },
-  { id: '9', time: '۱۱:۱۵', isAvailable: true },
-] as const;
+const toJalaliStr   = dateToJalaliStr;
+const jalaliDisplay = jalaliDisplayDate;
+const jalaliToGreg  = jalaliStrToDate;
 
-// 📅 Convert Gregorian date to Jalali format (YYYY/MM/DD)
-const formatJalaliDate = (date: Date) => {
-  const { jy, jm, jd } = toJalaali(date);
-  return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
-};
+const BookingCalendar = ({ schedule = [], doctorId = "", isLoggedIn: isLoggedInProp }: Props) => {
+  const router = useRouter();
 
-// 🖋️ Convert date to readable Persian format
-const getJalaliDisplay = (date: Date) => {
-  const { jy, jm, jd } = toJalaali(date);
-  return `${jd.toLocaleString('fa-IR', { useGrouping: false })} ${JALALI_MONTHS[jm - 1]} ${jy.toLocaleString('fa-IR', { useGrouping: false })}`;
-};
-
-// 🔁 Sort time slots chronologically
-const sortedTimeSlots = () => {
-  // 🔄 Convert Persian digits to standard format for comparison
-  const toHHMM = (time: string) => {
-    const parts = time.split(':');
-    const h = parts[0] ?? '0';
-    const m = parts[1] ?? '0';
-    return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
-  };
-
-  return [...TIME_SLOTS_DATA].sort((a, b) =>
-    toHHMM(a.time).localeCompare(toHHMM(b.time), 'fa-IR')
+  // 🔐 Auth read only at click-time (the UI never depends on it), so resolving it client-side
+  //    from the shared /api/auth/me cache adds zero flicker and lets the doctor page skip the
+  //    server cookie read → static/cached. An explicit prop still wins. 🧠✨
+  const { data: me } = useSWR('/api/auth/me', meFetcher, { revalidateOnFocus: false });
+  const isLoggedIn = isLoggedInProp ?? !!me?.user;
+  // 🌍 Client time zone via an external store → no effect, no sync setState, no hydration
+  //    mismatch: server snapshot is undefined, client reads the real tz on mount. 🧠
+  const timeZone = useSyncExternalStore(
+    () => () => {},                                          // 🔌 value never changes → no-op subscribe
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,  // 💻 client snapshot
+    () => undefined,                                         // 🖥️ server snapshot
   );
-};
 
-const BookingCalendar = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date()); // 📅 Selected date state
-  const [selectedTime, setSelectedTime] = useState<string | null>(null); // ⏰ Selected time state
-  const [timeZone, setTimeZone] = useState<string | undefined>(undefined); // 🌐 User timezone state
+  const now         = useMemo(() => new Date(), []);
+  const todayStr    = useMemo(() => toJalaliStr(now), [now]);
+  const currentTime = useMemo(() => `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`, [now]);
 
-  // 🌍 Detect and set user's timezone on mount
-  useEffect(() => {
-    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
+  const scheduleMap = useMemo(() => new Map(schedule.map(s => [s.date, s.times])), [schedule]);
 
-  // 🔹 Toggle time slot selection
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(prev => prev === time ? null : time);
+  // 🗓️ Day timestamps with a real open slot (today-or-future + a free time). Used only to
+  //    ring available days — days aren't disabled; an empty day shows a "not scheduled" note. 🔓
+  const bookableTs = useMemo(() => {
+    const set = new Set<number>();
+    for (const { date, times } of schedule) {
+      if (date < todayStr) continue;                                            // ⏮️ past day
+      const hasFree = date === todayStr ? times.some(t => t > currentTime) : times.length > 0;
+      if (hasFree) set.add(jalaliToGreg(date).setHours(0, 0, 0, 0));
+    }
+    return set;
+  }, [schedule, todayStr, currentTime]);
+
+  const hasSlotMatcher = useMemo(() => (d: Date) => bookableTs.has(new Date(d).setHours(0, 0, 0, 0)), [bookableTs]); // 💍 ring
+
+  const firstAvailable = useMemo(() => {
+    for (const { date, times } of [...schedule].sort((a,b) => a.date.localeCompare(b.date))) {
+      if (date < todayStr) continue;
+      if (date === todayStr ? times.some(t => t > currentTime) : times.length > 0) return date;
+    }
+    return null;
+  }, [schedule, todayStr, currentTime]);
+
+  // 🔒 Use undefined instead of new Date() as fallback — new Date() in useState initializer
+  // can produce different timestamps on SSR vs hydration, causing hydration mismatch
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => firstAvailable ? jalaliToGreg(firstAvailable) : undefined);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  const selectedJalali = selectedDate ? toJalaliStr(selectedDate) : null;
+  const sortedTimes    = [...(selectedJalali ? (scheduleMap.get(selectedJalali) ?? []) : [])].sort();
+
+  const isActive = (time: string) => {
+    if (!selectedJalali) return false;
+    if (selectedJalali > todayStr) return true;
+    return selectedJalali === todayStr && time > currentTime;
   };
 
-  // ✅ Handle booking confirmation
-  const handleBook = () => {
-    if (!date || !selectedTime) {
-      alert('لطفاً تاریخ و زمان را انتخاب کنید.');
+  // 🔐 Check auth before proceeding
+  const handleContinue = () => {
+    if (!selectedDate || !selectedTime) return;
+
+    if (!isLoggedIn) {
+      toast.error('ابتدا وارد حساب خود شوید', {
+        description: 'برای رزرو نوبت باید وارد حساب کاربری خود شوید.',
+        action: {
+          label: 'ورود',
+          onClick: () => router.push('/auth/login'),
+        },
+        duration: 5000,
+      });
       return;
     }
-    const formattedDate = formatJalaliDate(date);
-    alert(`رزرو با موفقیت ثبت شد! 📅 تاریخ: ${formattedDate}، ⏰ زمان: ${selectedTime}`);
-  };
 
-  const displayDate = date ? getJalaliDisplay(date) : 'تاریخی انتخاب نشده';
+    const jalali = toJalaliStr(selectedDate);
+    router.push(`/booking/confirm?${new URLSearchParams({
+      doctorId,
+      date:        jalali,
+      time:        selectedTime,
+      displayDate: jalaliDisplay(selectedDate),
+      displayTime: toFarsiTime(selectedTime),
+    })}`);
+  };
 
   return (
     <div className="mt-6 lg:mt-0 rounded-xl p-3 md:p-4 border border-neutral-100">
-      {/* 📆 Calendar Section */}
-      <div className="border border-neutral-100 px-1 py-3 md:p-3 rounded-xl mb-2">
+      {/* 📅 Calendar */}
+      <div className="border border-neutral-100 px-1 py-3 md:p-3 rounded-xl mb-3">
         <div className="flex items-center justify-between mb-3 mx-3">
           <h4 className="text-base md:text-lg font-bold text-neutral-950">تقویم</h4>
-          <span className="text-sm md:text-[15px]/7 text-neutral-500">{displayDate}</span>
+          {/* 📌 Today's date, always shown top-left as a reference */}
+          <span className="text-sm text-neutral-500">امروز: {jalaliDisplay(now)}</span>
         </div>
         <Calendar
           mode="single"
-          defaultMonth={date}
-          selected={date}
-          onSelect={setDate}
-          timeZone={timeZone}
+          onSelect={d => { setSelectedDate(d); setSelectedTime(null); }}
+          modifiers={{ hasSlot: hasSlotMatcher }}
+          modifiersClassNames={{ hasSlot: 'ring-1 ring-primary-400' }}
           className="rounded-lg"
+          // 🔒 Omit optional props when undefined → satisfies exactOptionalPropertyTypes
+          {...(selectedDate && { selected: selectedDate, defaultMonth: selectedDate })}
+          {...(timeZone && { timeZone })}
         />
       </div>
 
-      {/* ⏰ Time Slots Grid */}
-      <div className="grid grid-cols-2 auto-cols-fr md:grid-cols-3 gap-2 mb-2">
-        {sortedTimeSlots().map(slot => (
-          <Button
-            key={slot.id}
-            variant={slot.isAvailable ? (selectedTime === slot.time ? 'default' : 'outline') : 'secondary'}
-            disabled={!slot.isAvailable}
-            onClick={() => slot.isAvailable && handleTimeSelect(slot.time)}
-            className={clsx(
-              'h-9 text-sm font-medium border cursor-pointer last:col-span-2 md:last:col-span-1',
-              slot.isAvailable
-                ? clsx(
-                    'text-primary-500 border-primary-500 hover:text-primary-500 hover:bg-primary-100',
-                    selectedTime === slot.time && 'bg-primary-500 text-white hover:bg-primary-500 hover:text-white'
-                  )
-                : 'text-neutral-500 border-none bg-neutral-200 cursor-not-allowed'
-            )}
-          >
-            {slot.time}
-          </Button>
-        ))}
+      {/* ⏱️ Time slots */}
+      <div className="mb-3 min-h-16">
+        {sortedTimes.length === 0 ? (
+          <p className="text-sm text-neutral-400 text-center py-5">نوبتی برای این روز ثبت نشده</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {sortedTimes.map(time => (
+              <Button
+                key={time}
+                disabled={!isActive(time)}
+                variant="outline"
+                onClick={() => setSelectedTime(p => p === time ? null : time)}
+                className={cn('h-9 text-sm font-medium transition-colors',
+                  selectedTime === time
+                    ? 'bg-primary-500 text-white border-primary-500 hover:bg-primary-500 hover:text-white'
+                    : isActive(time)
+                      ? 'text-primary-500 border-primary-500 hover:bg-primary-50'
+                      : 'text-neutral-400 border-neutral-200 bg-neutral-100 cursor-not-allowed opacity-60'
+                )}
+              >
+                {toFarsiTime(time)}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 🎯 Book Appointment Button */}
       <Button
-        className="w-full h-12.25 rounded-xl bg-primary-500 hover:bg-primary-700 cursor-pointer text-white"
-        onClick={handleBook}
-        disabled={!date || !selectedTime}
+        className="w-full h-12 rounded-xl bg-primary-500 hover:bg-primary-700 text-white disabled:bg-primary-200"
+        onClick={handleContinue}
+        disabled={!selectedDate || !selectedTime}
       >
-        رزرو نوبت
+        ادامه و تایید نوبت
       </Button>
     </div>
   );

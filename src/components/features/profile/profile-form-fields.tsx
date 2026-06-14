@@ -1,6 +1,8 @@
+'use client';
+
 import { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from 'react-hook-form';
 import { FormField } from './form-field';
-import { ProfileFormData } from '@/lib/validations/profile.zod';
+import { ProfileFormData } from '@/lib/validations/profile';
 
 const FIELDS = [
   { name: 'firstName' as const, label: 'نام', required: true },

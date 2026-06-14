@@ -1,0 +1,544 @@
+@import "tailwindcss";
+/* 🎬 AOS animation CSS — imported here instead of layout.tsx to avoid Turbopack
+   module factory errors when CSS is imported inside a Server Component */
+@import "aos/dist/aos.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 🎨 Custom color palette */
+@theme {
+  /* 🟦 Primary: Blue */
+  --color-primary-50: #f0f5fe;
+  --color-primary-100: #dce8fd;
+  --color-primary-200: #c1d7fc;
+  --color-primary-300: #7eb0fb;
+  --color-primary-400: #659af5;
+  --color-primary-500: #4179f0;
+  --color-primary-600: #2c5be4;
+  --color-primary-700: #2348d2;
+  --color-primary-800: #233b88;
+  --color-primary-900: #223686;
+
+  /* 🟩 Secondary: Green */
+  --color-secondary-50: #f1fde8;
+  --color-secondary-100: #ffeacc;
+  --color-secondary-200: #c8f6a0;
+  --color-secondary-300: #a2ed69;
+  --color-secondary-400: #7fdf3c;
+  --color-secondary-500: #60cf1d;
+  --color-secondary-600: #479e13;
+  --color-secondary-700: #377813;
+  --color-secondary-800: #305f15;
+  --color-secondary-900: #2a5116;
+  --color-secondary-950: #122c07;
+
+  /* 🟥 Danger: Red */
+  --color-danger-50: #fff1f1;
+  --color-danger-100: #ffe0e0;
+  --color-danger-200: #ffc5c5;
+  --color-danger-300: #ff9d9d;
+  --color-danger-400: #ff6565;
+  --color-danger-500: #ec2a2a;
+  --color-danger-600: #ec1818;
+  --color-danger-700: #c70e0e;
+  --color-danger-800: #a41010;
+  --color-danger-900: #881414;
+  --color-danger-950: #4a0505;
+
+  /* ⚪ Neutral: Gray scale */
+  --color-neutral-30: #fcfcfc;
+  --color-neutral-50: #fafafa;
+  --color-neutral-75: #f0f0f0;
+  --color-neutral-100: #e7e7e7;
+  --color-neutral-150: #dddddd;
+  --color-neutral-200: #d1d1d1;
+  --color-neutral-300: #c1c1c1;
+  --color-neutral-400: #b3b3b3;
+  --color-neutral-500: #888888;
+  --color-neutral-600: #6d6d6d;
+  --color-neutral-700: #5d5d5d;
+  --color-neutral-750: #565656;
+  --color-neutral-800: #4d4d4d;
+  --color-neutral-850: #3d3d3d;
+  --color-neutral-900: #333333;
+  --color-neutral-950: #262626;
+  --color-neutral-975: #2e2e2e;
+  --color-neutral-990: #1d1d1d;
+
+  /* 🟨 Special colors */
+  --color-alert: #ffb800;
+  --color-custom-blue: #203c86;
+  --color-dark-blue: #0a142f;
+  --color-light-gray: #e7e8f2;
+  --color-medium-gray: #4f4f4f;
+  --color-gray-100: #f7f7f7;
+}
+
+@layer components {
+  /* 🃏 Card */
+  .card { @apply bg-white rounded-2xl border border-neutral-100; }
+
+  /* 📝 Form input */
+  .form-input {
+    @apply w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm bg-white
+           focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-100
+           transition-all placeholder:text-neutral-600;
+  }
+  .form-input-error { @apply border-danger-400 focus:border-danger-400 focus:ring-danger-100; }
+  .form-label { @apply block text-sm font-medium text-neutral-700 mb-1.5; }
+
+  /* 🔘 Icon button */
+  .icon-btn {
+    @apply w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-100
+           text-neutral-500 transition-colors disabled:opacity-50 shrink-0 bg-white hover:bg-neutral-50;
+  }
+}
+
+/* ─── Tiptap Editor — Persian RTL Theme ─────────────────────────────────────
+   🎨 Matches project palette: primary=#2c5be4 neutral=#e7e7e7
+   ✅ Fully offline — no CDN dependency
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* 📄 Editor area */
+.tiptap-content .ProseMirror {
+  min-height: 340px;
+  padding: 20px 24px;
+  direction: rtl;
+  text-align: right;
+  font-family: "Vazirmatn", "Tahoma", sans-serif;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: #262626;
+  background: #ffffff;
+  outline: none;
+}
+
+/* Placeholder */
+.tiptap-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #b3b3b3;
+  pointer-events: none;
+  float: right;
+  height: 0;
+}
+
+/* Typography */
+.tiptap-content .ProseMirror h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d1d1d;
+  margin: 20px 0 8px;
+  line-height: 1.4;
+}
+.tiptap-content .ProseMirror h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333333;
+  margin: 16px 0 6px;
+  line-height: 1.4;
+}
+.tiptap-content .ProseMirror p {
+  margin: 0 0 10px;
+}
+.tiptap-content .ProseMirror strong {
+  font-weight: 700;
+  color: #1d1d1d;
+}
+.tiptap-content .ProseMirror em {
+  font-style: italic;
+  color: #4d4d4d;
+}
+.tiptap-content .ProseMirror a {
+  color: #2c5be4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tiptap-content .ProseMirror a:hover {
+  color: #2348d2;
+}
+
+/* Blockquote */
+.tiptap-content .ProseMirror blockquote {
+  border-right: 3px solid #2c5be4;
+  border-left: none;
+  padding: 12px 16px 12px 12px;
+  margin: 14px 0;
+  background: #f0f5fe;
+  border-radius: 0 10px 10px 0;
+  color: #2348d2;
+}
+
+/* 🖼️ In-content images */
+.tiptap-content .ProseMirror img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 16px auto;
+  border-radius: 12px;
+}
+/* 🔲 Selected-image highlight (ProseMirror node selection) */
+.tiptap-content .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #2c5be4;
+  outline-offset: 2px;
+}
+
+/* Lists */
+.tiptap-content .ProseMirror ul,
+.tiptap-content .ProseMirror ol {
+  padding-right: 28px;
+  padding-left: 0;
+  margin: 8px 0;
+}
+.tiptap-content .ProseMirror li {
+  margin: 4px 0;
+}
+.tiptap-content .ProseMirror li p {
+  margin: 0;
+}
+
+/* Code */
+.tiptap-content .ProseMirror code {
+  background: #f0f0f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+  color: #333;
+  font-family: monospace;
+}
+.tiptap-content .ProseMirror pre {
+  background: #1d1d1d;
+  color: #e7e7e7;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  direction: ltr;
+  text-align: left;
+  overflow-x: auto;
+}
+.tiptap-content .ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: 13px;
+}
+
+/* Text selection */
+.tiptap-content .ProseMirror ::selection {
+  background: #c1d7fc;
+}
+
+/* 📦 Container utility */
+@utility container {
+  margin: 0 auto;
+}
+
+/* 🖼️ Swiper styles */
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 🖼️ Article cover — show the whole image (contain) over a blurred twin (cover).
+   The `.swiper-slide …` selector raises specificity above the generic
+   `.swiper-slide img { object-fit: cover }` rule above, so the foreground stays
+   uncropped inside the home carousel too. */
+.article-cover .cover-bg,
+.swiper-slide .article-cover .cover-bg { object-fit: cover; }
+.article-cover .cover-fg,
+.swiper-slide .article-cover .cover-fg { object-fit: contain; }
+
+/* 🌀 Accordion animations */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* 🔢 OTP feedback animations */
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+@keyframes otp-fade {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-otp-shake { animation: otp-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.animate-otp-fade { animation: otp-fade 200ms ease-out; }
+/* 💫 حلقه pulse اطراف آیکون قفل OTP */
+@keyframes otp-pulse {
+  0%   { opacity: 0.7; transform: scale(0.96); }
+  70%  { opacity: 0;   transform: scale(1.12); }
+  100% { opacity: 0;   transform: scale(1.12); }
+}
+
+/* 🎯 pop هنگام پر شدن اسلات */
+@keyframes otp-slot-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+/* 🎯 کلاس قابل‌استفاده برای pop رقم تازه‌واردشده (با کمی کشش spring) */
+.animate-otp-slot-pop { animation: otp-slot-pop 240ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ✨ چشمک کرسر فعال (قبلاً keyframe نداشت و کرسر بی‌حرکت بود) */
+@keyframes caret-blink {
+  0%, 70%, 100% { opacity: 1; }
+  20%, 50%      { opacity: 0; }
+}
+.animate-caret-blink { animation: caret-blink 1s steps(1) infinite; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-otp-shake, .animate-otp-fade, .animate-otp-slot-pop,
+  .animate-caret-blink, [class*="animate-[otp-"] { animation: none; }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 300ms cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+.animate-accordion-up {
+  animation: accordion-up 300ms cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+/* 🎨 Design system tokens */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --breakpoint-xs: 25rem;
+}
+
+/* 🌞 Light theme */
+:root {
+  --radius: 0.625rem;
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+}
+
+/* 🌙 Dark theme */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Vazirmatn", "Tahoma", sans-serif;
+    direction: rtl;
+  }
+
+  /* 🎨 Themed text selection — overrides the browser default everywhere
+     (inputs, textareas, body copy) so highlighting matches the design system.
+     Uses the same primary tint as the rich-text editor for one consistent look. */
+  ::selection {
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-900);
+  }
+  ::-moz-selection {
+    /* 🦊 Firefox needs its own rule — a combined selector would drop both */
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-900);
+  }
+
+  /* Admin shell owns the only scroll — lock html/body to prevent double scroll */
+  html:has([data-admin-shell]),
+  html:has([data-admin-shell]) body {
+    overflow: hidden;
+    height: 100%;
+  }
+}
+
+/* ✨ Tailwind CSS v4 custom keyframes for search dropdown */
+@layer utilities {
+  @keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-6px) scaleY(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scaleY(1); }
+  }
+
+  .animate-dropdown {
+    animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: top center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🎬 CSS-only scroll animations — replaces AOS on SSR components
+   Zero hydration issues: no JS touches React's DOM during hydration
+   ═══════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* 📦 Initial state — invisible + shifted down */
+  .anim-fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    will-change: opacity, transform;
+  }
+
+  /* ✅ Visible state — applied by IntersectionObserver */
+  .anim-fade-up.anim-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 🚫 Respect prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .anim-fade-up {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* 🔧 Fix: Allow Swiper slides to show card border/shadow at bottom and sides */
+  .swiper {
+    overflow: visible !important;
+  }
+  .swiper-wrapper {
+    overflow: visible !important;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   📖 Article reading typography — styles the Tiptap-generated HTML on the
+   public article detail page (/articles/[slug]). RTL, reading-optimized.
+   ──────────────────────────────────────────────────────────────────────────── */
+.article-prose {
+  direction: rtl;
+  text-align: right;
+  font-family: "Vazirmatn", "Tahoma", sans-serif;
+  font-size: 16.5px;
+  line-height: 2.1;
+  color: #3d3d3d;
+}
+.article-prose h2 {
+  font-size: 23px;
+  font-weight: 700;
+  color: #1d1d1d;
+  margin: 32px 0 12px;
+  line-height: 1.5;
+}
+.article-prose h3 {
+  font-size: 19px;
+  font-weight: 600;
+  color: #333333;
+  margin: 24px 0 8px;
+  line-height: 1.5;
+}
+.article-prose p { margin: 0 0 16px; }
+.article-prose strong { font-weight: 700; color: #1d1d1d; }
+.article-prose em { font-style: italic; color: #4d4d4d; }
+.article-prose a {
+  color: #2c5be4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.article-prose a:hover { color: #2348d2; }
+.article-prose blockquote {
+  border-right: 3px solid #2c5be4;
+  border-left: none;
+  padding: 14px 18px;
+  margin: 22px 0;
+  background: #f0f5fe;
+  border-radius: 0 12px 12px 0;
+  color: #2348d2;
+}
+.article-prose ul,
+.article-prose ol { padding-right: 28px; padding-left: 0; margin: 0 0 16px; }
+.article-prose ul { list-style: disc; }
+.article-prose ol { list-style: decimal; }
+.article-prose li { margin: 6px 0; }
+.article-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 22px 0;
+}
+
+/* ─── Swiper equal-height slides ─────────────────────────────────────────────
+   🟰 By default Swiper sizes each slide to its own content (and its own CSS sets
+   .swiper-slide{height:100%}), so cards with less text end up shorter. We raise
+   specificity (`.swiper .swiper-slide`) so this wins over Swiper's own rule
+   regardless of stylesheet order, force the wrapper to stretch, and make each
+   slide a flex container so `h-full` cards fill the tallest slide.
+   ──────────────────────────────────────────────────────────────────────────── */
+.swiper .swiper-wrapper {
+  align-items: stretch;
+}
+.swiper .swiper-slide {
+  height: auto;
+  display: flex;
+}
+.swiper .swiper-slide > * {
+  width: 100%;
+}

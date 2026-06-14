@@ -1,70 +1,78 @@
-import { useCallback, useState } from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
-import { Button } from '@/components/ui/button';
-import clsx from 'clsx';
+"use client";
 
-// 🎨 Types
-interface BioSectionProps {
-  bio: string;
-  title: string;
+import { useCallback, useState, useRef, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
+
+interface Props {
+  bio?:       string;
+  title?:     string;
   className?: string;
 }
 
-// 📋 BioSection: Displays a collapsible biography section
-const BioSection = ({ bio, title, className }:BioSectionProps) => {
-  // 🔐 State: manages expanded/collapsed state
-  const [isExpanded, setIsExpanded] = useState(true);
+const COLLAPSED_H = 20 * 3; // line-height × visible-lines = 60px
 
-  // 🎯 Toggle handler — memoized for performance
-  const toggleExpand = useCallback(() => {
-    setIsExpanded(prev => !prev);
-  }, []);
+export default function BioSection({ bio = "", title = "", className }: Props) {
+  const textRef                     = useRef<HTMLParagraphElement>(null);
+  const [isClamped,  setIsClamped]  = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // 📏 Measure full height after fonts load to determine if clamp is needed
+  useEffect(() => {
+    const check = () => {
+      const el = textRef.current;
+      if (!el) return;
+      el.style.webkitLineClamp = 'unset';
+      el.style.display         = 'block';
+      const full               = el.scrollHeight;
+      el.style.webkitLineClamp = '';
+      el.style.display         = '';
+      setIsClamped(full > COLLAPSED_H + 4);
+    };
+    check();
+    document.fonts?.ready.then(check);
+  }, [bio]);
+
+  const toggle = useCallback(() => setIsExpanded(p => !p), []);
 
   return (
-    <div className={clsx(
+    <div className={cn(
       'p-3 sm:px-4 lg:p-5 border border-neutral-100 md:border-none md:rounded-none rounded-[10px] relative',
+      isClamped && !isExpanded && 'pb-8',
       className
     )}>
-      {/* 🏷️ Section header */}
-      <h4 className="text-lg text-black font-medium">
-        درباره {title}
-      </h4>
+      <h4 className="text-lg text-black font-medium mb-2">درباره {title}</h4>
 
-      {/* 📝 Expandable content with fixed height animation */}
-      <div className={clsx("transition-all duration-400 ease-in-out overflow-hidden",isExpanded ? "h-16.25" : "h-31.25  xl:h-27.75")}>
-        <p className="text-neutral-700 text-[13px] mt-2  line-clamp-6">
-          {bio}
-        </p>
-      </div>
+      <p ref={textRef} className={cn('text-neutral-700 text-[13px] leading-5 transition-all duration-300 ease-in-out', !isExpanded && 'line-clamp-3')}>
+        {bio}
+      </p>
 
-      {/* 🌫️ Gradient overlay — visually hides overflow text when collapsed */}
-      <div
-        className={clsx(
-          'absolute bottom-0 z-10 left-0 right-0 h-18.75 rounded-b-[10px] bg-linear-to-t from-white to-transparent pointer-events-none transition-opacity duration-300',
-          isExpanded ? 'opacity-100' : 'opacity-0'
-        )}
-      />
-
-      {/* 🔄 Toggle button — accessible, centered, with rotation effect */}
-      <Button
-        onClick={toggleExpand}
-        variant="ghost"
-        size="icon"
-        className="absolute -bottom-5 left-0 right-0 m-auto w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center z-40 p-0"
-        aria-expanded={!isExpanded}
-        aria-label={isExpanded ? "مشاهده بیشتر" : "مشاهده کمتر"}
-      >
-        <IoIosArrowDown
-          size={24}
-          color="#6D6D6D"
-          className={clsx(
-            'transition-transform duration-300 ease-in-out',
-            !isExpanded && 'rotate-180' // Rotates arrow when collapsed
+      {isClamped && (
+        <>
+          {/* 🌫️ Fade overlay when collapsed */}
+          {!isExpanded && (
+            <div className="absolute bottom-7 left-0 right-0 h-10 bg-linear-to-t from-white to-transparent pointer-events-none rounded-b-[10px]" />
           )}
-        />
-      </Button>
+
+          <Button
+            onClick={toggle}
+            variant="ghost"
+            size="icon"
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'مشاهده کمتر' : 'مشاهده بیشتر'}
+            className="absolute -bottom-4 left-0 right-0 mx-auto w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-40 p-0"
+          >
+            {/* ⬇️ Rotates 180° when expanded */}
+            <ChevronDown
+              size={20}
+              color="#6D6D6D"
+              className={cn('transition-transform duration-300 ease-in-out', isExpanded && 'rotate-180')}
+            />
+          </Button>
+        </>
+      )}
     </div>
   );
-};
-
-export default BioSection;
+}

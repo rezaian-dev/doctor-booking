@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import { Instagram, Linkedin, Send } from 'lucide-react';
 import SocialButton from './social-button';
 
@@ -9,7 +8,7 @@ const SOCIAL_LINKS = [
   { icon: Send, bgColor: 'bg-blue-400', href: 'https://t.me', label: 'Telegram' }
 ];
 
-const SocialLinks: FC = () => {
+const SocialLinks = () => {
   return (
     <div className="flex items-center justify-center gap-3 flex-col xs:flex-row md:gap-6" aria-label="شبکه‌های اجتماعی">
       <span className="text-gray-600 font-medium">شبکه‌های اجتماعی:</span>
@@ -20,7 +19,6 @@ const SocialLinks: FC = () => {
           bgColor={social.bgColor}
           href={social.href}
           label={social.label}
-          aria-label={`دنبال کردن در ${social.label}`}
         />
       ))}
     </div>

@@ -1,6 +1,5 @@
-import React from 'react';
-
-const PaymentNotice: React.FC = () => {
+// 🛡️ Reassurance panel shown beside the payment summary
+const PaymentNotice = () => {
   return (
     <div className="bg-white rounded-[12px] py-6 px-5 mb-6 lg:mb-0  border border-neutral-100">
       {/* Header */}

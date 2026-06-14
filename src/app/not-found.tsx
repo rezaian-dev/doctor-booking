@@ -1,3 +1,4 @@
+// No next/* imports — not-found renders outside normal router context.
 import type { FC } from 'react';
 
 const NotFoundPage: FC = () => {
@@ -11,19 +12,16 @@ const NotFoundPage: FC = () => {
         <div className="flex flex-col md:flex-row items-center md:justify-start justify-center gap-6 sm:gap-8 lg:gap-12 xl:gap-16 max-w-7xl mx-auto">
           <section className="shrink-0 w-full sm:w-auto" aria-label="404 error illustration">
             <div className="relative w-full max-w-70 sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto lg:mx-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {/* loading="lazy" suppresses the <link rel="preload"> Next.js emits for
+                  not-found boundary images — they're never used on normal page loads. */}
               <img
                 src="/images/404.png"
                 alt="صفحه مورد نظر یافت نشد - خطای 404"
                 width={788}
                 height={738}
                 loading="lazy"
-                decoding="sync"
-                className="w-full h-auto"
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  aspectRatio: '788 / 738',
-                }}
+                className="h-auto w-full"
               />
             </div>
           </section>
@@ -37,16 +35,17 @@ const NotFoundPage: FC = () => {
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-gray-700 font-medium leading-relaxed">
-              دسترسی خود به اینترنت را بررسی کنید!
+              ممکن است آدرس را اشتباه وارد کرده باشید یا این صفحه حذف شده باشد.
             </p>
 
-            <div className="pt-2 sm:pt-3 lg:pt-4 w-full max-w-30 h-10">
+            <div className="pt-2 sm:pt-3 lg:pt-4">
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
-                className="flex items-center justify-center h-10 bg-white border-2 border-primary-500 text-primary-500 rounded-lg font-semibold text-sm hover:bg-primary-50 hover:border-primary-600 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:scale-95 transition-all duration-200 ease-in-out shadow-sm hover:shadow-md"
+                className="inline-flex items-center justify-center h-10 px-6 bg-white border-2 border-primary-500 text-primary-500 rounded-lg font-semibold text-sm hover:bg-primary-50 hover:border-primary-600 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:scale-95 transition-all duration-200 ease-in-out shadow-sm hover:shadow-md"
                 aria-label="بازگشت به صفحه اصلی"
               >
-                بارگذاری مجدد
+                بازگشت به صفحه اصلی
               </a>
             </div>
           </section>

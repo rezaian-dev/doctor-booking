@@ -1,223 +1,106 @@
+// 🧠 Client mobile header chrome. user/unreadCount arrive as props (avatar in SSR HTML,
+//    no flash). ✨ Hamburger is always a plain <button> so it can't vanish; the heavy
+//    Radix Sheet drawer loads only when the menu opens → tiny initial payload. 🚀
 'use client';
 
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { Cancel01Icon, Menu01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet';
-import { MdKeyboardArrowLeft } from 'react-icons/md';
-import { LogOut, Loader2, Calendar } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils/cn';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/lib/providers/auth-provider';
-import { Button } from '@/components/ui/button';
+import dynamic from 'next/dynamic';
+import { Menu } from 'lucide-react';
+import { HeaderAvatar } from '@/components/shared/header-avatar';
+import type { NavItem } from '@/components/layout/header-shell'; // 🔗 Shared nav shape (DRY)
+import type { UserData } from '@/types/patient';                 // 🔗 Shared user shape (DRY)
 
-interface NavItem {
-  href: string;
-  label: string;
+// 💤 Radix Sheet drawer — its own chunk, fetched ON DEMAND (first menu open only)
+const MobileMenuDrawer = dynamic(() => import('@/components/shared/mobile-menu-drawer'), {
+  ssr: false,
+});
+
+interface Props {
+  navItems:     readonly NavItem[];
+  // 🔑 Server passes these as props — no client fetch needed
+  user:         UserData | null;
+  unreadCount?: number;
+  // ⏳ True only while a LOGGED-IN user's profile resolves (static page → /api/auth/me)
+  isAuthLoading?: boolean;
+  // 👻 True on SSR + first paint, before the session hint is read → render an empty slot
+  //    so guests never flash a skeleton or a login button on refresh. 🧠
+  sessionPending?: boolean;
 }
 
-interface MobileMenuProps {
-  navItems: readonly NavItem[];
-}
+export function MobileMenu({ navItems, user, unreadCount = 0, isAuthLoading = false, sessionPending = false }: Props) {
+  const [open, setOpen]               = useState(false);
+  const [drawerMounted, setDrawerMnt] = useState(false); // 📦 mount drawer chunk lazily
+  const triggerRef = useRef<HTMLButtonElement>(null);    // ♿ restore focus on close
 
-export const MobileMenu = ({ navItems }: MobileMenuProps) => {
-  const pathname = usePathname();
-  const { user, logout } = useAuth();
-  const [isClient, setIsClient] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  useEffect(() => setIsClient(true), []);
-
-  // 🚪 Logout handler
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    await logout();
+  // 🎛️ First interaction loads the chunk AND opens the sheet
+  const openMenu = () => {
+    setDrawerMnt(true);
+    setOpen(true);
   };
 
-  // 🧠 User display data
   const initials = user
-    ? (user.firstName?.charAt(0) ?? '') + (user.lastName?.charAt(0) ?? '') || 'U'
-    : 'U';
-  const fullName = user
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'کاربر'
-    : 'کاربر';
+    ? ((user.firstName?.charAt(0) ?? '') + (user.lastName?.charAt(0) ?? '')).toUpperCase() || 'U'
+    : '';
 
   return (
     <>
-      <div className="flex items-center gap-x-4">
-        {/* 🍔 Hamburger menu */}
-        {isClient ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="md:hidden" aria-label="Open menu">
-                <HugeiconsIcon icon={Menu01Icon} color="#262626" />
-              </button>
-            </SheetTrigger>
+      {/* 🎛️ HAMBURGER — always a plain button (identical on SSR + client, never
+          swapped) so it can never flicker/disappear during hydration or chunk load. */}
+      <button
+        ref={triggerRef}
+        className="md:hidden"
+        aria-label="باز کردن منو"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        type="button"
+        onClick={openMenu}
+      >
+        <Menu size={24} color="#262626" />
+      </button>
 
-            <SheetContent side="right" className="flex w-72 flex-col p-0 md:hidden">
-              {/* ❌ Close button */}
-              <div className="self-end px-4 pt-5">
-                <SheetClose asChild>
-                  <button className="mb-1 rounded-md" aria-label="Close">
-                    <HugeiconsIcon icon={Cancel01Icon} color="#000000" size={24} />
-                  </button>
-                </SheetClose>
-                <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
-                <SheetDescription className="sr-only">Navigate sections</SheetDescription>
-              </div>
+      {/* 🏠 Logo */}
+      <Link href="/" className="flex items-center gap-x-2" aria-label="صفحه اصلی">
+        <img src="/images/logo.jpg" alt="دکتر رزرو" width={32} height={32} className="size-6 sm:size-8" />
+        <span className="text-lg font-medium">دکتر <span className="text-primary-600">رزرو</span></span>
+      </Link>
 
-              {/* 👤 User header */}
-              {user && (
-                <div className="mx-4 mb-4 rounded-2xl bg-linear-to-br from-primary-600 to-primary-700 p-4 shadow-lg shadow-primary-600/20">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12 border-2 border-white/30 shadow-md">
-                      <AvatarImage src={user.avatar ?? undefined} alt={fullName} />
-                      <AvatarFallback className="bg-white/20 text-sm font-bold text-white backdrop-blur-sm">
-                        {initials.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-white">{fullName}</p>
-                      {user.phone && (
-                        <p className="text-xs text-white/70 font-medium direction-ltr text-right">
-                          {user.phone}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 🧭 Navigation links */}
-              <nav className="flex flex-1 flex-col gap-y-2 overflow-y-auto px-4 pb-4">
-                {navItems.map(({ href, label }) => {
-                  const isActive = pathname === href;
-                  return (
-                    <SheetClose asChild key={href}>
-                      <Link
-                        href={href}
-                        aria-current={isActive ? 'page' : undefined}
-                        className={cn(
-                          '-mx-3 flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium transition-all duration-200 active:scale-[0.98]',
-                          isActive
-                            ? 'bg-primary-50 text-primary-600 shadow-sm'
-                            : 'text-neutral-950 hover:bg-neutral-50'
-                        )}
-                      >
-                        {label}
-                        <MdKeyboardArrowLeft color={isActive ? '#2c5be4' : '#000'} size={24} />
-                      </Link>
-                    </SheetClose>
-                  );
-                })}
-
-                {/* 📅 Appointments link */}
-                {user && (
-                  <SheetClose asChild>
-                    <Link
-                      href="/appointments"
-                      aria-current={pathname === '/appointments' ? 'page' : undefined}
-                      className={cn(
-                        '-mx-3 flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium transition-all duration-200 active:scale-[0.98]',
-                        pathname === '/appointments'
-                          ? 'bg-linear-to-l from-secondary-50 to-secondary-100/50 text-secondary-600 shadow-sm'
-                          : 'text-neutral-950 hover:bg-neutral-50'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            'flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
-                            pathname === '/appointments'
-                              ? 'bg-secondary-600 text-white shadow-md shadow-secondary-600/30'
-                              : 'bg-neutral-100 text-neutral-600'
-                          )}
-                        >
-                          <Calendar className="h-4.5 w-4.5" />
-                        </div>
-                        <span>لیست نوبت‌ها</span>
-                      </div>
-                      <MdKeyboardArrowLeft color={pathname === '/appointments' ? '#479e13' : '#000'} size={24} />
-                    </Link>
-                  </SheetClose>
-                )}
-
-                {/* 🚪 Logout button */}
-                {user && (
-                  <>
-                    <div className="my-2 h-px bg-linear-to-r from-transparent via-neutral-200 to-transparent" />
-                    <button
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
-                      className={cn(
-                        '-mx-3 flex items-center justify-between rounded-xl px-3 py-3 transition-all duration-200 active:scale-[0.98]',
-                        'hover:bg-danger-50 disabled:opacity-50'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-danger-100 text-danger-600 transition-colors group-hover:bg-danger-200">
-                          {isLoggingOut ? (
-                            <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                          ) : (
-                            <LogOut className="h-4.5 w-4.5" />
-                          )}
-                        </div>
-                        <span className="text-sm font-medium text-danger-600">خروج از حساب</span>
-                      </div>
-                      <MdKeyboardArrowLeft color="#ec2a2a" size={24} />
-                    </button>
-                  </>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
+      {/* 👤 Fixed-width user slot → the logo NEVER shifts between
+          placeholder / skeleton / avatar / login (zero header jump on refresh).
+          • pending → empty (hint not read yet → no skeleton, no login flash for guests)
+          • loading → 36px circular skeleton (logged-in users only)
+          • authed  → avatar (shimmers until its photo paints)
+          • guest   → login button
+          The slot is sized to fit the widest state (login) and end-aligns its
+          content, so every transition is a pure cross-fade in place. 🧠 */}
+      <div className="md:hidden flex w-20 shrink-0 items-center justify-end">
+        {sessionPending ? (
+          <span className="h-9 w-9" aria-hidden />
+        ) : isAuthLoading ? (
+          <div className="h-9 w-9 rounded-full bg-neutral-200 animate-pulse" aria-hidden />
+        ) : user ? (
+          <Link href="/profile" className="shrink-0" aria-label="پروفایل">
+            <HeaderAvatar src={user.avatar ?? null} alt={user.firstName} initials={initials} />
+          </Link>
         ) : (
-          <Button className="md:hidden" aria-label="Open menu" disabled>
-            <HugeiconsIcon icon={Menu01Icon} color="#262626" />
-          </Button>
+          <Link href="/auth/login"
+            className="rounded-xl bg-linear-to-l from-primary-600 to-primary-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform active:scale-95">
+            ورود
+          </Link>
         )}
-
-        {/* 🏷️ Logo */}
-        <Link href="/" className="flex items-center gap-x-2" aria-label="Home">
-          <Image
-            src="/images/Logo.jpg"
-            alt="Dr. Reserve"
-            width={32}
-            height={32}
-            className="size-6 sm:size-8"
-            priority
-            sizes="(max-width: 640px) 24px, 32px"
-          />
-          <span className="text-lg font-medium">
-            دکتر <span className="text-primary-600">رزرو</span>
-          </span>
-        </Link>
       </div>
 
-      {/* 👤 Mobile avatar */}
-      {user && (
-        <Link href="/profile" className="md:hidden" aria-label="Profile">
-          <Avatar className="h-9 w-9 ring-2 ring-primary-100 transition-all duration-200 hover:ring-primary-300 active:scale-95">
-            <AvatarImage src={user.avatar ?? undefined} alt={fullName} />
-            <AvatarFallback className="bg-linear-to-br from-primary-100 to-primary-200 text-xs font-bold text-primary-700">
-              {initials.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-      )}
-
-      {/* 🔓 Mobile login */}
-      {!user && (
-        <Link
-          href="/auth/login"
-          className="rounded-xl bg-linear-to-l from-primary-600 to-primary-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform active:scale-95 md:hidden"
-        >
-          ورود
-        </Link>
+      {/* 💤 Drawer — mounted only after the first open → its chunk loads on demand */}
+      {drawerMounted && (
+        <MobileMenuDrawer
+          navItems={navItems}
+          user={user}
+          unreadCount={unreadCount}
+          open={open}
+          onOpenChange={setOpen}
+          triggerRef={triggerRef}
+        />
       )}
     </>
   );
-};
+}

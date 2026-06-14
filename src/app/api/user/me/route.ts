@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth/auth-jwt';
+import { verifyAccessToken } from '@/lib/auth/jwt';
 import { connectDB } from '@/lib/db/connection';
-import { User } from '@/lib/db/models/user.model';
+import { User } from '@/lib/db/models/user';
 
 // 🔐 Get authenticated user data
 export async function GET() {
@@ -16,7 +16,11 @@ export async function GET() {
     await connectDB();
     const user = await User.findById(payload.userId).select('firstName lastName phone avatar').lean();
 
-    return NextResponse.json({ user: user || null });
+    // 🆔 Surface the id (alongside profile fields) so client components can match the
+    //    current user against review.userId without a server cookie read on the page. 🧠
+    return NextResponse.json({
+      user: user ? { id: String(user._id), ...user } : null,
+    });
   } catch {
     return NextResponse.json({ user: null });
   }

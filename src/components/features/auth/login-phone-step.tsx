@@ -1,7 +1,9 @@
+'use client';
+
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormInput } from './form-input';
 import { SubmitButton } from './submit-button';
-import { LoginPhoneInput } from '@/lib/validations/auth.zod';
+import { LoginPhoneInput } from '@/lib/validations/auth';
 
 interface LoginPhoneStepProps {
   register: UseFormRegister<LoginPhoneInput>;

@@ -1,7 +1,9 @@
+'use client';
+
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { FormInput } from './form-input';
 import { SubmitButton } from './submit-button';
-import { RegisterInput, VerifySignupInput } from '@/lib/validations/auth.zod';
+import { RegisterInput, VerifySignupInput } from '@/lib/validations/auth';
 
 
 interface SignupFormStepProps {

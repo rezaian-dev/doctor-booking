@@ -1,3 +1,5 @@
+'use client';
+
 import { Edit, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';

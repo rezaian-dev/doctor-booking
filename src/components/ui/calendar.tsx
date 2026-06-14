@@ -1,3 +1,5 @@
+'use client';
+
 import { ComponentProps, useEffect, useRef } from 'react';
 import {
   ChevronDownIcon,
@@ -5,25 +7,11 @@ import {
   ChevronRightIcon,
 } from 'lucide-react';
 import { DayButton, getDefaultClassNames, DayPicker } from 'react-day-picker';
-import { toJalaali } from 'jalaali-js';
 import { cn } from '@/lib/utils/cn';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { jalaliMonthCaption, jalaliDayNumber } from '@/hooks/use-jalaali';
 
 // 📅 Constants
-const JALALI_MONTHS = [
-  'فروردین',
-  'اردیبهشت',
-  'خرداد',
-  'تیر',
-  'مرداد',
-  'شهریور',
-  'مهر',
-  'آبان',
-  'آذر',
-  'دی',
-  'بهمن',
-  'اسفند',
-] as const;
 const WEEKDAYS: Record<string, string> = {
   Saturday: 'شنبه',
   Sunday: 'یکشنبه',
@@ -33,8 +21,6 @@ const WEEKDAYS: Record<string, string> = {
   Thursday: 'پنجشنبه',
   Friday: 'جمعه',
 };
-const toPersian = (n: number) =>
-  n.toLocaleString('fa-IR', { useGrouping: false });
 
 function Calendar({
   className,
@@ -62,10 +48,7 @@ function Calendar({
         className
       )}
       formatters={{
-        formatMonthCaption: (d: Date) => {
-          const { jy, jm } = toJalaali(d);
-          return `${JALALI_MONTHS[jm - 1]} ماه ${toPersian(jy)}`;
-        },
+        formatMonthCaption: (d: Date) => jalaliMonthCaption(d),
         ...formatters,
       }}
       classNames={{
@@ -109,16 +92,13 @@ function Calendar({
           'flex w-6 h-6 rounded-full items-center justify-center text-neutral-500 hover:bg-neutral-100 hover:text-black text-[11px] xs:text-sm font-medium',
           base.day
         ),
-        today: cn('font-bold text-xs text-secondary-500', base.today),
+        today: cn('font-bold', base.today),
         selected: cn(
           'bg-primary-500 text-white hover:bg-primary-500 hover:text-white',
           base.selected
         ),
         outside: cn('text-danger-950', base.outside),
-        disabled: cn(
-          "'text-white opacity-40 cursor-not-allowed",
-          base.disabled
-        ),
+        disabled: cn('cursor-not-allowed', base.disabled),
         hidden: cn('invisible', base.hidden),
         ...classNames,
       }}
@@ -133,7 +113,9 @@ function Calendar({
           return <Icon className={cn('size-4 md:size-6', className)} />;
         },
         DayButton: CalendarDayButton,
-        Weekday: (props: any) => (
+        // 🔧 Cast to ThHTMLAttributes — react-day-picker's Weekday signature; aria-label is
+        //    already part of it, so no type is lost.
+        Weekday: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
           <th
             {...props}
             className={cn(
@@ -142,7 +124,8 @@ function Calendar({
             )}
           >
             <span className="text-[10px] xs:text-xs xs:font-medium text-neutral-700">
-              {WEEKDAYS[props['aria-label']]}
+              {/* 🛡️ Fallback to aria-label itself if key not in map */}
+              {WEEKDAYS[props['aria-label'] ?? ''] ?? props['aria-label'] ?? ''}
             </span>
           </th>
         ),
@@ -169,13 +152,19 @@ function CalendarDayButton({
     <button
       ref={ref}
       className={cn(
-        'w-6 h-6 cursor-pointer rounded-full',
-        modifiers.outside && 'text-neutral-200',
-        modifiers.today && !modifiers.selected && 'font-bold text-neutral-500'
+        'w-6 h-6 rounded-full',
+        // 🚫 Disabled (kept for reuse elsewhere) → readable muted gray, never white-on-white
+        modifiers.disabled ? 'text-neutral-300 cursor-not-allowed' : 'cursor-pointer',
+        // 📍 Today → bold & dark (no green)
+        modifiers.today && !modifiers.selected && !modifiers.disabled && 'font-bold text-neutral-900',
+        // 🩺 The ONLY colored mark: the doctor's open days → primary + bold
+        modifiers.hasSlot && !modifiers.disabled && 'text-primary-600 font-bold',
+        modifiers.outside && 'text-neutral-200',                                  // 🌫️ adjacent-month filler stays faint
+        modifiers.selected && 'text-white',                                       // ✅ selected → white on primary bg
       )}
       {...props}
     >
-      {toPersian(toJalaali(day.date).jd)}
+      {jalaliDayNumber(day.date)}
     </button>
   );
 }

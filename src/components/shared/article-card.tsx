@@ -1,267 +1,128 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils/cn';
-import { Calendar, Clock, ArrowLeft } from 'lucide-react';
-
-/**
- * 📰 ArticleCard – Enhanced article card with shadcn/ui
- *
- * Features:
- * ✅ Smooth animations with framer-motion
- * ✅ Reading time estimation
- * ✅ Category/tag support with badges
- * ✅ Author information display
- * ✅ Interactive hover states
- * ✅ Skeleton loading state
- * ✅ Enhanced accessibility
- * ✅ SEO-optimized
- */
+import Image from "next/image";
+import Link from "next/link";
+import { Calendar, Clock, ArrowLeft } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ButtonLink } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
 
 interface ArticleCardProps {
-  title: string;
-  excerpt: string;
-  date: string;
-  image: string;
-  href: string;
-  category?: string;
-  tags?: string[];
-  readingTime?: number; // in minutes
-  author?: {
-    name: string;
-    avatar?: string;
-  };
-  isFeatured?: boolean;
-  className?: string;
-  onCardClick?: (href: string) => void;
+  title:        string;
+  excerpt:      string;
+  date:         string;
+  image:        string;
+  href:         string;
+  readingTime?: number;
+  // 🧩 Kept for caller compatibility — tags are not rendered on the compact card
+  tags?:        string[];
+  author?:      { name: string; avatar?: string };
+  category?:    string;
+  isFeatured?:  boolean;
+  className?:   string;
+  index?:       number;
 }
 
-const ArticleCard = ({
-  title,
-  excerpt,
-  date,
-  image,
-  href,
-  category,
-  tags = [],
-  readingTime,
-  author,
-  isFeatured = false,
-  onCardClick,
-}: ArticleCardProps) => {
-  const handleClick = () => {
-    onCardClick?.(href);
-  };
+// 📰 Compact article card — same vertical rhythm as DoctorCard so the
+//    "Latest articles" carousel lines up with "Most popular doctors".
+export default function ArticleCard({
+  title, excerpt, date, image, href, readingTime, author, className,
+}: ArticleCardProps) {
+  // 👤 First letter of the author name for the initial-avatar fallback
+  const authorName    = author?.name?.trim() ?? "";
+  const authorInitial = authorName.charAt(0) || "ن";
 
   return (
-    <Card
-      className={cn(
-        'overflow-hidden border group bg-white',
-        'transition-all duration-300',
-        'hover:shadow-xl',
-        isFeatured
-          ? 'border-primary-300 shadow-md'
-          : 'border-neutral-100 shadow-sm hover:border-primary-200'
-      )}
-      onClick={handleClick}
-    >
-      {/* 🖼️ Image Section */}
-      <div className="relative aspect-289/200 w-full overflow-hidden">
+    <Card className={cn(
+      "group h-full gap-0 overflow-hidden border border-neutral-200 bg-white transition-all duration-300 hover:border-primary-300 hover:shadow-lg",
+      className,
+    )}>
+      {/* 🖼️ Cover — fixed box height; the FULL image is shown (no crop), and a
+          blurred twin of the same image fills the letterbox bars with its own
+          colors so nothing looks empty. Same src ⇒ browser caches it once. */}
+      <Link href={href} className="article-cover relative block aspect-289/200 w-full shrink-0 overflow-hidden bg-neutral-100">
+        {/* 🌫️ Blurred fill behind */}
+        <Image
+          src={image}
+          alt=""
+          aria-hidden
+          fill
+          loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="cover-bg scale-110 blur-xl"
+        />
+        {/* 🎯 Full, uncropped image on top */}
         <Image
           src={image}
           alt={title}
           fill
-          className={cn(
-            'object-cover transition-all duration-500',
-            'group-hover:scale-110 group-hover:brightness-95'
-          )}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="cover-fg transition-transform duration-500 group-hover:scale-105"
         />
+      </Link>
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* 📝 Content — grows to fill so the footer always pins to the bottom */}
+      <CardContent className="flex grow flex-col space-y-2 p-3 sm:p-4">
+        <Link href={href}>
+          <h3 className="line-clamp-2 min-h-[2.6em] text-sm font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-primary-600 sm:text-base">
+            {title}
+          </h3>
+        </Link>
 
-        {/* Category Badge */}
-        {category && (
-          <Badge
-            variant="default"
-            className={cn(
-              'absolute top-3 right-3 shadow-lg',
-              isFeatured && 'bg-amber-500 hover:bg-amber-600'
+        {/* 📐 min-h reserves 2 lines (leading-relaxed) so short excerpts don't shrink the card */}
+        <p className="line-clamp-2 min-h-[3.25em] text-xs leading-relaxed text-neutral-600 sm:text-sm">{excerpt}</p>
+
+        {/* 👤 Author byline — only when an author exists */}
+        {authorName && (
+          <div className="flex items-center gap-2 border-t border-neutral-100 pt-2.5">
+            {author?.avatar ? (
+              <span className="relative size-7 shrink-0 overflow-hidden rounded-full ring-2 ring-primary-50">
+                <Image src={author.avatar} alt={authorName} fill sizes="28px" className="object-cover" />
+              </span>
+            ) : (
+              // 🅰️ Initial avatar — gradient keeps it premium without an image
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-500 to-primary-700 text-[11px] font-bold text-white ring-2 ring-primary-50">
+                {authorInitial}
+              </span>
             )}
-          >
-            {category}
-          </Badge>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-semibold text-neutral-800">{authorName}</p>
+              <p className="text-[10px] text-neutral-600">نویسنده</p>
+            </div>
+          </div>
         )}
 
-        {/* Featured Badge */}
-        {isFeatured && (
-          <Badge
-            variant="secondary"
-            className="absolute top-3 left-3 bg-white/90 text-neutral-900 shadow-lg"
-          >
-            ویژه
-          </Badge>
-        )}
-      </div>
-
-      {/* 📝 Content Section */}
-      <CardHeader className="px-4 py-3 space-y-2">
-        {/* Title */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={href}>
-                <h3
-                  className={cn(
-                    'font-semibold text-base md:text-lg text-neutral-900',
-                    'line-clamp-2 cursor-pointer',
-                    'transition-colors duration-200',
-                    'group-hover:text-primary-600',
-                    'h-12 md:h-14'
-                  )}
-                >
-                  {title}
-                </h3>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-sm">
-              <p>{title}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        {/* Excerpt */}
-        <p
-          className={cn(
-            'text-sm leading-relaxed text-neutral-600 line-clamp-1'
-          )}
-        >
-          {excerpt}
-        </p>
-      </CardHeader>
-
-      {/* Tags Section */}
-      {tags.length > 0 && (
-        <CardContent className="px-4 pb-3">
-          <div className="flex flex-wrap gap-1.5">
-            {tags.slice(0, 3).map((tag, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="text-xs font-normal text-neutral-600 hover:bg-neutral-100"
-              >
-                {tag}
-              </Badge>
-            ))}
-            {tags.length > 3 && (
-              <Badge
-                variant="outline"
-                className="text-xs font-normal text-neutral-500"
-              >
-                +{tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      )}
-
-      <Separator className="mx-4" />
-
-      {/* 📅 Footer Section */}
-      <CardFooter className="px-4 py-3 flex items-center justify-between gap-2">
-        {/* Meta Information */}
-        <div className="flex items-center gap-3 text-neutral-500 text-xs">
-          {/* Date */}
-          <div className="flex items-center gap-1">
-            <Calendar size={14} aria-hidden="true" />
-            <time dateTime={date} className="whitespace-nowrap">
-              {date}
-            </time>
-          </div>
-
-          {/* Reading Time */}
-          {readingTime && (
+        {/* 📅 Meta — pinned to the bottom of the content area (mt-auto) */}
+        <div className="mt-auto flex items-center gap-3 pt-0.5 text-xs text-neutral-500">
+          <span className="flex items-center gap-1">
+            <Calendar size={13} aria-hidden />
+            <time dateTime={date} className="whitespace-nowrap">{date}</time>
+          </span>
+          {readingTime ? (
             <>
               <span className="text-neutral-300">•</span>
-              <div className="flex items-center gap-1">
-                <Clock size={14} aria-hidden="true" />
-                <span className="whitespace-nowrap">
-                  {readingTime} دقیقه مطالعه
-                </span>
-              </div>
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <Clock size={13} aria-hidden />
+                {readingTime} دقیقه مطالعه
+              </span>
             </>
-          )}
+          ) : null}
         </div>
+      </CardContent>
 
-        {/* CTA Link */}
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className={cn(
-            'text-primary-600 hover:text-primary-700 hover:bg-primary-50',
-            'gap-1 px-3 h-8',
-            'transition-all duration-200',
-            'group-hover:gap-2'
-          )}
+      {/* 🔗 CTA → article detail */}
+      <CardFooter className="p-3 pt-0 sm:p-4 sm:pt-0">
+        <ButtonLink
+          href={href}
+          aria-label={`ادامه مطلب: ${title}`}
+          variant="outline"
+          className="h-9 w-full gap-1 border-primary-500 text-primary-600 transition-colors duration-200 hover:bg-primary-500 hover:text-white sm:h-10"
         >
-          <Link href={href} aria-label={`ادامه مطلب: ${title}`}>
-            <span className="text-sm font-medium">ادامه مطلب</span>
-            <ArrowLeft
-              size={14}
-              className="transition-transform duration-200 group-hover:-translate-x-1"
-              aria-hidden="true"
-            />
-          </Link>
-        </Button>
+          <span className="text-sm font-medium">ادامه مطلب</span>
+          <ArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-1" aria-hidden />
+        </ButtonLink>
       </CardFooter>
-
-      {/* Author Section (Optional) */}
-      {author && (
-        <>
-          <Separator className="mx-4" />
-          <CardFooter className="px-4 py-3">
-            <div className="flex items-center gap-2">
-              {author.avatar ? (
-                <Image
-                  src={author.avatar}
-                  alt={author.name}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span className="text-primary-600 text-xs font-medium">
-                    {author.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              <span className="text-sm text-neutral-600">{author.name}</span>
-            </div>
-          </CardFooter>
-        </>
-      )}
     </Card>
   );
-};
-
-export default ArticleCard;
+}

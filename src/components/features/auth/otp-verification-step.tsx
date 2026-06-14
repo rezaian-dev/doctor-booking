@@ -1,3 +1,6 @@
+'use client';
+
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OTPInput } from './otp-input';
 import { SubmitButton } from './submit-button';
@@ -7,6 +10,7 @@ interface OTPVerificationStepProps {
   otpValue: string;
   onOtpChange: (value: string) => void;
   otpError?: string;
+  attemptsLeft?: number | null;
   isSubmitting: boolean;
   onSubmit: () => void;
   onResend: () => Promise<void>;
@@ -15,17 +19,11 @@ interface OTPVerificationStepProps {
   userInfo?: string;
 }
 
-/**
- * 🔐 OTP verification step – used in both login & signup flows
- * 🔄 Full user control: verify, resend, or go back to edit info
- * ⏳ Smart submit button: disabled until 5-digit code is entered
- * 🧩 Composed from reusable sub-components (OTPInput, ResendTimer, etc.)
- * ♿ Accessible form structure with proper loading & error states
- */
 export const OTPVerificationStep = ({
   otpValue,
   onOtpChange,
   otpError,
+  attemptsLeft,
   isSubmitting,
   onSubmit,
   onResend,
@@ -34,35 +32,36 @@ export const OTPVerificationStep = ({
   userInfo,
 }: OTPVerificationStepProps) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-1.5 md:space-y-5">
-      {/* 🔑 OTP input with context (phone + optional user info) */}
+    <form onSubmit={onSubmit} className="space-y-3">
+
       <OTPInput
         value={otpValue}
         onChange={onOtpChange}
         error={otpError}
+        attemptsLeft={attemptsLeft ?? null}
         disabled={isSubmitting}
         phoneNumber={phoneNumber}
         userInfo={userInfo}
       />
 
-      {/* ▶️ Submit only when full code is entered */}
       <SubmitButton
         isLoading={isSubmitting}
         disabled={otpValue.length !== 5}
         loadingText="در حال تأیید..."
-        buttonText="تأیید و ثبت‌نام"
+        buttonText="تأیید و ادامه"
       />
 
-      {/* 🕒 Auto-disabled resend with countdown timer */}
       <ResendTimer onResend={onResend} />
 
-      {/* ↩️ Back to previous step (e.g., edit phone or profile) */}
+      <div className="border-t border-neutral-100" />
+
       <Button
         type="button"
         variant="ghost"
         onClick={onBack}
-        className="w-full text-neutral-600 hover:text-neutral-900"
+        className="w-full h-9 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 text-[12.5px]"
       >
+        <ArrowRight className="ml-1.5 h-3 w-3" aria-hidden="true" />
         ویرایش اطلاعات
       </Button>
     </form>

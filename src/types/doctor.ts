@@ -1,15 +1,36 @@
-// 🎯 Profile view modes (controls UI state & routing)
-export type ProfileMode = 'payment' | 'confirm' | 'default' | 'find-doctor' | 'profile';
+// 🖥️ Determines which view/mode the profile page renders
+export type ProfileMode =
+  | "default"
+  | "confirm"
+  | "search"
+  | "payment"
+  | "profile"
+  | "appointment";
 
-// 👨‍⚕️ Doctor public profile data (read-only, API-sourced)
 export interface DoctorData {
-  name: string;                // 👤 Full name (e.g., "دکتر علی رضایی")
-  specialty: string;           // 🩺 Primary specialty (e.g., "روانپزشکی")
-  image: string;               // 🖼️ Avatar URL (CDN-hosted)
-  rating: number;              // ⭐ Avg. rating (0.0–5.0)
-  reviewsCount: number;        // 💬 Total verified reviews
-  medicalCode: string;         // 🪪 Official license number
-  address: string;             // 📍 Clinic/hospital location
-  nextAvailableSlot: string;   // 📅 Earliest appointment (Jalali date + time, e.g., "1405-03-10 14:30")
-  bio: string;                 // 📝 Professional background summary
+  // 🏥 Core doctor info
+  name:         string;
+  specialty:    string;
+  image:        string;
+  rating:       number;
+  reviewsCount: number;
+  medicalCode:  string;
+  address:      string;
+  bio:          string;
+
+  // 🗓️ Scheduling
+  nextAvailableSlot?: string;
+  doctorId?:          string;
+  visitFee?:          number;
+
+  // 💳 Payment page extras
+  visitType?:    string;
+  patientName?:  string;
+  patientPhone?: string;
+  bookedForSelf?: boolean; // 🧑‍⚕️ false → appointment was booked for another person
+
+  // 🎫 Appointment card
+  appointmentStatus?: "active" | "expired" | "cancelled";
+  appointmentId?:     string;
+  trackingCode?:      string;
 }

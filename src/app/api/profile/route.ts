@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { cookies } from 'next/headers';
-import { getAuthUserDoc } from '@/lib/auth/auth-session';
+import { getAuthUserDoc } from '@/lib/auth/session';
 import { checkDuplicatesForUpdate } from '@/lib/utils/check-duplicates';
 
 const ALLOWED = ['firstName', 'lastName', 'email', 'phone', 'nationalCode', 'birthDate', 'gender', 'city'] as const;
@@ -19,7 +19,7 @@ export async function GET() {
 
     const { password, ...data } = user.toObject();
     return NextResponse.json({ success: true, user: data });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'خطای سرور' }, { status: 500 });
   }
 }
@@ -56,7 +56,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // 📝 Build update object
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
     ALLOWED.forEach(f => {
       if (f in body) updates[f] = body[f] || undefined;
     });
@@ -70,10 +70,13 @@ export async function PATCH(req: NextRequest) {
 
     const { password, ...data } = user.toObject();
     return NextResponse.json({ success: true, user: data });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // 🔑 Narrow MongoDB error shape for safe property access
+    const mongoErr = error as { code?: number; keyPattern?: Record<string, unknown>; name?: string };
+
     // 🚫 Duplicate key error
-    if (error.code === 11000) {
-      const field = error.keyPattern?.email ? 'email' : 'phone';
+    if (mongoErr.code === 11000) {
+      const field = mongoErr.keyPattern?.email ? 'email' : 'phone';
       return NextResponse.json(
         {error: field === 'email' ? 'این ایمیل قبلاً ثبت شده است.' : 'این شمارهٔ موبایل قبلاً ثبت شده است.',field },
         { status: 409 }
@@ -81,7 +84,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // ❌ Validation error
-    if (error.name === 'ValidationError') {
+    if (mongoErr.name === 'ValidationError') {
       return NextResponse.json({ error: 'داده نامعتبر' }, { status: 400 });
     }
 

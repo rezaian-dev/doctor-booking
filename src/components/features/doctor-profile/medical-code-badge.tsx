@@ -1,14 +1,16 @@
-import clsx from "clsx";
-import { GoCheckCircle } from "react-icons/go";
+import { cn } from "@/lib/utils/cn";
+import { CheckCircle2 } from "lucide-react";
 
-// 🏅 Medical Code Badge
-const MedicalCodeBadge = ({ code, className }: { code: string; className?: string }) => (
-  <div className={clsx('flex items-center gap-x-2 sm:gap-x-4', className)}>
-    <GoCheckCircle className="shrink-0 size-4 xs:size-5" size={20} color="#4F4F4F" />
-    <span className="text-xs xs:text-sm text-medium-gray">
-      کد نظام پزشکی: {code}
-    </span>
-  </div>
-);
+interface MedicalCodeBadgeProps {
+  code?:      string;
+  className?: string;
+}
 
-export default MedicalCodeBadge;
+export default function MedicalCodeBadge({ code = "—", className }: MedicalCodeBadgeProps) {
+  return (
+    <div className={cn("flex items-center gap-x-2 sm:gap-x-4", className)}>
+      <CheckCircle2 className="shrink-0 size-4 xs:size-5 text-neutral-500" />
+      <span className="text-xs xs:text-sm text-medium-gray">کد نظام پزشکی: {code}</span>
+    </div>
+  );
+}

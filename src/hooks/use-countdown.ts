@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+// ⏱️ Pad to 2 digits (5 → "05")
+const pad = (n: number) => String(n).padStart(2, '0');
 
 interface UseCountdownReturn {
   timeLeft: number;
@@ -7,36 +10,23 @@ interface UseCountdownReturn {
   formattedTime: string;
 }
 
-export function useCountdown(initialSeconds: number = 90): UseCountdownReturn {
+export function useCountdown(initialSeconds = 90): UseCountdownReturn {
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
-  const [isFinished, setIsFinished] = useState(false);
 
-  // ⏱️ Auto-decrement timer every second
+  // ⏳ Tick down once per second; self-stops at zero (no state-set in effect body)
   useEffect(() => {
-    if (timeLeft <= 0) {
-      setIsFinished(true);
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
+    if (timeLeft <= 0) return;
+    const id = setInterval(() => setTimeLeft((s) => s - 1), 1000);
+    return () => clearInterval(id);
   }, [timeLeft]);
 
-  // 🔄 Reset countdown to initial value
-  const restart = useCallback(() => {
-    setTimeLeft(initialSeconds);
-    setIsFinished(false);
-  }, [initialSeconds]);
+  // 🔄 Reset to initial value
+  const restart = useCallback(() => setTimeLeft(initialSeconds), [initialSeconds]);
 
-
-// Pads a number with a leading zero to always show 2 digits ⏱️
-const format = (n: number): string => String(n).padStart(2, "0");
-
-// Convert total seconds into MM:SS format for display 🎯
-const formattedTime = `${format(Math.floor(timeLeft / 60))}:${format(timeLeft % 60)}`;
-
-  return { timeLeft, isFinished, restart, formattedTime };
+  return {
+    timeLeft,
+    isFinished: timeLeft <= 0, // 🎯 derived — no redundant state
+    restart,
+    formattedTime: `${pad(Math.floor(timeLeft / 60))}:${pad(timeLeft % 60)}`,
+  };
 }

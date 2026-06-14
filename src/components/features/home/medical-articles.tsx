@@ -1,72 +1,54 @@
 'use client';
+
 import ArticleCard from '@/components/shared/article-card';
 import SwiperSection from '@/components/shared/swiper-section';
+import { SectionEmptyState } from '@/components/shared/section-empty-state';
+import { SectionHeader } from '@/components/shared/section-header';
+import type { ArticleCardData } from '@/lib/services/articles';
 
 interface MedicalArticlesProps {
-  title?: string;
+  title?:    string;
+  articles:  ArticleCardData[]; // 🗄️ fetched server-side, passed from the home page
 }
 
-// 📦 Article data type
-interface Article {
-  id: number;
-  title: string;
-  excerpt: string;
-  date: string;
-  image: string;
-  href: string;
-}
+const CONTAINER = 'container px-4 md:px-8 mt-7.5 mb-8 md:mb-16 md:mt-10';
 
 /**
- * 📚 MedicalArticles – Refactored using shared SwiperSection
- * ✅ Clean & DRY | ✅ Type-safe | ✅ Maintainable
+ * 📚 MedicalArticles — newest published articles, carousel via shared SwiperSection.
+ *    Data is fetched on the server (page.tsx) and passed down as props.
+ *    Shows a polished empty state instead of silently disappearing.
  */
-const MedicalArticles = ({ title = 'آخرین مقالات' }: MedicalArticlesProps) => {
-  // 📦 Static article data – replace with API in production
-  const articles: readonly Article[] = [
-    {
-      id: 1,
-      title: '۱۰ نشانه هشدار دهنده مشکلات قلبی',
-      excerpt: 'اگر این ۱۰ نشانه را داشتید حتما به پزشک مراجعه کنید...',
-      date: '۱۴۰۳/۰۸/۱۵',
-      image: '/images/article-1.png',
-      href: '/articles/1',
-    },
-    {
-      id: 2,
-      title: '۵ گام ساده برای پیشگیری از دیابت',
-      excerpt: '۵ گام ساده برای پیشگیری از دیابت نوع ۲ ...',
-      date: '۱۴۰۳/۰۸/۱۰',
-      image: '/images/article-2.png',
-      href: '/articles/2',
-    },
-    {
-      id: 3,
-      title: 'چگونه بهترین دکتر را برای نیازهای خود پیدا کنیم؟',
-      excerpt:
-        'رزرو بهترین دکتر نیازمند یکسری پیشنیاز ها است که باید بدانید...',
-      date: '۱۴۰۳/۰۸/۰۵',
-      image: '/images/article-3.png',
-      href: '/articles/3',
-    },
-    {
-      id: 4,
-      title: 'چگونه بهترین دکتر را برای نیازهای خود پیدا کنیم؟',
-      excerpt:
-        'رزرو بهترین دکتر نیازمند یکسری پیشنیاز ها است که باید بدانید...',
-      date: '۱۴۰۳/۰۸/۰۵',
-      image: '/images/article-3.png',
-      href: '/articles/3',
-    },
-  ] as const;
+const MedicalArticles = ({ title = 'آخرین مقالات', articles }: MedicalArticlesProps) => {
+  if (articles.length === 0) {
+    return (
+      <section className={CONTAINER}>
+        <SectionHeader title={title} viewAllHref="/articles" className="mb-5" />
+        <SectionEmptyState variant="articles" />
+      </section>
+    );
+  }
 
   return (
     <SwiperSection
       title={title}
       viewAllHref="/articles"
       items={articles}
-      renderItem={article => <ArticleCard {...article} />}
-      getItemKey={article => article.id}
-      containerClassName="container px-4 md:px-8 mt-7.5 mb-8 md:mb-16 md:mt-10"
+      autoplay
+      renderItem={(article: ArticleCardData, index) => (
+        <ArticleCard
+          title={article.title}
+          excerpt={article.excerpt}
+          date={article.date}
+          image={article.coverImage || '/images/no-image.png'}
+          href={`/articles/${article.slug}`}
+          tags={article.tags}
+          readingTime={article.readingTime}
+          index={index ?? 0}
+          {...(article.author ? { author: { name: article.author } } : {})}
+        />
+      )}
+      getItemKey={(article: ArticleCardData) => article.slug}
+      containerClassName={CONTAINER}
     />
   );
 };

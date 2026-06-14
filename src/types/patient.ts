@@ -49,3 +49,12 @@ export interface User {
     lastName: string;
     avatar?: string;
 }
+
+// 🧭 Header/menu user shape (nullable, from /api/auth/me) — distinct from User above.
+//    Shared by user-dropdown-menu & mobile-menu → single source of truth. 🧠
+export interface UserData {
+    firstName: string;
+    lastName:  string;
+    phone?:    string | null;  // 📱 May be null/absent in session payload
+    avatar?:   string | null;  // 🖼️ CDN URL or null
+}

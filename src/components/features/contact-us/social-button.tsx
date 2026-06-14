@@ -1,6 +1,5 @@
-import { FC } from 'react';
 import { LucideIcon } from 'lucide-react';
-import clsx from 'clsx';
+import { cn } from '@/lib/utils/cn';
 
 // 🔗 Accessible social media button with hover effects & security best practices
 interface SocialButtonProps {
@@ -10,13 +9,13 @@ interface SocialButtonProps {
   label: string;
 }
 
-const SocialButton: FC<SocialButtonProps> = ({ icon: Icon, bgColor, href, label }) => {
+const SocialButton = ({ icon: Icon, bgColor, href, label }: SocialButtonProps) => {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={clsx(
+      className={cn(
         'p-3 rounded-full transition-all',
         bgColor,
         'hover:scale-110 hover:shadow-lg',

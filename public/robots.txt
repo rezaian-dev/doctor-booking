@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /doctors/
+Allow: /articles/
+Allow: /about-us/
+Allow: /contact-us/
+Allow: /faq/
+Allow: /find-doctor/
+
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /inbox/
+Disallow: /booking/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://doctoryab.ir/sitemap.xml

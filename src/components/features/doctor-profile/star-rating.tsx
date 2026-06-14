@@ -1,9 +1,13 @@
-import { FaStar } from "react-icons/fa6";
+import { buildStars } from "@/lib/utils/array-utils";
+import { formatFaNumber } from "@/lib/utils/persian-format";
+import { Star } from "lucide-react";
 
-// 🌟 StarRating Component
-const StarRating = ({ rating, reviewsCount }: { rating: number; reviewsCount: number }) => {
-  const stars = Array.from({ length: 5 }, (_, i) => i < rating);
+interface StarRatingProps {
+  rating?:       number;
+  reviewsCount?: number;
+}
 
+export default function StarRating({ rating = 0, reviewsCount = 0 }: StarRatingProps) {
   return (
     <div className="flex items-center gap-x-1.5 flex-wrap">
       <div
@@ -11,20 +15,18 @@ const StarRating = ({ rating, reviewsCount }: { rating: number; reviewsCount: nu
         role="img"
         aria-label={`امتیاز ${rating} از ۵`}
       >
-        {stars.map((filled, index) => (
-          <FaStar
-            key={index}
-            color={filled ? '#FFB800' : '#D1D1D1'}
+        {buildStars(rating).map((filled, i) => (
+          <Star
+            key={i}
             size={12}
-            aria-hidden="true"
+            aria-hidden
+            className={filled ? "text-amber-400 fill-amber-400" : "text-neutral-300 fill-neutral-300"}
           />
         ))}
       </div>
       <span className="text-xs text-neutral-500 whitespace-nowrap">
-        ({reviewsCount.toLocaleString('fa-IR')} نظر)
+        ({formatFaNumber(reviewsCount)} نظر)
       </span>
     </div>
   );
-};
-
-export default StarRating;
+}

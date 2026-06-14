@@ -1,166 +1,269 @@
-'use client';
-import {
-  AlarmClockIcon,
-  AlertSquareIcon,
-  MapPinpoint02Icon,
-} from '@hugeicons/core-free-icons';
-import Image from 'next/image';
-import clsx from 'clsx';
-import InfoRow from '@/components/features/doctor-profile/info-row';
-import MedicalCodeBadge from '@/components/features/doctor-profile/medical-code-badge';
-import PaymentDetailsTable from '@/components/features/doctor-profile/payment-details-table';
-import ActionButtons from '@/components/features/doctor-profile/action-buttons';
-import StarRating from '@/components/features/doctor-profile/star-rating';
-import BioSection from '@/components/features/booking/bio-section';
-import { DoctorData, ProfileMode } from '@/types/doctor';
+"use client";
 
-interface DoctorProfileProps {
-  mode: ProfileMode;
+import { useState }                                               from "react";
+import { AlarmClock, Hash, MapPin, UserRound }                        from "lucide-react";
+import Image                                                       from "next/image";
+import { cn } from "@/lib/utils/cn";
+import InfoRow                 from "@/components/features/doctor-profile/info-row";
+import MedicalCodeBadge        from "@/components/features/doctor-profile/medical-code-badge";
+import PaymentDetailsTable     from "@/components/features/doctor-profile/payment-details-table";
+import ActionButtons           from "@/components/features/doctor-profile/action-buttons";
+import StarRating              from "@/components/features/doctor-profile/star-rating";
+import BioSection              from "@/components/features/booking/bio-section";
+import CancelAppointmentButton from "@/components/features/appointments/cancel-appointment-button";
+import { DoctorData, ProfileMode } from "@/types/doctor";
+import { NO_IMAGE } from "@/lib/utils/profile-card";
+import { Separator } from "@/components/ui/separator";
+
+type AppointmentStatus = "active" | "expired" | "cancelled";
+
+interface ProfileCardProps {
+  mode:          ProfileMode;
+  data?:         Partial<DoctorData>;
+  cancelAction?: () => Promise<{ success?: boolean; error?: string }>;
+  schedule?:     { date: string; times: string[] }[];
+  isLoggedIn?:   boolean;
 }
 
-// 📊 Mock Data
-const DOCTOR_DATA: DoctorData = {
-  name: 'دکتر زهرا وارسته',
-  specialty: 'متخصص قلب و عروق',
-  image: '/images/2.png',
-  rating: 4,
-  reviewsCount: 105,
-  medicalCode: '۴۰۲۲۳',
-  address: 'تهران، ستارخان، خیابان هفتم، پلاک ۴۰',
-  nextAvailableSlot: 'دوشنبه ۲۴ دی',
-  bio: 'دارای بورد تخصصی بیماری های نوزادان و کودکان با بیش از بیست سال سابقه فعالیت در زمینه تشخیص و درمان اختلالات گوارشی آلرژیک رشد و نمو نوزادان و کودکان و مشکلات رشد و بلوغ در نوجوانان در مطب خدمات تخصصی شامل سونوگرافی شکم برای بررسی وضعیت گوارشی و اندام های داخلی تست حساسیت به کازئین شیر برای تشخیص آلرژی های پروتئینی تست حساسیت به لاکتوز شیر جهت شناسایی عدم تحمل لاکتوز تست تنفسی اسپیرومتری برای بررسی عملکرد ریوی و تشخیص بیماری های تنفسی ارائه می شود همچنین حضور دستیار کارشناس ارشد مشاور کودکان و نوجوانان جهت ارائه راهنمایی های تکمیلی پاسخگویی به پرسش های والدین و همراهی در روند درمان فراهم شده است هدف ما پایش دقیق رشد سلامت و کیفیت زندگی کودکان و نوجوانان با رویکردی علمی صبورانه و دلسوزانه می باشد',
+const STATUS_LABEL: Record<AppointmentStatus, string> = {
+  active:    "فعال",
+  expired:   "منقضی‌شده",
+  cancelled: "لغو‌شده",
 };
 
-// 🎨 Main Component
-const ProfileCard = ({ mode }: DoctorProfileProps) => {
-  const showDefaultInfo = ['default', 'confirm', 'find-doctor'].includes(mode);
-  const showBio = mode === 'default';
-  const showActions = ['find-doctor', 'profile'].includes(mode);
+const STATUS_CLASS: Record<AppointmentStatus, string> = {
+  active:    "bg-green-100 text-green-700",
+  expired:   "bg-neutral-100 text-neutral-500",
+  cancelled: "bg-red-100 text-red-500",
+};
 
-  // 📐 Dynamic padding based on mode
-  const containerPadding =
-    mode === 'payment' ? 'xs:p-4 sm:p-5' : 'xs:p-3 xs:pb-[9px]';
+export default function ProfileCard({ mode, data = {}, cancelAction, schedule, isLoggedIn = false }: ProfileCardProps) {
+  const doc = data; // 🩺 already Partial<DoctorData> via the default param — no cast needed
 
-  const containerClasses = clsx(
-    'relative bg-white rounded-[10px] border overflow-hidden sm:overflow-visible border-neutral-100',
-    mode === 'profile' && 'max-w-[882px] mx-auto'
+  // 📷 Real photo vs. the "/images/no-image.png" fallback (callers pass it pre-resolved)
+  const hasPhoto = Boolean(doc.image) && doc.image !== NO_IMAGE;
+
+  const [localStatus, setLocalStatus] = useState<AppointmentStatus | undefined>(
+    doc.appointmentStatus
   );
+
+  // 🖼️ Track the photo's decode so the card shimmers → fades in (no dead gray box while
+  //    the remote image loads). Declared before the early return to keep hook order stable. ✨
+  const [photoLoaded, setPhotoLoaded] = useState(false);
+
+  const showDefaultInfo = ["default", "confirm", "search"].includes(mode);
+  const showBio         = mode === "default";
+  const showActions     = ["search", "profile"].includes(mode);
+  const isAppointment   = mode === "appointment";
+
+  // 📋 Appointment mode → a compact list-style card (small avatar + info + status), tidy
+  //    from 320px up. Every other mode keeps the full image block below. ✨
+  if (isAppointment) {
+    return (
+      <div className="relative overflow-hidden rounded-xl border border-neutral-100 bg-white">
+        <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+          {/* 🖼️ Fixed-size avatar — never grows the row; object-cover keeps it neat */}
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-neutral-100 xs:size-20">
+            <Image
+              src={hasPhoto ? doc.image! : NO_IMAGE}
+              alt={doc.name || ""}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
+          </div>
+
+          {/* 🩺 Info — flex-1 + min-w-0 so long names truncate instead of overflowing */}
+          <div className="flex min-w-0 flex-1 flex-col gap-y-1.5">
+            {/* name ↔ status: justify-between keeps the badge pinned to the start (RTL) */}
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="min-w-0 truncate text-sm font-medium leading-snug text-black xs:text-base">
+                {doc.name}
+              </h2>
+              {localStatus && (
+                <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-medium", STATUS_CLASS[localStatus])}>
+                  {STATUS_LABEL[localStatus]}
+                </span>
+              )}
+            </div>
+
+            <span className="truncate text-xs font-medium text-neutral-950 xs:text-sm">
+              {doc.specialty}
+            </span>
+
+            {/* 🧑‍⚕️ Booked-for-someone-else marker — only when it's NOT a self-booking. The
+                 explicit bookedForSelf flag (not a name comparison) keeps this reliable. ✨ */}
+            {doc.bookedForSelf === false && doc.patientName && (
+              <span className="inline-flex w-fit items-center gap-1 rounded-md bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700">
+                <UserRound className="size-3.5 shrink-0" />
+                <span className="truncate">برای: {doc.patientName}</span>
+              </span>
+            )}
+
+            {doc.nextAvailableSlot && (
+              <span className="text-xs text-neutral-600 xs:text-sm">{doc.nextAvailableSlot}</span>
+            )}
+
+            {doc.trackingCode && (
+              <span className="truncate font-mono text-xs text-neutral-400">
+                کد پیگیری: {doc.trackingCode}
+              </span>
+            )}
+
+            {/* 🗑️ Cancel — its own row (right-aligned in RTL), comfortable touch target */}
+            {localStatus === "active" && cancelAction && (
+              <div className="mt-1">
+                <CancelAppointmentButton
+                  cancelAction={cancelAction}
+                  onCancelled={() => setLocalStatus("cancelled")}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className={containerClasses}>
-        {/* 👤 Header Section */}
-        <div className={containerPadding}>
-          <div className="flex xs:flex-row flex-col">
-            {/* 🖼️ Doctor Image */}
-            <Image
-              src={DOCTOR_DATA.image}
-              width={186}
-              height={153}
-              alt={DOCTOR_DATA.name}
-              className="min-h-full w-full xs:w-46.5 sm:aspect-186/153 object-cover xs:rounded-[6px]"
-              priority
-              sizes="(max-width: 640px) 100vw, 186px"
-            />
+      <div className={cn(
+        "relative bg-white rounded-xl border border-neutral-100 overflow-hidden",
+        mode === "profile" && "max-w-221 mx-auto"
+      )}>
+        <div className={cn("p-3", mode === "payment" ? "sm:p-4 lg:p-5" : "")}>
+          <div className="flex flex-col min-[480px]:flex-row gap-3">
 
-            {/* 📝 Doctor Info */}
-            <div className="flex items-start justify-between grow px-3 pt-3">
-              <div className="flex flex-col gap-y-3">
-                <h1 className="text-black font-medium text-lg">
-                  {DOCTOR_DATA.name}
-                </h1>
-                <span className="text-neutral-950 text-sm font-medium">
-                  {DOCTOR_DATA.specialty}
-                </span>
-                <StarRating
-                  rating={DOCTOR_DATA.rating}
-                  reviewsCount={DOCTOR_DATA.reviewsCount}
+            {/* 🖼️ Doctor image — smart fit:
+                • real photo → shown in FULL (object-contain), never cropped; a blurred copy
+                  fills the frame so any aspect ratio looks intentional (no empty bars).
+                • no photo  → the placeholder fills the frame cleanly (blurring it looks odd). */}
+            <div className="w-full min-[480px]:w-35 sm:w-40 md:w-46.5 shrink-0">
+              <div
+                className={cn(
+                  "relative w-full overflow-hidden bg-neutral-100",
+                  "rounded-none min-[480px]:rounded-md",
+                  "aspect-4/3 min-[480px]:aspect-186/153"
+                )}
+              >
+                {/* 🦴 Shimmer behind the photo — fades out the instant the image decodes,
+                     so confirm/payment never flash a gray box while the photo loads. */}
+                <div
+                  aria-hidden
+                  className={cn(
+                    "absolute inset-0 z-0 animate-pulse bg-neutral-200/70 transition-opacity duration-300",
+                    photoLoaded && "opacity-0"
+                  )}
                 />
+                {hasPhoto ? (
+                  <>
+                    {/* 🌫️ Backdrop: blurred + zoomed copy paints the empty sides */}
+                    <Image
+                      src={doc.image!}
+                      alt=""
+                      aria-hidden
+                      fill
+                      sizes="(max-width: 479px) 100vw, (max-width: 639px) 140px, (max-width: 767px) 160px, 186px"
+                      className={cn(
+                        "scale-125 object-cover blur-2xl brightness-95 transition-opacity duration-500",
+                        photoLoaded ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {/* 🩺 Foreground: full doctor photo, contained → never cropped; fades in on load */}
+                    <Image
+                      src={doc.image!}
+                      alt={doc.name || ""}
+                      fill
+                      priority
+                      sizes="(max-width: 479px) 100vw, (max-width: 639px) 140px, (max-width: 767px) 160px, 186px"
+                      // 🛟 Guard: if the image is already cached/complete before React wires
+                      //    onLoad, flip the flag now so it can never get stuck transparent.
+                      ref={(img) => { if (img?.complete) setPhotoLoaded(true); }}
+                      onLoad={() => setPhotoLoaded(true)}
+                      className={cn(
+                        "relative z-1 object-contain transition-opacity duration-500",
+                        photoLoaded ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </>
+                ) : (
+                  /* 🚫 No photo → placeholder fills the frame, no blur trickery */
+                  <Image
+                    src={NO_IMAGE}
+                    alt={doc.name || ""}
+                    fill
+                    priority
+                    sizes="(max-width: 479px) 100vw, (max-width: 639px) 140px, (max-width: 767px) 160px, 186px"
+                    ref={(img) => { if (img?.complete) setPhotoLoaded(true); }}
+                    onLoad={() => setPhotoLoaded(true)}
+                    className={cn(
+                      "object-cover transition-opacity duration-500",
+                      photoLoaded ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 🩺 Doctor info */}
+            <div className="flex items-start justify-between grow px-1 min-[480px]:px-0 min-[480px]:pt-1">
+              <div className="flex flex-col gap-y-2 sm:gap-y-3 min-w-0">
+
+                <h1 className="text-black font-medium text-base sm:text-lg leading-snug truncate">
+                  {doc.name}
+                </h1>
+
+                <span className="text-neutral-950 text-xs sm:text-sm font-medium">
+                  {doc.specialty}
+                </span>
+
+                {/* ⭐ Rating (appointment mode renders its own compact card above) */}
+                <StarRating rating={doc.rating ?? 0} reviewsCount={doc.reviewsCount ?? 0} />
               </div>
 
-              {/* 🏅 Desktop Medical Code */}
-              <MedicalCodeBadge
-                code={DOCTOR_DATA.medicalCode}
-                className="hidden lg:flex"
-              />
+              {/* 🪪 Medical code — desktop only */}
+              <MedicalCodeBadge code={doc.medicalCode ?? "—"} className="hidden lg:flex shrink-0 mr-2" />
             </div>
           </div>
 
-          {/* 📱 Mobile Medical Code + Additional Info */}
-          {(showDefaultInfo || mode === 'payment' || mode === 'profile') && (
-            <div className="mt-3 xs:mt-2.5 px-3 xs:px-0 sm:px-0 pb-3 xs:pb-0">
-              <MedicalCodeBadge
-                code={DOCTOR_DATA.medicalCode}
-                className="flex lg:hidden mb-2"
-              />
+          {/* ─── Secondary Info Block ─────────────────────────────────── */}
+          {(showDefaultInfo || mode === "payment" || mode === "profile") && (
+            <div className="mt-3 px-1 min-[480px]:px-0">
+              <MedicalCodeBadge code={doc.medicalCode ?? "—"} className="flex lg:hidden mb-2.5" />
 
-              {/* 📋 Mode-specific content */}
-              {mode === 'payment' && <PaymentDetailsTable data={DOCTOR_DATA} />}
+              {mode === "payment" && <PaymentDetailsTable data={doc} />}
 
               {showDefaultInfo && (
                 <div className="space-y-2">
-                  <InfoRow
-                    icon={MapPinpoint02Icon}
-                    label="آدرس مطب:"
-                    value={DOCTOR_DATA.address}
-                  />
-                  <InfoRow
-                    icon={AlarmClockIcon}
-                    label="اولین نوبت در دسترس:"
-                    value={DOCTOR_DATA.nextAvailableSlot}
-                  />
+                  <InfoRow icon={MapPin}      label="آدرس مطب:"             value={doc.address ?? "—"} />
+                  <InfoRow icon={AlarmClock}  label="اولین نوبت در دسترس:"  value={doc.nextAvailableSlot ?? "نوبت خالی موجود نیست"} />
                 </div>
               )}
 
-              {mode === 'profile' && (
-                <div className="space-y-4">
-                  <InfoRow
-                    icon={MapPinpoint02Icon}
-                    label="آدرس مطب:"
-                    value={DOCTOR_DATA.address}
-                  />
-                  <InfoRow
-                    icon={AlarmClockIcon}
-                    label="تاریخ نوبت :"
-                    value={DOCTOR_DATA.nextAvailableSlot}
-                  />
-                  <InfoRow
-                    icon={AlertSquareIcon}
-                    label="کد پیگیری :"
-                    value="۲۴۶۷۵۸۹۲"
-                  />
+              {mode === "profile" && (
+                <div className="space-y-3 sm:space-y-4">
+                  <InfoRow icon={MapPin}        label="آدرس مطب:"   value={doc.address ?? "—"} />
+                  <InfoRow icon={AlarmClock}    label="تاریخ نوبت:" value={doc.nextAvailableSlot ?? "—"} />
+                  <InfoRow icon={Hash}   label="کد پیگیری:"  value={doc.trackingCode ?? "—"} />
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* 📋 Desktop Bio Section */}
         {showBio && (
           <>
-            <hr className="hidden md:block" />
-            <BioSection
-              bio={DOCTOR_DATA.bio}
-              title={DOCTOR_DATA.name}
-              className="hidden md:block"
-            />
+            <Separator className="hidden md:block bg-neutral-100" />
+            <BioSection bio={doc.bio ?? ""} title={doc.name ?? ""} className="hidden md:block" />
           </>
         )}
 
-        {/* 🔘 Action Buttons */}
-        {showActions && <ActionButtons mode={mode} />}
+        {showActions && <ActionButtons mode={mode} doctorId={doc.doctorId ?? ""} schedule={schedule ?? []} isLoggedIn={isLoggedIn} />}
       </div>
 
-      {/* 📱 Mobile Bio Section */}
       {showBio && (
-        <BioSection
-          bio={DOCTOR_DATA.bio}
-          title={DOCTOR_DATA.name}
-          className="mt-6 block md:hidden"
-        />
+        <BioSection bio={doc.bio ?? ""} title={doc.name ?? ""} className="mt-4 block md:hidden" />
       )}
     </>
   );
-};
-
-export default ProfileCard;
+}

@@ -1,9 +1,9 @@
-import { FC } from 'react';
 import { Phone, Clock, MapPin } from 'lucide-react';
 import InfoCard from './info-card';
 import SocialLinks from './social-links';
+import AosWrapper from '@/components/shared/aos-wrapper';
+import { aosStagger, AOS_MAX } from '@/lib/utils/aos';
 
-// 📞 Contact info cards — semantic, accessible, and responsive
 const CONTACT_INFO = [
   {
     icon: Phone,
@@ -30,27 +30,32 @@ const CONTACT_INFO = [
   }
 ];
 
-// 📍 Main contact section with address, info cards, and social links
-const ContactInfo: FC = () => {
+const ContactInfo = () => {
   return (
     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
-        تماس با دکتر رزور
-      </h1>
+      <AosWrapper animation="fade-down">
+        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
+          تماس با دکتر رزور
+        </h1>
+      </AosWrapper>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {CONTACT_INFO.map((info) => (
-          <InfoCard key={info.label} {...info} />
+        {CONTACT_INFO.map((info, i) => (
+          <AosWrapper key={info.label} animation="fade-up" delay={aosStagger(i)}>
+            <InfoCard {...info} />
+          </AosWrapper>
         ))}
       </div>
 
-      <div className="bg-gray-50 rounded-xl p-6 mb-6">
+      <AosWrapper animation="fade-up" delay={AOS_MAX} className="bg-gray-50 rounded-xl p-6 mb-6">
         <p className="text-gray-700 leading-relaxed text-center">
           <span className="font-semibold">آدرس:</span> تهران، خیابان شریعتی، خیابان ملک، خیابان ورنوابی، پلاک ۱۳ ساختمان امیر
         </p>
-      </div>
+      </AosWrapper>
 
-      <SocialLinks />
+      <AosWrapper animation="fade-up" delay={AOS_MAX}>
+        <SocialLinks />
+      </AosWrapper>
     </div>
   );
 };

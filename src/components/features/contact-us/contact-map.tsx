@@ -1,8 +1,9 @@
+'use client';
+
 import Image from 'next/image';
-import { FC } from 'react';
 
 // 🗺️ Static map preview with location info & secure external link
-const ContactMap: FC = () => {
+const ContactMap = () => {
   const handleOpenMap = () => {
     window.open('https://maps.google.com', '_blank', 'noopener,noreferrer');
   };

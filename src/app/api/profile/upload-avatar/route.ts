@@ -3,7 +3,7 @@ import { writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { cookies } from 'next/headers';
-import { getAuthUserDoc } from '@/lib/auth/auth-session';
+import { getAuthUserDoc } from '@/lib/auth/session';
 
 const DIR = join(process.cwd(), 'public', 'uploads', 'avatars');
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     await user.save();
 
     return NextResponse.json({ success: true, avatar: url });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'آپلود ناموفق' }, { status: 500 });
   }
 }
@@ -81,11 +81,11 @@ export async function DELETE() {
 
     // 🗑️ Remove file and clear
     await deleteFile(user.avatar);
-    user.avatar = undefined;
+    user.avatar = "";
     await user.save();
 
     return NextResponse.json({ success: true, message: 'تصویر حذف شد' });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'حذف ناموفق' }, { status: 500 });
   }
 }

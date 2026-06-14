@@ -1,57 +1,37 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
-    "target": "ES2020",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2020"
-    ],
+    // 🎯 Target & libs
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
-    /* Modules */
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
+
+    // 🔧 Interop & module behavior
     "allowJs": true,
-    /* Emit */
     "noEmit": true,
     "incremental": true,
-    /* Interop Constraints */
     "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    /* Type Checking */
+
+    // 🛡️ Strictness (kept maximal — zero `tsc --noEmit` errors enforced before every delivery)
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    /* Completeness */
-    "skipLibCheck": true,
-    /* Path Mapping */
+
+    // 🔗 Path alias + Next plugin
     "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    /* Next.js */
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    "paths": { "@/*": ["./src/*"] },
+    "plugins": [{ "name": "next" }],
+    "skipLibCheck": true
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "exclude": ["node_modules", "tests", "playwright.config.ts"]
 }

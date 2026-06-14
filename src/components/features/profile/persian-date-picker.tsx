@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils/cn';
 
 interface PersianDatePickerProps {
-  value?: string;
+  value?: string | undefined;
   onChange?: (date: string) => void;
   disabled?: boolean;
 }

@@ -2,36 +2,26 @@ import { UseFormRegisterReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 
 interface FormInputProps {
-  id: string;
-  label: string;
-  type?: string;
+  id:          string;
+  label:       string;
+  type?:       string;
   placeholder: string;
-  error?: string;
-  register: UseFormRegisterReturn;
-  inputMode?: 'text' | 'tel' | 'email' | 'numeric';
-  dir?: 'ltr' | 'rtl';
-  maxLength?: number;
-  className?: string;
+  error?:      string | undefined;
+  register:    UseFormRegisterReturn;
+  inputMode?:  'text' | 'tel' | 'email' | 'numeric';
+  dir?:        'ltr' | 'rtl';
+  maxLength?:  number;
+  className?:  string;
 }
 
 /**
- * 🧾 Reusable controlled input with label & validation
- * ✅ Auto-bound to react-hook-form via `register`
- * 🚫 Prevents layout shift with fixed error container height
- * 🌐 RTL/LTR & inputMode support for international UX
- * 🎨 Consistent styling via shared `Input` component
+ * 🧾 Reusable input with label + validation error
+ * ✅ Error shown via opacity transition — zero layout shift
+ * ✅ Reserved h-5 slot always present, text fades in/out
  */
 export const FormInput = ({
-  id,
-  label,
-  type = 'text',
-  placeholder,
-  error,
-  register,
-  inputMode,
-  dir,
-  maxLength,
-  className,
+  id, label, type = 'text', placeholder,
+  error, register, inputMode, dir, maxLength, className,
 }: FormInputProps) => {
   return (
     <div>
@@ -43,19 +33,23 @@ export const FormInput = ({
         type={type}
         placeholder={placeholder}
         aria-invalid={!!error}
+        aria-describedby={`${id}-error`}
         inputMode={inputMode}
         dir={dir}
         maxLength={maxLength}
         className={className}
         {...register}
       />
-
-      {/* ⚠️ Fixed-height error container to avoid layout jumps */}
-      <div className="h-6 mt-2">
-        {error && (
-          <p className="text-danger-500 text-xs md:text-sm animate-fade-in">{error}</p>
-        )}
-      </div>
+      {/* ⚠️ Always-present slot — opacity animates, height never changes */}
+      <p
+        id={`${id}-error`}
+        role="alert"
+        aria-live="polite"
+        className="h-5 mt-1.5 text-xs text-danger-500 transition-opacity duration-200"
+        style={{ opacity: error ? 1 : 0 }}
+      >
+        {error ?? '\u200c'}
+      </p>
     </div>
   );
 };

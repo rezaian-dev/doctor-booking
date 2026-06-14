@@ -40,10 +40,10 @@ export default function ProfileContent() {
     dedupingInterval: 5000,
   });
 
-  // 🔐 Redirect on unauthorized
+  // 🔐 Redirect on unauthorized — canonical auth route (matches the rest of the app)
   useEffect(() => {
     if (error?.message === 'Unauthorized') {
-      router.push('/login');
+      router.push('/auth/login');
     }
   }, [error, router]);
 

@@ -2,7 +2,9 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/%F0%9F%A9%BA-Doctor%20Booking-2c5be4?style=for-the-badge&labelColor=0a142f" alt="logo" height="40"/>
+<img src="https://s34.picofile.com/file/8490701592/ChatGPT_Image_Jun_23_2026_12_33_36_AM.png" alt="دکتر رزرو — Doctor Booking" width="100%" style="border-radius:16px;"/>
+
+<br/><br/>
 
 # دکتر رزرو
 
@@ -26,6 +28,7 @@
   <img src="https://img.shields.io/badge/UI-RTL%20%C2%B7%20Persian-2c5be4?style=flat-square" alt="RTL"/>
   <img src="https://img.shields.io/badge/tsc--noEmit-0%20errors-22c55e?style=flat-square" alt="Type Safe"/>
   <img src="https://img.shields.io/badge/Tests-unit%20%7C%20api%20%7C%20e2e-2EAD33?style=flat-square&logo=playwright&logoColor=white" alt="Tests"/>
+  <img src="https://img.shields.io/badge/Lighthouse-Audited-F44B21?style=flat-square&logo=lighthouse&logoColor=white" alt="Lighthouse"/>
   <img src="https://img.shields.io/badge/License-Private-ef4444?style=flat-square" alt="License"/>
 </p>
 
@@ -49,6 +52,74 @@
 
 ---
 
+<div align="center">
+
+## 🚀 دسترسی دمو و نکات مهم
+
+<sub>قبل از شروع، این دو نکته را بخوانید تا بهترین تجربه را داشته باشید ✨</sub>
+
+</div>
+
+<br/>
+
+<table align="center" width="100%">
+<tr>
+<td align="center" width="50%" valign="top">
+
+### 🔐 ورود به پنل مدیریت
+
+<sub>برای تجربهٔ کامل پنل ادمین وارد شوید</sub>
+
+<br/>
+
+<table>
+<tr><td>👤 <b>نام کاربری</b></td><td><code>09018106646</code></td></tr>
+<tr><td>🔑 <b>رمز عبور</b></td><td><code>12345678m</code></td></tr>
+</table>
+
+<br/>
+
+<sub>↩️ پس از ورود به مسیر <code>/admin</code> بروید 🛡️</sub>
+
+</td>
+<td align="center" width="50%" valign="top">
+
+### 📱 فعال‌سازی کد پیامکی (OTP)
+
+<sub>ارسال پیامک فقط در اجرای محلی فعال است</sub>
+
+<br/>
+
+```bash
+npm install
+npm run build
+npm run start   # ✅ پیامک فعال
+```
+
+<br/>
+
+<sub>کد یک‌بارمصرف مستقیماً برای شمارهٔ شما ارسال می‌شود 📨</sub>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+> [!CAUTION]
+> **چرا ارسال پیامک در حالت آنلاین کار نمی‌کند؟** 📱
+>
+> به‌دلیل **مسائل امنیتی پنل پیامکی فراز SMS**، در نسخهٔ **آنلاین (دیپلوی‌شده)** امکان ارسال کد تأیید پیامکی وجود ندارد. ⛔
+>
+> سرویس **فراز SMS** درخواست‌های API را فقط از **IP داخل ایران** می‌پذیرد؛ اما هاست پروژه **خارج از کشور** قرار دارد، بنابراین API نمی‌تواند کار کند و کد ارسال نمی‌شود. 🌍🚫
+>
+> ✅ **راه‌حل:** پروژه را روی سیستم خود (با IP داخل ایران) با `npm run start` اجرا کنید تا قابلیت **ارسال OTP پیامکی** کاملاً فعال شود. 🇮🇷
+
+> [!TIP]
+> در حالت آنلاین، **تمام بخش‌های دیگر** سایت — جست‌وجوی پزشک، پروفایل‌ها، رزرو، مقالات و پنل ادمین — کاملاً فعال‌اند؛ فقط مرحلهٔ **تأیید پیامکی ثبت‌نام** به اجرای محلی نیاز دارد. همچنین برای محیط تولید، معماری **SMS Relay** (بخش [متغیرهای محیطی](#-متغیرهای-محیطی-environment-variables)) این محدودیت را برطرف می‌کند.
+
+---
+
 ## 📖 فهرست مطالب
 
 <table>
@@ -56,6 +127,7 @@
 <td valign="top">
 
 - [🎯 دربارهٔ پروژه](#-دربارهٔ-پروژه)
+- [🚀 دسترسی سریع (دمو)](#-دسترسی-سریع-demo-access)
 - [✨ ویژگی‌ها در یک نگاه](#-ویژگیها-در-یک-نگاه)
 - [🧰 پشتهٔ فناوری](#-پشتهٔ-فناوری-tech-stack)
 - [🏛️ معماری سامانه](#️-معماری-سامانه)
@@ -106,6 +178,29 @@
 <td align="center">🛡️<br/><b>پنل ادمین کامل</b><br/><sub>داشبورد، CRUD، مدیریت کاربران و پیام‌ها</sub></td>
 </tr>
 </table>
+
+---
+
+## 🔑 دسترسی نمونه (Demo Access)
+
+برای بررسی **پنل مدیریت** و قابلیت‌های ادمین، می‌توانید با اطلاعات نمونهٔ زیر وارد شوید:
+
+| فیلد | مقدار |
+|:-----|:------|
+| 👤 **نام کاربری (شماره موبایل)** | `09018106646` |
+| 🔒 **رمز عبور** | `12345678m` |
+
+> [!WARNING]
+> **محدودیت ارسال پیامک OTP در حالت آنلاین:** به دلیل سیاست‌های امنیتی **پنل پیامک فراز (Faraz SMS)**، امکان ارسال کد یک‌بارمصرف از روی نسخهٔ مستقرشده (آنلاین) وجود ندارد.
+>
+> برای بهره‌مندی از قابلیت **ارسال کد OTP پیامکی**، پروژه را روی سیستم خود دانلود کرده و به‌صورت محلی اجرا کنید:
+>
+> ```bash
+> npm run build
+> npm run start
+> ```
+>
+> در این حالت چون درخواست از یک IP داخل ایران ارسال می‌شود، کد OTP به‌درستی پیامک خواهد شد. 📲
 
 ---
 
@@ -496,6 +591,40 @@ erDiagram
 </td>
 </tr>
 </table>
+
+<br/>
+
+<div align="center">
+
+### 🏆 نتایج Google Lighthouse
+
+<sub>ممیزی‌شده با Chrome Lighthouse — اثبات کیفیت در عمل، نه فقط روی کاغذ ✨</sub>
+
+<br/><br/>
+
+<a href="https://s34.picofile.com/file/8490704868/ChatGPT_Image_Jun_23_2026_10_39_18_AM.png">
+  <img src="https://s34.picofile.com/file/8490704868/ChatGPT_Image_Jun_23_2026_10_39_18_AM.png" alt="نتایج تست Google Lighthouse — دکتر رزرو" width="85%" style="border-radius:16px;"/>
+</a>
+
+<br/><br/>
+
+<table>
+<tr>
+<td align="center" width="25%">⚡<br/><b>Performance</b><br/><sub>کارایی</sub></td>
+<td align="center" width="25%">♿<br/><b>Accessibility</b><br/><sub>دسترس‌پذیری</sub></td>
+<td align="center" width="25%">✅<br/><b>Best Practices</b><br/><sub>بهترین‌شیوه‌ها</sub></td>
+<td align="center" width="25%">🔍<br/><b>SEO</b><br/><sub>بهینه‌سازی موتور جست‌وجو</sub></td>
+</tr>
+</table>
+
+<br/>
+
+<img src="https://img.shields.io/badge/Audited%20with-Chrome%20Lighthouse-F44B21?style=for-the-badge&logo=lighthouse&logoColor=white" alt="Lighthouse"/>
+
+</div>
+
+> [!NOTE]
+> این امتیازها از اجرای واقعی **Lighthouse** روی نسخهٔ تولید پروژه به‌دست آمده‌اند و حاصل تصمیم‌های مهندسی عمدی هستند: رندر سمت سرور با ISR، tree-shaking، تصاویر AVIF/WebP، preload فونت، و هدرهای کش بهینه.
 
 ---
 

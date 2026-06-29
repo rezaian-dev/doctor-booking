@@ -15,6 +15,7 @@ import type { ScheduleItem } from "@/lib/validations/doctor";
 interface SchedulePickerProps {
   value: ScheduleItem[];
   onChange: (next: ScheduleItem[]) => void;
+  errors?: (string | undefined)[]; // 🚨 per-row date errors surfaced from the form resolver
 }
 
 // ⏰ Available time slots — every 30 minutes from 8:00 to 20:00
@@ -25,9 +26,14 @@ const TIME_SLOTS = [
   "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00",
 ];
 
-export default function SchedulePicker({ value, onChange }: SchedulePickerProps) {
+export default function SchedulePicker({ value, onChange, errors }: SchedulePickerProps) {
   // 🕒 Compute once at mount — keeps new Date() out of the render body (stable guard)
   const today = useMemo(() => todayJalali().date, []);
+
+  // 🚫 Dates already chosen in OTHER rows → one calendar day = one row. Used to disable those
+  //    days in the picker and to reject a duplicate pick defensively. Row i ignores its own date. 🧠
+  const usedDatesExcept = (rowIdx: number) =>
+    new Set(value.filter((_, idx) => idx !== rowIdx).map((s) => s.date).filter(Boolean));
 
   // 🧰 Immutable helpers — each returns a new array passed up via onChange
   const addDay = () => onChange([...value, { date: "", times: [] }]);
@@ -73,6 +79,7 @@ export default function SchedulePicker({ value, onChange }: SchedulePickerProps)
                   const d = String(val.day).padStart(2, "0");
                   const dateStr = `${y}-${m}-${d}`;
                   if (dateStr < today) return; // 🚫 block past dates
+                  if (usedDatesExcept(i).has(dateStr)) return; // 🚫 block a date already used by another row
                   setDate(i, dateStr);
                 }}
                 calendar={persian}
@@ -89,9 +96,17 @@ export default function SchedulePicker({ value, onChange }: SchedulePickerProps)
                   if (dateStr < today) {
                     return { disabled: true, style: { color: "#d1d5db", cursor: "not-allowed" } };
                   }
+                  // 🚫 Grey out days already taken by another row → duplicates are unpickable. 🧠
+                  if (usedDatesExcept(i).has(dateStr)) {
+                    return { disabled: true, style: { color: "#d1d5db", cursor: "not-allowed" } };
+                  }
                   return undefined; // ✅ explicit return satisfies noImplicitReturns
                 }}
               />
+              {/* 🚨 Duplicate / invalid date error from the form resolver */}
+              {errors?.[i] && (
+                <p className="text-xs font-medium text-danger-600">{errors[i]}</p>
+              )}
             </div>
 
             {/* 🗑️ Remove day */}

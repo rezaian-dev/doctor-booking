@@ -13,6 +13,7 @@ import BioSection              from "@/components/features/booking/bio-section";
 import CancelAppointmentButton from "@/components/features/appointments/cancel-appointment-button";
 import { DoctorData, ProfileMode } from "@/types/doctor";
 import { NO_IMAGE } from "@/lib/utils/profile-card";
+import { formatDoctorName } from "@/lib/utils/doctor-name";
 import { Separator } from "@/components/ui/separator";
 
 type AppointmentStatus = "active" | "expired" | "cancelled";
@@ -78,7 +79,7 @@ export default function ProfileCard({ mode, data = {}, cancelAction, schedule, i
             {/* name ↔ status: justify-between keeps the badge pinned to the start (RTL) */}
             <div className="flex items-start justify-between gap-2">
               <h2 className="min-w-0 truncate text-sm font-medium leading-snug text-black xs:text-base">
-                {doc.name}
+                {formatDoctorName(doc.name)}
               </h2>
               {localStatus && (
                 <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-medium", STATUS_CLASS[localStatus])}>
@@ -128,7 +129,9 @@ export default function ProfileCard({ mode, data = {}, cancelAction, schedule, i
   return (
     <>
       <div className={cn(
-        "relative bg-white rounded-xl border border-neutral-100 overflow-hidden",
+        "relative bg-white rounded-xl border border-neutral-100",
+        // 🪟 default mode lets the bio's circular toggle straddle the card's bottom border
+        mode === "default" ? "overflow-visible" : "overflow-hidden",
         mode === "profile" && "max-w-221 mx-auto"
       )}>
         <div className={cn("p-3", mode === "payment" ? "sm:p-4 lg:p-5" : "")}>
@@ -210,7 +213,7 @@ export default function ProfileCard({ mode, data = {}, cancelAction, schedule, i
               <div className="flex flex-col gap-y-2 sm:gap-y-3 min-w-0">
 
                 <h1 className="text-black font-medium text-base sm:text-lg leading-snug truncate">
-                  {doc.name}
+                  {formatDoctorName(doc.name)}
                 </h1>
 
                 <span className="text-neutral-950 text-xs sm:text-sm font-medium">
@@ -254,7 +257,7 @@ export default function ProfileCard({ mode, data = {}, cancelAction, schedule, i
         {showBio && (
           <>
             <Separator className="hidden md:block bg-neutral-100" />
-            <BioSection bio={doc.bio ?? ""} title={doc.name ?? ""} className="hidden md:block" />
+            <BioSection bio={doc.bio ?? ""} title={formatDoctorName(doc.name)} className="hidden md:block" />
           </>
         )}
 
@@ -262,7 +265,7 @@ export default function ProfileCard({ mode, data = {}, cancelAction, schedule, i
       </div>
 
       {showBio && (
-        <BioSection bio={doc.bio ?? ""} title={doc.name ?? ""} className="mt-4 block md:hidden" />
+        <BioSection bio={doc.bio ?? ""} title={formatDoctorName(doc.name)} className="mt-4 block md:hidden" />
       )}
     </>
   );

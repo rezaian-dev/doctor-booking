@@ -4,6 +4,24 @@ import { REGEX } from "@/lib/validations/regex";
 const JALALI_DATE = REGEX.JALALI_DATE_FLEX;
 const TIME_SLOT   = REGEX.TIME_SLOT;
 
+// 🚫 Reject duplicate schedule dates — one calendar day may appear only once. The error is
+//    attached to the *later* duplicate row's date so the UI can highlight exactly that field. 🧠
+//    Shared by the client form schema and the server schema → one rule, two layers (no drift). ✨
+function refineUniqueDates(
+  schedule: { date: string; times: string[] }[],
+  ctx: z.RefinementCtx,
+): void {
+  const seen = new Set<string>();
+  schedule.forEach((s, i) => {
+    if (!s.date) return; // ⏭️ empty rows aren't duplicates yet
+    if (seen.has(s.date)) {
+      ctx.addIssue({ code: "custom", path: ["schedule", i, "date"], message: "این تاریخ تکراری است" });
+    } else {
+      seen.add(s.date);
+    }
+  });
+}
+
 // ─── Reusable schemas ─────────────────────────────────────────────────────────
 
 export const ScheduleAddSchema = z.object({
@@ -52,7 +70,7 @@ export const DoctorFormSchema = z.object({
   hasOnlineVisit:     z.boolean(),
   acceptedInsurances: z.array(z.string()),
   schedule:           z.array(ScheduleItemSchema),
-});
+}).superRefine((data, ctx) => refineUniqueDates(data.schedule, ctx)); // 🚫 no two rows share a date
 
 export type DoctorFormFields = z.infer<typeof DoctorFormSchema>;
 export type DoctorFormErrors = Partial<Record<keyof DoctorFormFields, string>>;
@@ -98,7 +116,7 @@ export const DoctorServerSchema = z.object({
     date:  z.string().min(1, { error: "تاریخ الزامی است" }),
     times: z.array(z.string()),
   })).default([]),
-});
+}).superRefine((data, ctx) => refineUniqueDates(data.schedule, ctx)); // 🚫 server-side guard: dates must be unique
 
 export type DoctorServerInput = z.infer<typeof DoctorServerSchema>;
 

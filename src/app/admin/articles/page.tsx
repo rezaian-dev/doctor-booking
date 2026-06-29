@@ -40,7 +40,8 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
   const { articles, total, totalPages } = await getAdminArticles(page, search, status);
 
   return (
-    <div className="space-y-6">
+    // 🖥️ Desktop (lg): exactly one viewport tall, never scrolls. 📱 Mobile keeps natural flow. 🧠
+    <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl">مدیریت مقالات</h1>
@@ -57,6 +58,8 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
         <ArticlesFilter search={search} status={status} />
       </Suspense>
 
+      {/* 📐 Fills leftover height on desktop → pagination pinned at the bottom, no scroll. 🧠 */}
+      <div className="flex-1 lg:min-h-0 lg:overflow-hidden">
       {articles.length === 0 ? (
         <div className="rounded-2xl border border-neutral-100 bg-white p-12 text-center text-sm text-neutral-400">
           مقاله‌ای یافت نشد
@@ -84,16 +87,17 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
             })}
           </div>
 
-          {/* 🖥️ Desktop table */}
-          <div className="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm lg:block">
+          {/* 🖥️ Desktop table — container override clips the shadcn inner X-scroll; long
+              titles/authors truncate so table-fixed columns never spill out of the card. */}
+          <div className="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm lg:block [&_[data-slot=table-container]]:overflow-x-hidden">
             <Table className="table-fixed">
               <TableHeader className="bg-neutral-50 [&_tr]:border-b [&_tr]:border-neutral-100">
                 <TableRow className="hover:bg-neutral-50">
-                  <TableHead className="w-[40%] px-4 text-right text-neutral-600">عنوان</TableHead>
-                  <TableHead className="w-[18%] px-3 text-right text-neutral-600">نویسنده</TableHead>
-                  <TableHead className="w-[16%] px-3 text-right text-neutral-600">وضعیت</TableHead>
+                  <TableHead className="w-[42%] px-4 text-right text-neutral-600">عنوان</TableHead>
+                  <TableHead className="w-[16%] px-3 text-right text-neutral-600">نویسنده</TableHead>
+                  <TableHead className="w-[14%] px-3 text-right text-neutral-600">وضعیت</TableHead>
                   <TableHead className="w-[14%] px-3 text-right text-neutral-600">تاریخ</TableHead>
-                  <TableHead className="w-[12%] px-3" />
+                  <TableHead className="w-[14%] px-3" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,14 +105,16 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
                   const s = STATUS[a.status] ?? STATUS.draft!;
                   return (
                     <TableRow key={a._id} className="border-neutral-100 hover:bg-neutral-50/70">
-                      <TableCell className="px-4 py-3">
-                        <p className="font-medium text-neutral-900">{a.title}</p>
+                      <TableCell className="px-4 py-2">
+                        <p className="truncate font-medium text-neutral-900">{a.title}</p>
                         <TagList tags={a.tags} />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-neutral-600">{a.author || "—"}</TableCell>
-                      <TableCell className="px-3 py-3"><Badge variant={s.variant}>{s.label}</Badge></TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs text-neutral-500">{a.createdAt}</TableCell>
-                      <TableCell className="px-3 py-3"><EntityActions entityLabel="مقاله" editHref={`/admin/articles/${a._id}/edit`} deleteUrl={`/api/admin/articles/${a._id}`} /></TableCell>
+                      <TableCell className="px-3 py-2 text-neutral-600">
+                        <span className="block truncate">{a.author || "—"}</span>
+                      </TableCell>
+                      <TableCell className="px-3 py-2"><Badge variant={s.variant}>{s.label}</Badge></TableCell>
+                      <TableCell className="whitespace-nowrap px-3 py-2 text-xs text-neutral-500">{a.createdAt}</TableCell>
+                      <TableCell className="px-3 py-2"><EntityActions entityLabel="مقاله" editHref={`/admin/articles/${a._id}/edit`} deleteUrl={`/api/admin/articles/${a._id}`} /></TableCell>
                     </TableRow>
                   );
                 })}
@@ -117,6 +123,7 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
           </div>
         </>
       )}
+      </div>
 
       {totalPages > 1 && <Pagination totalPages={totalPages} />}
     </div>

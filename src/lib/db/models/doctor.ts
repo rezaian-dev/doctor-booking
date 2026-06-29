@@ -8,7 +8,7 @@ const ReviewSchema = new Schema(
     userName:   { type: String, default: "کاربر ناشناس" },
     userAvatar: { type: String, default: "" },
     rating:     { type: Number, required: true, min: 1, max: 5 },
-    comment:    { type: String, required: true },
+    comment:    { type: String, default: "" }, // 📝 optional in the UI → must not be required here
     status:     { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
   },
   { timestamps: true }
@@ -44,6 +44,15 @@ const DoctorSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// ─── Indexes ──────────────────────────────────────────────────────────────────
+// 🚀 With thousands of doctors, the /doctors search filters and sorts must hit indexes instead
+//    of scanning the whole collection. (medicalCode already has a unique index.) 🧠
+DoctorSchema.index({ createdAt: -1 });            // 🆕 newest / default sort
+DoctorSchema.index({ specialty: 1 });             // 🔬 specialty filter
+DoctorSchema.index({ city: 1 });                  // 📍 city filter
+DoctorSchema.index({ gender: 1, experience: 1 }); // 🧑‍⚕️ gender + experience filters
+DoctorSchema.index({ "schedule.date": 1 });       // 🗓️ availability / weekend ($elemMatch on date)
 
 // ─── Inferred types ───────────────────────────────────────────────────────────
 

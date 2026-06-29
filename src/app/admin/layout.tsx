@@ -31,7 +31,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       {/* 📄 Content column — mobile bar pinned, only <main> scrolls */}
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminMobileNav admin={admin} />
-        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        {/* 🔒 overflow-y-auto alone makes the X-axis compute to `auto` (CSS spec) → a phantom
+            horizontal scrollbar on any 1px spill. Explicit overflow-x-hidden kills it for good. 🧠 */}
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

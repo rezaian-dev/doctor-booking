@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { NO_IMAGE } from '@/lib/utils/profile-card';
+import { formatDoctorName } from '@/lib/utils/doctor-name';
 
 export interface DoctorCardProps {
   _id:              string;
@@ -94,7 +95,7 @@ export default function DoctorCard({
       <CardContent className="p-3 sm:p-4 space-y-3">
         {/* ⭐ Name + rating */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-sm sm:text-base text-neutral-900 line-clamp-1">{name}</h3>
+          <h3 className="font-semibold text-sm sm:text-base text-neutral-900 line-clamp-1">{formatDoctorName(name)}</h3>
           <div className="flex items-center gap-1 shrink-0 bg-amber-50 px-2 py-1 rounded-md">
             <Star className="text-amber-500 fill-amber-500" size={12} />
             <span className="text-xs font-medium text-neutral-700">{avgRating.toFixed(1)}</span>

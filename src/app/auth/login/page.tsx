@@ -43,6 +43,10 @@ const Page: FC = () => {
       //    refetch, THEN notify. The header reads "unknown" → skeleton → avatar, and can never
       //    misread a stale null as a guest. Root-cause guard for the second-login bug. 🧠✨
       mutate('/api/auth/me', undefined, { revalidate: true });
+      // 🧼 Also drop the previous user's cached /profile data so the incoming user never sees it —
+      //    guards the path where logout's cache-wipe didn't run (e.g. session expiry). Refetches
+      //    fresh when /profile mounts → fully realtime, no manual reload. 🧠✨
+      mutate('/api/profile', undefined, { revalidate: false });
       notifyAuthChange();
       // 🚀 Soft nav only — router.refresh() re-ran Server Components and caused a full re-render/flash.
       startTransition(() => {

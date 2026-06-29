@@ -40,7 +40,7 @@ export default function UserTestimonialsCarousel({ items }: { items: ReviewItem[
       renderItem={(r: ReviewItem) => (
         <UserTestimonialCard
           userName={r.userName}
-          userImage={r.userAvatar || '/images/review-user-2.png'}
+          userImage={r.userAvatar || ''}
           rating={r.rating}
           date={formatDateClient(r.date)}
           comment={r.comment}

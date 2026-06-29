@@ -111,6 +111,7 @@ export default function Reviews({ reviews = [], doctorId = "", avgRating = 0, re
               date={new Date(review.createdAt).toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Tehran" })}
               comment={review.comment}
               showDoctorReference={false}
+              expandable
               className={`border-t mt-2 p-4 last:border-b-0 animate-in fade-in-0 slide-in-from-bottom-3 fill-mode-both duration-500 ease-out ${REVEAL_DELAY[i % STEP] ?? "delay-0"}`}
             />
           ))}

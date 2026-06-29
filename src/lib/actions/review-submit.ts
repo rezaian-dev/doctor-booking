@@ -34,21 +34,27 @@ export async function submitReview(doctorId: string, data: unknown): Promise<voi
     _id: doctorId,
     "reviews.userId": { $ne: String(payload.userId) },
   };
-  const found = await Doctor.findOneAndUpdate(
-    guardFilter,
-    {
-      $push: {
-        reviews: {
-          ...parsed.data,
-          userId:     payload.userId,
-          userName:   `${dbUser.firstName} ${dbUser.lastName}`,
-          userAvatar: dbUser.avatar ?? "",
-          status:     "pending",
+  let found;
+  try {
+    found = await Doctor.findOneAndUpdate(
+      guardFilter,
+      {
+        $push: {
+          reviews: {
+            ...parsed.data,
+            userId:     payload.userId,
+            userName:   `${dbUser.firstName} ${dbUser.lastName}`,
+            userAvatar: dbUser.avatar ?? "",
+            status:     "pending",
+          },
         },
       },
-    },
-    { new: true, runValidators: true },
-  );
+      { new: true, runValidators: true },
+    );
+  } catch {
+    // 🚫 Never surface raw Mongoose/validation messages to the user
+    throw new Error("ثبت نظر با خطا مواجه شد. لطفاً دوباره تلاش کنید.");
+  }
 
   // 🩺 null → doctor missing OR user already left a review; disambiguate
   if (!found) {

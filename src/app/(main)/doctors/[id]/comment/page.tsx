@@ -1,7 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import DoctorReview from '@/components/features/review/doctor-review';
-import { fetchDoctorById } from '@/lib/services/doctors';
+import { fetchDoctorHeader, hasUserReviewed } from '@/lib/services/doctors';
+import type { DoctorData } from '@/types/doctor';
 import { getAuthUser } from '@/lib/auth/session';
 import { submitReview } from '@/lib/actions/review-submit';
 
@@ -20,23 +21,25 @@ export default async function CommentPage({ params }: Props) {
     redirect(`/auth/login?callbackUrl=/doctors/${id}/comment`);
   }
 
-  const doctor = await fetchDoctorById(id);
+  // 🪶 The review form's header only shows name/specialty/photo — fetch just that, plus a
+  //    targeted "already reviewed?" check, in parallel. Far less DB work & bandwidth than
+  //    loading the entire doctor with all reviews + avatars. ⚡
+  const [doctor, alreadyReviewed] = await Promise.all([
+    fetchDoctorHeader(id),
+    hasUserReviewed(id, user._id),
+  ]);
   if (!doctor) notFound();
 
-  // 🔒 One review per user per doctor — if already reviewed, the form is locked
-  //    (the server action enforces this too; this just avoids a blank form). 🧠
-  const alreadyReviewed = doctor.reviews.some((r) => r.userId === user._id);
-
-  const doctorData = {
-    name:              doctor.name,
-    specialty:         doctor.specialty,
-    image:             doctor.photo || '/images/no-image.png',
-    rating:            doctor.avgRating,
-    reviewsCount:      doctor.reviewCount,
-    medicalCode:       doctor.medicalCode,
-    address:           doctor.address,
-    nextAvailableSlot: doctor.nextAvailableSlot ?? '',
-    bio:               doctor.about,
+  // 🧾 Only name/specialty/image are rendered; the rest satisfy the shared DoctorData shape.
+  const doctorData: DoctorData = {
+    name:         doctor.name,
+    specialty:    doctor.specialty,
+    image:        doctor.photo || '/images/no-image.png',
+    rating:       0,
+    reviewsCount: 0,
+    medicalCode:  '',
+    address:      '',
+    bio:          '',
   };
 
   // 🔗 Bind doctor ID so the component doesn't need to know it

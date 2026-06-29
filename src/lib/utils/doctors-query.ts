@@ -13,6 +13,8 @@ export interface ReadonlyParams {
 const AVAILABILITY_MAP: Record<string, Record<string, string>> = {
   "available-today": { availableToday: "true" },
   "online-visit": { onlineVisit: "true" },
+  evening: { evening: "true" }, // 🌙 doctors offering afternoon/evening slots
+  weekend: { weekend: "true" }, // 🗓️ doctors offering slots on holidays (Fridays)
 };
 
 // 🔑 nuqs stores multi-values comma-joined in ONE param → split + clean

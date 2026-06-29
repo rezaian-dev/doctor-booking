@@ -1,5 +1,6 @@
 // ⭐ REST API — PATCH (approve/reject) and DELETE for a single review
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { connectDB } from "@/lib/db/connection";
 import { Doctor } from "@/lib/db/models/doctor";
 import { requireApiAdmin } from "@/lib/auth/require-api-admin";
@@ -39,6 +40,12 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       );
     }
 
+    // ♻️ Approving/rejecting changes the doctor's approved-review average → bust the cached
+    //    home lists (popular/newest) so the new rating shows up right away. 🧠
+    revalidateTag("doctors", { expire: 0 }); // ⏱️ immediate bust (Next 16 needs a profile)
+    revalidatePath("/");        // 🏠 home «محبوب‌ترین پزشکان»
+    revalidatePath("/doctors"); // 🩺 doctors list
+
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "خطای سرور" }, { status: 500 });
@@ -63,6 +70,11 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
     if (!result) {
       return NextResponse.json({ error: "دکتر یافت نشد" }, { status: 404 });
     }
+
+    // ♻️ Deleting an (approved) review changes the average → refresh cached home lists. 🧠
+    revalidateTag("doctors", { expire: 0 });
+    revalidatePath("/");
+    revalidatePath("/doctors");
 
     return NextResponse.json({ success: true });
   } catch {

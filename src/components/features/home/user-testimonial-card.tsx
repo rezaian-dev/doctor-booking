@@ -2,7 +2,8 @@ import { buildStars } from '@/lib/utils/array-utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { Star } from 'lucide-react';
+import { Star, UserRound } from 'lucide-react';
+import ExpandableText from '@/components/shared/expandable-text';
 
 interface UserTestimonialCardProps {
   userName:             string;
@@ -13,12 +14,13 @@ interface UserTestimonialCardProps {
   doctorName?:          string;
   doctorLink?:          string;
   showDoctorReference?: boolean;
+  expandable?:          boolean; // 📖 full review with «مشاهده بیشتر» toggle (reviews list) vs. fixed teaser (home grid)
   className?:           string;
 }
 
-// ✅ Helper: treat empty string OR missing value as "no real avatar"
-function resolveAvatar(src: string | undefined | null): string {
-  return src && src.trim() !== '' ? src : '/images/review-user-2.png';
+// ✅ Real avatar only when a non-empty src is provided; otherwise we render an آدمک placeholder
+function hasRealAvatar(src: string | undefined | null): boolean {
+  return !!src && src.trim() !== '';
 }
 
 const UserTestimonialCard: React.FC<UserTestimonialCardProps> = ({
@@ -30,10 +32,11 @@ const UserTestimonialCard: React.FC<UserTestimonialCardProps> = ({
   doctorName,
   doctorLink,
   showDoctorReference = true,
+  expandable = false,
   className = '',
 }) => {
   const shouldShowDoctorReference = showDoctorReference && doctorName && doctorLink;
-  const avatarSrc = resolveAvatar(userImage);
+  const showAvatar = hasRealAvatar(userImage);
 
   return (
     <li className={`bg-white flex flex-col gap-y-4 ${className}`}>
@@ -41,15 +44,20 @@ const UserTestimonialCard: React.FC<UserTestimonialCardProps> = ({
       {/* 👤 User info & rating */}
       <div className="flex justify-between items-start gap-x-2">
         <div className="flex gap-x-2 min-w-0">
-          <div className="relative w-7 h-7 shrink-0 rounded-full overflow-hidden">
-            <Image
-              src={avatarSrc}
-              fill
-              alt={userName}
-              className="object-cover"
-              sizes="28px"
-              loading="lazy"
-            />
+          <div className="relative w-7 h-7 shrink-0 rounded-full overflow-hidden bg-neutral-100 flex items-center justify-center ring-1 ring-neutral-200/60">
+            {showAvatar ? (
+              <Image
+                src={userImage}
+                fill
+                alt={userName}
+                className="object-cover"
+                sizes="28px"
+                loading="lazy"
+              />
+            ) : (
+              // 🧍 آدمک placeholder — clean generic person icon, no missing-image flicker
+              <UserRound className="w-4 h-4 text-neutral-400" aria-hidden />
+            )}
           </div>
           <div className="min-w-0">
             <span className="font-medium text-sm sm:text-base text-neutral-900 inline-block truncate max-w-full">
@@ -66,10 +74,15 @@ const UserTestimonialCard: React.FC<UserTestimonialCardProps> = ({
         <time className="shrink-0 whitespace-nowrap text-neutral-600 text-xs py-1 tabular-nums">({date})</time>
       </div>
 
-      {/* 💬 Comment */}
-      <p className="text-neutral-900 text-[13px] line-clamp-3 md:line-clamp-2 min-h-14.5 md:min-h-10">
-        {comment}
-      </p>
+      {/* 💬 Comment — reviews list shows the full text with a «مشاهده بیشتر» toggle; the home
+           grid keeps a fixed-height teaser so cards stay aligned. */}
+      {expandable ? (
+        <ExpandableText text={comment} clampLines={3} className="text-neutral-900 text-[13px] leading-5" />
+      ) : (
+        <p className="text-neutral-900 text-[13px] line-clamp-3 md:line-clamp-2 min-h-14.5 md:min-h-10">
+          {comment}
+        </p>
+      )}
 
       {/* 🩺 Doctor reference */}
       {shouldShowDoctorReference && (

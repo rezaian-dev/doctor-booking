@@ -7,7 +7,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mutate } from 'swr'; // 🔄 invalidate the shared /api/auth/me cache on logout
+import { mutate } from 'swr'; // 🔄 wipe the whole SWR cache on logout (no cross-user data leak)
 import { clearSessionHintClient, notifyAuthChange } from '@/lib/auth/session-hint'; // 🪪 drop hint + flip header live
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -32,10 +32,11 @@ export default function UserDropdownMenu({ user, fullName, initials, unreadCount
       // 🪪 Drop the client hint immediately → the header re-renders as a clean guest
       //    (login button, no skeleton) without waiting on the Set-Cookie round-trip. ✨
       clearSessionHintClient();
-      // 🔄 CLEAR the shared profile cache (don't seed { user: null }!). A cached null would be
-      //    read by the header on the NEXT login and shown as a guest button → this was the bug.
-      //    undefined = "unknown" → next login shows a skeleton then the avatar. ✨
-      await mutate('/api/auth/me', undefined, { revalidate: false });
+      // 🧹 Wipe the ENTIRE SWR cache on logout — not just /api/auth/me. Every user-scoped key
+      //    (/api/profile, /api/appointments, inbox …) is dropped so the NEXT user can never read
+      //    the previous user's cached data on a soft nav. 🔑 Root cause of the /profile stale-data bug.
+      //    revalidate:false → keys clear instantly; each page refetches fresh on its next mount. ✨
+      await mutate(() => true, undefined, { revalidate: false });
       // 📣 Notify every mounted header to re-read the cleared hint live → no manual refresh.
       notifyAuthChange();
       router.push('/'); // 🚀 soft nav only (refresh removed → no flash)

@@ -39,7 +39,9 @@ export default async function UsersPage({ searchParams }: PageProps) {
   const { users, total, totalPages } = await getAdminUsers(page, search, role);
 
   return (
-    <div className="space-y-6">
+    // 🖥️ Desktop (lg): the page is exactly one viewport tall and never scrolls (h-full +
+    //    overflow-hidden). 📱 Mobile keeps natural flow. gap tightened so 10 rows fit. 🧠
+    <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
       <div>
         <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl">مدیریت کاربران</h1>
         <p className="mt-0.5 text-sm text-neutral-500">{formatFaNumber(total)} کاربر</p>
@@ -49,6 +51,9 @@ export default async function UsersPage({ searchParams }: PageProps) {
         <UsersFilter search={search} role={role} />
       </Suspense>
 
+      {/* 📐 Fills the leftover height on desktop so pagination sits at the bottom with no
+          scroll; min-h-0 lets it shrink inside the fixed-height column. 🧠 */}
+      <div className="flex-1 lg:min-h-0 lg:overflow-hidden">
       {users.length === 0 ? (
         <div className="rounded-2xl border border-neutral-100 bg-white p-12 text-center text-sm text-neutral-400">
           کاربری یافت نشد
@@ -81,17 +86,18 @@ export default async function UsersPage({ searchParams }: PageProps) {
             })}
           </div>
 
-          {/* 🖥️ Desktop table */}
-          <div className="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm lg:block">
+          {/* 🖥️ Desktop table — [data-slot=table-container] override clips the shadcn inner
+              X-scroll; table-fixed widths keep every column inside the card (no scroll). */}
+          <div className="hidden overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm lg:block [&_[data-slot=table-container]]:overflow-x-hidden">
             <Table className="table-fixed">
               <TableHeader className="bg-neutral-50 [&_tr]:border-b [&_tr]:border-neutral-100">
                 <TableRow className="hover:bg-neutral-50">
                   <TableHead className="w-[28%] px-4 text-right text-neutral-600">کاربر</TableHead>
-                  <TableHead className="w-[18%] px-3 text-right text-neutral-600">تلفن</TableHead>
+                  <TableHead className="w-[16%] px-3 text-right text-neutral-600">تلفن</TableHead>
                   <TableHead className="w-[12%] px-3 text-right text-neutral-600">نقش</TableHead>
                   <TableHead className="w-[12%] px-3 text-right text-neutral-600">وضعیت</TableHead>
-                  <TableHead className="w-[16%] px-3 text-right text-neutral-600">تاریخ ثبت</TableHead>
-                  <TableHead className="w-[14%] px-3" />
+                  <TableHead className="w-[12%] px-3 text-right text-neutral-600">تاریخ ثبت</TableHead>
+                  <TableHead className="w-[20%] px-3" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -99,9 +105,9 @@ export default async function UsersPage({ searchParams }: PageProps) {
                   const rc = ROLE[u.role] ?? ROLE.user!;
                   return (
                     <TableRow key={u._id} className="border-neutral-100 hover:bg-neutral-50/70">
-                      <TableCell className="px-4 py-3">
+                      <TableCell className="px-4 py-2">
                         <div className="flex items-center gap-2">
-                          <Avatar className="size-9 bg-primary-100">
+                          <Avatar className="size-8 bg-primary-100">
                             <AvatarImage src={u.avatar} alt={`${u.firstName} ${u.lastName}`} />
                             <AvatarFallback className="bg-primary-100 text-xs font-bold text-primary-700">{u.firstName?.[0]}{u.lastName?.[0]}</AvatarFallback>
                           </Avatar>
@@ -111,13 +117,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-3 text-xs text-neutral-600">{u.phone}</TableCell>
-                      <TableCell className="px-3 py-3"><Badge variant={rc.variant}>{rc.label}</Badge></TableCell>
-                      <TableCell className="px-3 py-3">
+                      <TableCell className="px-3 py-2 text-xs text-neutral-600">{u.phone}</TableCell>
+                      <TableCell className="px-3 py-2"><Badge variant={rc.variant}>{rc.label}</Badge></TableCell>
+                      <TableCell className="px-3 py-2">
                         {u.isBanned ? <Badge variant="danger">مسدود</Badge> : <Badge variant="success">فعال</Badge>}
                       </TableCell>
-                      <TableCell className="px-3 py-3 text-xs text-neutral-500">{u.createdAt}</TableCell>
-                      <TableCell className="px-3 py-3"><UserActions userId={u._id} currentRole={u.role} isBanned={u.isBanned} /></TableCell>
+                      <TableCell className="px-3 py-2 text-xs text-neutral-500">{u.createdAt}</TableCell>
+                      <TableCell className="px-3 py-2"><UserActions userId={u._id} currentRole={u.role} isBanned={u.isBanned} /></TableCell>
                     </TableRow>
                   );
                 })}
@@ -126,6 +132,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
           </div>
         </>
       )}
+      </div>
 
       {totalPages > 1 && <Pagination totalPages={totalPages} />}
     </div>

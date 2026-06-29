@@ -83,8 +83,14 @@ export default function DoctorForm({ action, initialData = {}, title, cityLabels
     },
   });
 
-  const { control, handleSubmit, setValue, watch, setError, formState: { isSubmitting } } = form;
+  const { control, handleSubmit, setValue, watch, setError, formState: { isSubmitting, errors } } = form;
   const photo = watch("photo");
+
+  // 🚨 Map RHF's nested schedule errors → a flat per-row date-message array for the picker.
+  //    (zod attaches duplicate-date issues at schedule.<i>.date) 🧠
+  const scheduleErrors = Array.isArray(errors.schedule)
+    ? errors.schedule.map((e) => e?.date?.message as string | undefined)
+    : [];
 
   /* ── Photo upload ────────── */
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -154,9 +160,17 @@ export default function DoctorForm({ action, initialData = {}, title, cityLabels
     }
   };
 
+  // ❌ Blocked submit — surface schedule problems (duplicate dates are the common one) as a toast,
+  //    while the inline per-row errors point at the exact field to fix. 🚨
+  const onInvalid = (formErrors: typeof errors) => {
+    if (formErrors.schedule) {
+      toast.error("تاریخ‌های تکراری مجاز نیست؛ هر روز را فقط یک‌بار ثبت کنید");
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onValid)} className="space-y-5">
+      <form onSubmit={handleSubmit(onValid, onInvalid)} className="space-y-5">
         <DoctorPhotoSection
           photo={photo}
           uploading={uploading}
@@ -174,7 +188,7 @@ export default function DoctorForm({ action, initialData = {}, title, cityLabels
         {/* 📅 Schedule */}
         <Section title="برنامه کاری" subtitle="تاریخ و ساعت‌های ویزیت دکتر را مشخص کنید" icon={CalendarDays}>
           <FormField control={control} name="schedule" render={({ field }) => (
-            <SchedulePicker value={field.value} onChange={field.onChange} />
+            <SchedulePicker value={field.value} onChange={field.onChange} errors={scheduleErrors} />
           )} />
         </Section>
 

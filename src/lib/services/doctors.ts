@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { isValidObjectId, type PipelineStage } from "mongoose";
 import { connectDB } from "@/lib/db/connection";
 import { Doctor } from "@/lib/db/models/doctor";
 import { User } from "@/lib/db/models/user";
@@ -14,10 +15,6 @@ export type Review = {
   _id: string; userId: string; userName: string; userAvatar: string;
   rating: number; comment: string; status: ReviewStatus; createdAt: string;
 };
-
-// 🩺 Fields needed to render a doctor card (list views)
-const CARD_SELECT =
-  "name specialty city photo hasOnlineVisit hasInPersonVisit schedule reviews address medicalCode";
 
 // ─── Jalali Helpers ───────────────────────────────────────────────────────────
 // 🗓️ Persian readable label (weekday + day + month) — hydration-safe formatter from use-jalaali. 🔁
@@ -105,8 +102,9 @@ function calcReviewStats(reviews: Review[]): { reviewCount: number; avgRating: n
 }
 
 // ─── Card mapper (single source of truth for list views) ──────────────────────
-function toDoctorCard(d: RawDoc, avatarMap: Map<string, string>, today: string, now: string) {
-  const reviews  = buildReviews((d.reviews as RawDoc[]) ?? [], avatarMap);
+// 🧮 Receives a doc whose review stats were computed in the DB ($set), so the heavy reviews
+//    array never crosses the wire and no per-reviewer avatar query is needed for cards. 🪶
+function toDoctorCard(d: RawDoc, today: string, now: string) {
   const schedule = serializeSchedule(d.schedule as unknown[]);
   return {
     _id:               String(d._id),
@@ -121,37 +119,58 @@ function toDoctorCard(d: RawDoc, avatarMap: Map<string, string>, today: string, 
     isAvailable:       hasOpenSlot(schedule, today, now),
     schedule,
     nextAvailableSlot: getNextAvailableSlot(schedule, today, now) ?? undefined,
-    ...calcReviewStats(reviews),
+    reviewCount:       Number(d.reviewCount ?? 0),
+    avgRating:         Number(d.avgRating ?? 0),
+    recommendPct:      Number(d.recommendPct ?? 0),
   };
 }
 export type DoctorCard = ReturnType<typeof toDoctorCard>;
 
-// 🔁 Fetch + map doctor cards once — every list view derives from this (DRY)
+// 🔁 Fetch + map doctor cards via ONE aggregation — every list view derives from this (DRY).
+//    Stats, sort, and limit all run in Mongo; only the ≤N projected cards reach Node. ⚡
+//    This is the big win on a 4000-doc collection: no full-collection scan into memory and no
+//    reviews/avatars transfer — just the handful of fields a card actually renders. 🚀
 async function loadDoctorCards(
   opts: { sort?: Record<string, 1 | -1>; limit?: number } = {},
 ): Promise<DoctorCard[]> {
   await connectDB();
   const { date: today, time: now } = todayJalali();
 
-  const query = Doctor.find({}).select(CARD_SELECT);
-  if (opts.sort)  query.sort(opts.sort);
-  if (opts.limit) query.limit(opts.limit);
-  const doctors = await query.lean<RawDoc[]>();
+  const pipeline: PipelineStage[] = [
+    // ⭐ Approved-review stats in-DB — the reviews array is consumed here and dropped by $project.
+    { $set: { _ok: { $filter: { input: { $ifNull: ["$reviews", []] }, as: "r", cond: { $eq: ["$$r.status", "approved"] } } } } },
+    { $set: {
+        reviewCount: { $size: "$_ok" },
+        avgRating: { $cond: [{ $gt: [{ $size: "$_ok" }, 0] }, { $round: [{ $avg: "$_ok.rating" }, 1] }, 0] },
+        recommendPct: { $cond: [
+          { $gt: [{ $size: "$_ok" }, 0] },
+          { $round: [{ $multiply: [{ $divide: [
+            { $size: { $filter: { input: "$_ok", as: "r", cond: { $gte: ["$$r.rating", 4] } } } },
+            { $size: "$_ok" },
+          ] }, 100] }, 0] },
+          0,
+        ] },
+    } },
+  ];
+  if (opts.sort)  pipeline.push({ $sort: opts.sort });
+  if (opts.limit) pipeline.push({ $limit: opts.limit });
+  // 🎯 Ship only what a card renders (drops reviews, contact, about, insurances, experience…)
+  pipeline.push({ $project: {
+    name: 1, specialty: 1, city: 1, photo: 1, address: 1, medicalCode: 1,
+    hasOnlineVisit: 1, hasInPersonVisit: 1, schedule: 1,
+    avgRating: 1, reviewCount: 1, recommendPct: 1,
+  } });
 
-  const avatarMap = await fetchAvatarMap(doctors.flatMap(d => (d.reviews as RawDoc[]) ?? []));
-  return doctors.map(d => toDoctorCard(d, avatarMap, today, now));
+  const docs = await Doctor.aggregate<RawDoc>(pipeline);
+  return docs.map(d => toDoctorCard(d, today, now));
 }
 
 // ─── Public list queries ──────────────────────────────────────────────────────
 
-// ⭐ Top doctors by avgRating (approved only), ties broken by reviewCount
+// ⭐ Top doctors by avgRating (approved only), ties broken by reviewCount — sorted & limited in Mongo
 export const fetchPopularDoctors = unstable_cache(
-  async (limit = 8): Promise<DoctorCard[]> => {
-    const cards = await loadDoctorCards();
-    return cards
-      .sort((a, b) => b.avgRating - a.avgRating || b.reviewCount - a.reviewCount)
-      .slice(0, limit);
-  },
+  (limit = 8): Promise<DoctorCard[]> =>
+    loadDoctorCards({ sort: { avgRating: -1, reviewCount: -1 }, limit }),
   ["doctors-popular"],
   // ⏱️ 15-min safety net: `isAvailable`/`nextAvailableSlot` are clock-relative, so a long
   //    cache would show stale "available today" badges. Bookings still bust INSTANTLY via tag. 🧠
@@ -230,3 +249,23 @@ export const fetchSpecialtyCounts = unstable_cache(
   ["specialty-counts"],
   { revalidate: 3600, tags: ["doctors"] },
 );
+
+// ─── Lean fetch for the review form ───────────────────────────────────────────
+// 🪶 The review form's header only renders name/specialty/photo. Fetching the whole
+//    doctor (every review + an avatar map) just to show three fields wastes DB time
+//    and the user's bandwidth — these targeted reads keep the comment page light. ⚡
+export async function fetchDoctorHeader(
+  id: string,
+): Promise<{ name: string; specialty: string; photo: string } | null> {
+  if (!isValidObjectId(id)) return null; // 🛡️ bad id → 404, not a CastError
+  await connectDB();
+  const d = await Doctor.findById(id).select("name specialty photo").lean<RawDoc | null>();
+  return d ? { name: String(d.name ?? ""), specialty: String(d.specialty ?? ""), photo: String(d.photo ?? "") } : null;
+}
+
+// 🔒 Already reviewed? Existence check only — never transfers the reviews array.
+export async function hasUserReviewed(doctorId: string, userId: string): Promise<boolean> {
+  if (!isValidObjectId(doctorId)) return false;
+  await connectDB();
+  return Boolean(await Doctor.exists({ _id: doctorId, "reviews.userId": String(userId) }));
+}

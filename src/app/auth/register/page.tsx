@@ -74,6 +74,9 @@ const Page: FC = () => {
       // 🧹 Clear any stale cached profile + refetch BEFORE notifying → header shows skeleton→avatar,
       //    never misreads a stale { user: null } as a guest. Same root-cause guard as login. 🧠✨
       mutate('/api/auth/me', undefined, { revalidate: true });
+      // 🧼 Also drop any stale cached /profile data so the new account never inherits it —
+      //    refetches fresh on /profile mount → fully realtime, no manual reload. 🧠✨
+      mutate('/api/profile', undefined, { revalidate: false });
       notifyAuthChange();
       // 🚀 Soft nav only — router.refresh() forced a full Server-Component re-render/flash.
       startTransition(() => {

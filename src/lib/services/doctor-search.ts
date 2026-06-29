@@ -3,11 +3,30 @@
 //    API route as a thin wrapper. 🧠
 import { connectDB } from "@/lib/db/connection";
 import { Doctor } from "@/lib/db/models/doctor";
-import { todayJalali, jalaliStrToLabel } from "@/hooks/use-jalaali";
+import { todayJalali, jalaliStrToLabel, jalaliStrToDate, dateToJalaliStr } from "@/hooks/use-jalaali";
 import { DOCTOR_FILTERS } from "@/lib/constants/filters";
 import { getCityLabelMap } from "@/lib/services/cities";
 
 const PAGE_SIZE = 5;
+
+// 🌙 "عصر و شب" = slots from 16:00 onward. Times are zero-padded "HH:MM" → lexicographic
+//    compare equals chronological, so a plain string >= works. Tune here if the cutoff changes. ⏰
+const EVENING_FROM = "16:00";
+
+// 🗓️ Weekly holiday(s) by JS getDay(): 5 = Friday (جمعه). Add 4 (پنج‌شنبه) here to include Thursdays.
+const HOLIDAY_DOW = [5];
+
+// 🗓️ Jalali weekday can't be computed inside MongoDB, so enumerate the upcoming holiday date-strings
+//    (today → ~1y ahead) in JS and $in them. ~53 items → a tiny, fast index lookup. 🧠
+function upcomingHolidayDates(todayStr: string, weeks = 53): string[] {
+  const out: string[] = [];
+  const d = jalaliStrToDate(todayStr); // 📆 today as a local Gregorian date
+  for (let i = 0; i <= weeks * 7; i++) {
+    if (HOLIDAY_DOW.includes(d.getDay())) out.push(dateToJalaliStr(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
 
 // 🏷️ Static id→label map for constant groups (specialty/insurance/...). City comes from DB.
 const STATIC_ID_TO_LABEL = Object.fromEntries(
@@ -63,6 +82,8 @@ export async function searchDoctors(sp: URLSearchParams): Promise<DoctorSearchRe
   const minExp = sp.get("experience") ? Number(sp.get("experience")!.replace("+", "")) : null;
   const onlineOnly = sp.get("onlineVisit") === "true";
   const availToday = sp.get("availableToday") === "true";
+  const eveningOnly = sp.get("evening") === "true"; // 🌙 afternoon/evening slots only
+  const weekendOnly = sp.get("weekend") === "true"; // 🗓️ holiday (Friday) slots only
   const { date: today, time: now } = todayJalali();
 
   // ── Match ─────────────────────────────────────────────────────────────────
@@ -84,6 +105,18 @@ export async function searchDoctors(sp: URLSearchParams): Promise<DoctorSearchRe
         { schedule: { $elemMatch: { date: { $gt: today }, "times.0": { $exists: true } } } },
         { schedule: { $elemMatch: { date: today, times: { $elemMatch: { $gt: now } } } } },
       ],
+    });
+  // 🌙 Keep only doctors with an upcoming day (today or later) that has a slot at/after 16:00 →
+  //    one $elemMatch ties date + time to the SAME day, so it can't match a past day's evening slot.
+  if (eveningOnly)
+    must.push({
+      schedule: { $elemMatch: { date: { $gte: today }, times: { $elemMatch: { $gte: EVENING_FROM } } } },
+    });
+  // 🗓️ Keep only doctors with at least one slot on an upcoming holiday (Friday). The date list is
+  //    built from today forward, so every entry is already today-or-later. ✨
+  if (weekendOnly)
+    must.push({
+      schedule: { $elemMatch: { date: { $in: upcomingHolidayDates(today) }, "times.0": { $exists: true } } },
     });
 
   const match = must.length ? { $and: must } : {};
@@ -153,6 +186,15 @@ export async function searchDoctors(sp: URLSearchParams): Promise<DoctorSearchRe
 
     {
       $sort: sort === "popular" ? { avgRating: -1, reviewCount: -1 } : sort === "nearest" ? { _nextKey: 1 } : { createdAt: -1 },
+    },
+
+    // 🎯 Drop the heavy bits (reviews/_rev/_ok/_nextKey) BEFORE paginating — only the fields the
+    //    UI renders cross into Node. Keeps the per-request payload tiny on a 4000-doc collection. 🪶
+    {
+      $project: {
+        name: 1, specialty: 1, city: 1, photo: 1, address: 1, medicalCode: 1,
+        hasOnlineVisit: 1, hasInPersonVisit: 1, _sch: 1, reviewCount: 1, avgRating: 1,
+      },
     },
 
     {

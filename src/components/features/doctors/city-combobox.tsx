@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, type RefObject } from 'react';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { MapPin, X } from 'lucide-react';
 import { InputGroupAddon } from '@/components/ui/input-group';
@@ -22,6 +22,10 @@ interface Props {
   value: string[];                  // ✅ selected city slugs
   onChange: (vals: string[]) => void;
   id?: string;
+  // 📦 DOM node to portal the dropdown into (e.g. inside the mobile Sheet).
+  //    Without this it defaults to <body>, which Radix's modal Sheet makes
+  //    pointer-events: none — so items become unclickable when nested in it.
+  portalContainer?: HTMLElement | null | RefObject<HTMLElement | null> | undefined;
 }
 
 // 🔤 Normalize Persian/Arabic variants so search matches regardless of keyboard
@@ -41,7 +45,7 @@ function CityChip({ label }: { label: string }) {
 }
 
 // 🏙️ Searchable, multi-select city picker — slugs in state, Persian labels on screen
-export default function CityCombobox({ options, value, onChange, id }: Props) {
+export default function CityCombobox({ options, value, onChange, id, portalContainer }: Props) {
   const anchor = useComboboxAnchor();
 
   // 🗺️ slug → label lookup for chips, list rows, and label-based filtering
@@ -87,6 +91,7 @@ export default function CityCombobox({ options, value, onChange, id }: Props) {
 
       <ComboboxContent
         anchor={anchor}
+        container={portalContainer}
         className="max-h-72 rounded-2xl border border-neutral-100 p-1.5 shadow-xl ring-black/5"
       >
         <ComboboxEmpty className="py-6 text-neutral-400">شهری یافت نشد.</ComboboxEmpty>

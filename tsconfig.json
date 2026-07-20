@@ -26,8 +26,9 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
 
-    // 🔗 Path alias + Next plugin
-    "baseUrl": ".",
+    // 🔗 Path alias + Next plugin — no baseUrl needed: paths already resolve
+    // relative to this file since their values start with "./" (baseUrl is
+    // deprecated as of TS 6.0 and removed in 7.0)
     "paths": { "@/*": ["./src/*"] },
     "plugins": [{ "name": "next" }],
     "skipLibCheck": true

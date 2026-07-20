@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,11 @@ export default function DoctorFiltersSheet({ setIsOpen, cityGroup }: Props) {
   const { draft, setPatch, setArrayField, apply, reset, canApply, canReset } = useFilterParams();
   const [openId, setOpenId] = useState('');
   const activeCount = countActiveFilters(draft); // 🔢 selected across groups + gender
+  // 🩹 CityCombobox's dropdown must portal INSIDE the sheet, not <body>: Radix
+  // makes the sheet modal, which sets `pointer-events: none` on <body> and only
+  // re-enables it on the sheet's own DOM subtree — a body-level portal from
+  // outside that subtree ends up completely unclickable.
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const handleReset = () => { reset(); setOpenId(''); };
   const handleApply = () => { apply(); setIsOpen(false); };
@@ -53,7 +58,7 @@ export default function DoctorFiltersSheet({ setIsOpen, cityGroup }: Props) {
         </SheetHeader>
 
         {/* 📋 Body */}
-        <div className="flex-1 overflow-y-auto p-5">
+        <div ref={bodyRef} className="flex-1 overflow-y-auto p-5">
           <FilterFields
             showSearch
             groups={DOCTOR_FILTERS}
@@ -63,6 +68,7 @@ export default function DoctorFiltersSheet({ setIsOpen, cityGroup }: Props) {
             setArrayField={setArrayField}
             openId={openId}
             setOpenId={setOpenId}
+            portalContainer={bodyRef}
           />
         </div>
 

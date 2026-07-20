@@ -102,14 +102,20 @@ function ComboboxContent({
   align = "start",
   alignOffset = 0,
   anchor,
+  container, // 🧩 lets the popup mount inside a modal (e.g. Radix Sheet) instead of <body>,
+             //    so it isn't left unclickable by the modal's pointer-events lock
   ...props
 }: ComboboxPrimitive.Popup.Props &
   Pick<
     ComboboxPrimitive.Positioner.Props,
     "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
-  >) {
+  > & {
+    container?: HTMLElement | null | React.RefObject<HTMLElement | null> | undefined
+  }) {
   return (
-    <ComboboxPrimitive.Portal>
+    <ComboboxPrimitive.Portal
+      container={container as React.ComponentProps<typeof ComboboxPrimitive.Portal>["container"]}
+    >
       <ComboboxPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}

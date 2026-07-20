@@ -1,5 +1,6 @@
 'use client';
 
+import { type RefObject } from 'react';
 import { Search } from 'lucide-react';
 import { Accordion } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,9 @@ interface Props {
   setArrayField:(key: ArrayFilterKey, vals: string[]) => void;
   openId:       string;
   setOpenId:    (id: string) => void;
+  // 📦 forwarded to CityCombobox — mounts its dropdown inside the mobile Sheet
+  //    when provided, instead of <body> (fixes clicks being blocked there)
+  portalContainer?: HTMLElement | null | RefObject<HTMLElement | null> | undefined;
 }
 
 // 📏 One label style → consistent typography across every section
@@ -26,7 +30,7 @@ const labelClass = 'text-sm font-medium text-neutral-900';
 
 // 🧱 Filter form body — identical on desktop & mobile, only the shell differs
 export default function FilterFields({
-  showSearch, groups, cityGroup, draft, setPatch, setArrayField, openId, setOpenId,
+  showSearch, groups, cityGroup, draft, setPatch, setArrayField, openId, setOpenId, portalContainer,
 }: Props) {
   return (
     <div className="space-y-5">
@@ -54,6 +58,7 @@ export default function FilterFields({
             options={cityGroup.options}
             value={draft.city}
             onChange={vals => setArrayField('city', vals)}
+            portalContainer={portalContainer}
           />
         </div>
       )}
